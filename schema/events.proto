@@ -1,0 +1,84 @@
+syntax = "proto3";
+import "google/protobuf/any.proto";
+package schema;
+option go_package = "go-lite/schema";
+
+
+
+
+message AddLocationRequest {
+  string name = 1;
+}
+
+message AddLocationResponse {
+  uint64 id = 2;
+}
+
+
+message LocationAdded {
+  string name = 1;
+  uint64 id = 2;
+}
+
+
+message AddProductRequest {
+  string name = 1;
+}
+
+
+message AddProductResponse {
+  uint64 id = 2;
+}
+
+message ProductAdded {
+  uint64 id = 1;
+  string name = 2;
+}
+
+message ChangeQuantityRequest {
+  uint64 location = 1;
+  uint64 product = 2;
+  uint64 quantity = 3;
+}
+
+message QuantityChanged {
+  uint64 location = 1;
+  uint64 product = 2;
+  uint64 quantity = 3;
+  uint64 total = 4;
+}
+
+message ChangeQuantityResponse {
+  uint64 total = 1;
+}
+
+message ListLocationRequest {
+  uint64 location = 1;
+}
+
+message ListLocationResponse {
+  message Item {
+    uint64 product =1;
+    uint64 quantity = 2;
+  }
+
+  repeated Item items = 1;
+}
+
+
+service InventoryService {
+  rpc AddLocation(AddLocationRequest) returns (AddLocationResponse);
+  rpc AddProduct(AddProductRequest) returns (AddProductResponse);
+  rpc ChangeQuantity(ChangeQuantityRequest) returns (ChangeQuantityResponse);
+  rpc ListLocation(ListLocationRequest) returns (ListLocationResponse);
+}
+
+message RewindRequest {
+  repeated google.protobuf.Any Events = 1;
+}
+message RewindResponse {
+
+}
+
+message TestCase {
+}
