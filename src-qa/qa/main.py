@@ -10,10 +10,18 @@ def main():
 
     t1(stub)
 
+    blah: type[str]
+
 
 
 def t1(s: InventoryServiceStub):
-    l: AddLocationResponse = s.AddLocation(AddLocationRequest(name="test"))
+
+    resp = s.AddLocation(AddLocationRequest())
+    
+
+
+
+
 
 
 
