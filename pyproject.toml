@@ -1,0 +1,12 @@
+[project]
+name = "qa"
+description = "BlackFriday QA Engine"
+version = "0.1.0"
+authors = [
+    { name = "Rinat Abdullin", email = "rinat@abdullin.com" }
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
