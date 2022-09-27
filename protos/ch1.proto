@@ -1,7 +1,7 @@
 syntax = "proto3";
 import "google/protobuf/any.proto";
-package schema;
-option go_package = "go-lite/schema";
+package protos;
+option go_package = "go-lite/protos";
 
 
 

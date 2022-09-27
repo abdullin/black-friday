@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.21.6
-// source: schema/events.proto
+// source: schemas/ch1.proto
 
 package schema
 
@@ -209,5 +209,5 @@ var InventoryService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "schema/events.proto",
+	Metadata: "schemas/ch1.proto",
 }
