@@ -1,4 +1,4 @@
-module go-lite
+module sdk-go
 
 go 1.19
 

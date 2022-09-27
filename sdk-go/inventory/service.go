@@ -1,9 +1,9 @@
 package inventory
 
-import "go-lite/schema"
+import "sdk-go/protos"
 
 type Service struct {
-	schema.UnimplementedInventoryServiceServer
+	protos.UnimplementedInventoryServiceServer
 }
 
 func NewService() *Service {

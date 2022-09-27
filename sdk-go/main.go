@@ -3,12 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
-	"go-lite/inventory"
-	"go-lite/schema"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"log"
 	"net"
+	"sdk-go/inventory"
+	"sdk-go/protos"
 )
 
 func main() {
@@ -22,7 +22,7 @@ func main() {
 	}
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
-	schema.RegisterInventoryServiceServer(grpcServer, inventory.NewService())
+	protos.RegisterInventoryServiceServer(grpcServer, inventory.NewService())
 
 	// this allows to call this server with commands like:
 	// grpcurl -plaintext localhost:8080 schema.InventoryService/ListLocation
