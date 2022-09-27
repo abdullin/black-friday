@@ -6,6 +6,7 @@ import (
 	"go-lite/inventory"
 	"go-lite/schema"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 	"log"
 	"net"
 )
@@ -22,5 +23,10 @@ func main() {
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
 	schema.RegisterInventoryServiceServer(grpcServer, inventory.NewService())
+
+	// this allows to call this server with commands like:
+	// grpcurl -plaintext localhost:8080 schema.InventoryService/ListLocation
+	// grpcurl -plaintext localhost:8080 list
+	reflection.Register(grpcServer)
 	log.Panicln(grpcServer.Serve(lis))
 }
