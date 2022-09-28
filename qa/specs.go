@@ -42,22 +42,27 @@ func (q *QAContext) assert(resp proto.Message, err error) bool {
 
 func RunCommandDrivenSpec(svc InventoryServiceServer) {
 
-	q := NewQA(svc)
-	teees(q)
+	for _, r := range tests {
 
-	if len(q.fails) == 0 {
+		q := NewQA(svc)
+		r(q)
+
+		if len(q.fails) == 0 {
+			continue
+		}
+
+		fmt.Println("QA: I got an error when doing " + q.text)
+
+		for i, s := range q.steps {
+
+			fmt.Printf(" %d. %s\n", i+1, s)
+		}
+
+		for _, f := range q.fails {
+			fmt.Println(f)
+		}
+
 		return
-	}
-
-	fmt.Println("QA: I got an error when doing " + q.text)
-
-	for i, s := range q.steps {
-
-		fmt.Printf(" %d. %s\n", i+1, s)
-	}
-
-	for _, f := range q.fails {
-		fmt.Println(f)
 	}
 
 }
@@ -85,7 +90,7 @@ func NewQA(svc InventoryServiceServer) *QA {
 type ProductID uint64
 type LocationID uint64
 
-func (q *QA) givenProduct(name string) ProductID {
+func (q *QA) product(name string) ProductID {
 
 	q.step("add product %s", name)
 	prod, _ := q.service.AddProduct(nil, &AddProductReq{Name: name})
@@ -97,7 +102,7 @@ func (q *QA) givenProduct(name string) ProductID {
 
 }
 
-func (q *QA) givenLoc(name string) LocationID {
+func (q *QA) loc(name string) LocationID {
 
 	q.step("add location %s", name)
 	loc, _ := q.service.AddLocation(nil, &AddLocationReq{Name: name})
@@ -106,7 +111,7 @@ func (q *QA) givenLoc(name string) LocationID {
 	return LocationID(loc.Id)
 }
 
-func (q *QA) givenQty(p ProductID, l LocationID, qt int64) int64 {
+func (q *QA) qty(p ProductID, l LocationID, qt int64) int64 {
 
 	if qt > 0 {
 
@@ -125,7 +130,7 @@ func (q *QA) givenQty(p ProductID, l LocationID, qt int64) int64 {
 	return qty.Total
 }
 
-func (q *QA) assertInventory(l LocationID, vals map[ProductID]int64) {
+func (q *QA) assertQty(l LocationID, vals map[ProductID]int64) {
 
 	lines := []string{}
 
@@ -176,15 +181,21 @@ func (q *QA) fail(format string, args ...any) {
 
 }
 
-func teees(q *QA) {
+type Test func(q *QA)
+
+var tests = []Test{
+	additive_quantity,
+}
+
+func additive_quantity(q *QA) {
 
 	q.title("check if quantity is added properly")
 
-	p := q.givenProduct("cola")
-	l1 := q.givenLoc("Shelf")
+	p := q.product("cola")
+	l1 := q.loc("Shelf")
 
-	q.givenQty(p, l1, 2)
-	q.givenQty(p, l1, 3)
+	q.qty(p, l1, 2)
+	q.qty(p, l1, 3)
 
-	q.assertInventory(l1, map[ProductID]int64{p: 6})
+	q.assertQty(l1, map[ProductID]int64{p: 5})
 }
