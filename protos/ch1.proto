@@ -15,18 +15,12 @@ message AddLocationResp {
 }
 
 
-message LocationAdded {
-  string name = 1;
-  uint64 id = 2;
-}
-
-
 message AddProductReq {
   string name = 1;
 }
 
 
-message AddProductResponse {
+message AddProductResp {
   uint64 id = 2;
 }
 
@@ -35,21 +29,15 @@ message ProductAdded {
   string name = 2;
 }
 
-message ChangeQuantityReq {
+message UpdateQtyReq {
   uint64 location = 1;
   uint64 product = 2;
-  uint64 quantity = 3;
+  int64 quantity = 3;
 }
 
-message QuantityChanged {
-  uint64 location = 1;
-  uint64 product = 2;
-  uint64 quantity = 3;
-  uint64 total = 4;
-}
 
-message ChangeQuantityResp {
-  uint64 total = 1;
+message UpdateQtyResp {
+  int64 total = 1;
 }
 
 message ListLocationsRequest {
@@ -60,14 +48,14 @@ message ListLocationsResponse {
 
 }
 
-message ListLocationReq {
+message GetInventoryReq {
   uint64 location = 1;
 }
 
-message ListLocationResp {
+message GetInventoryResp {
   message Item {
     uint64 product =1;
-    uint64 quantity = 2;
+    int64 quantity = 2;
   }
 
   repeated Item items = 1;
@@ -81,14 +69,16 @@ message ListLocationsResp {
 
 }
 
+
+
 service InventoryService {
+  rpc AddProduct(AddProductReq) returns (AddProductResp);
+
   rpc AddLocation(AddLocationReq) returns (AddLocationResp);
-  rpc ListLocations(ListLocationReq) returns (ListLocationsResp);
+  rpc ListLocations(ListLocationsReq) returns (ListLocationsResp);
 
-
-  rpc AddProduct(AddProductReq) returns (AddProductResponse);
-  rpc ChangeQuantity(ChangeQuantityReq) returns (ChangeQuantityResp);
-  rpc ListLocation(ListLocationReq) returns (ListLocationResp);
+  rpc UpdateQty(UpdateQtyReq) returns (UpdateQtyResp);
+  rpc GetInventory(GetInventoryReq) returns (GetInventoryResp);
 }
 
 message RewindRequest {

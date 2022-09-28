@@ -9,9 +9,28 @@ import (
 	"net"
 	"sdk-go/inventory"
 	"sdk-go/protos"
+	"sdk-go/qa"
 )
 
 func main() {
+
+	svc := inventory.NewService()
+
+	ctx := &qa.QAContext{}
+
+	qa.RunCommandDrivenSpec(svc, ctx)
+
+	problems := ctx.Problems()
+
+	if len(problems) > 0 {
+		for _, r := range problems {
+			println("QA: " + r)
+		}
+	}
+
+}
+
+func run() {
 
 	port := flag.Uint("port", 8080, "port")
 
