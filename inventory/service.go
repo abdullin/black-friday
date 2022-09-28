@@ -20,8 +20,9 @@ type product struct {
 type Service struct {
 	UnimplementedInventoryServiceServer
 
-	locs     []*Loc
-	products map[uint64]*product
+	locs           []*Loc
+	products       map[uint64]*product
+	products_index map[string]uint64
 
 	loc_counter  uint64
 	prod_counter uint64
@@ -43,10 +44,15 @@ func (s *Service) AddProduct(ctx c.Context, req *AddProductReq) (*AddProductResp
 
 	s.prod_counter += 1
 
+	if _, found := s.products_index[req.Sku]; found {
+		return nil, status.Errorf(codes.AlreadyExists, "SKU %s already exists", req.Sku)
+	}
+
 	s.products[s.prod_counter] = &product{
-		name:     req.Name,
+		name:     req.Sku,
 		quantity: map[uint64]int64{},
 	}
+	s.products_index[req.Sku] = s.prod_counter
 
 	return &AddProductResp{
 		Id: s.prod_counter,
@@ -96,6 +102,7 @@ func (s *Service) GetInventory(c c.Context, r *GetInventoryReq) (*GetInventoryRe
 
 func NewService() InventoryServiceServer {
 	return &Service{
-		products: map[uint64]*product{},
+		products:       map[uint64]*product{},
+		products_index: map[string]uint64{},
 	}
 }

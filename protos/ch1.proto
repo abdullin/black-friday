@@ -16,7 +16,7 @@ message AddLocationResp {
 
 
 message AddProductReq {
-  string name = 1;
+  string sku = 1;
 }
 
 
@@ -26,7 +26,7 @@ message AddProductResp {
 
 message ProductAdded {
   uint64 id = 1;
-  string name = 2;
+  string sku = 2;
 }
 
 message UpdateQtyReq {
