@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"google.golang.org/protobuf/proto"
 	. "sdk-go/protos"
+	"strings"
 )
 
 // TODO: have unique name generator
@@ -39,40 +40,151 @@ func (q *QAContext) assert(resp proto.Message, err error) bool {
 	return q.stop()
 }
 
-func RunCommandDrivenSpec(svc InventoryServiceServer, qa *QAContext) {
+func RunCommandDrivenSpec(svc InventoryServiceServer) {
 
-	// what about dropping the grpc generator and switching to plain classes?
+	q := NewQA(svc)
+	teees(q)
 
-	// code will exec tests via a lib (loading in generic def)
-
-	resp, err := svc.AddLocation(nil, &AddLocationReq{Name: "rand1"})
-
-	if qa.assert(resp, err) {
+	if len(q.fails) == 0 {
 		return
 	}
 
-	resp3, err3 := svc.AddProduct(nil, &AddProductReq{Name: "something"})
+	fmt.Println("QA: I got an error when doing " + q.text)
 
-	if qa.assert(resp3, err3) {
-		return
+	for i, s := range q.steps {
+
+		fmt.Printf(" %d. %s\n", i+1, s)
 	}
 
-	r5, err5 := svc.UpdateQty(nil, &UpdateQtyReq{
-		Location: resp.Id,
-		Product:  resp3.Id,
-		Quantity: -1,
+	for _, f := range q.fails {
+		fmt.Println(f)
+	}
+
+}
+
+type QA struct {
+	service InventoryServiceServer
+	text    string
+
+	steps []string
+
+	fails []string
+
+	locs    map[LocationID]string
+	producs map[ProductID]string
+}
+
+func NewQA(svc InventoryServiceServer) *QA {
+	return &QA{
+		service: svc,
+		producs: map[ProductID]string{},
+		locs:    map[LocationID]string{},
+	}
+}
+
+type ProductID uint64
+type LocationID uint64
+
+func (q *QA) givenProduct(name string) ProductID {
+
+	q.step("add product %s", name)
+	prod, _ := q.service.AddProduct(nil, &AddProductReq{Name: name})
+
+	result := ProductID(prod.Id)
+
+	q.producs[result] = name
+	return result
+
+}
+
+func (q *QA) givenLoc(name string) LocationID {
+
+	q.step("add location %s", name)
+	loc, _ := q.service.AddLocation(nil, &AddLocationReq{Name: name})
+
+	q.locs[LocationID(loc.Id)] = name
+	return LocationID(loc.Id)
+}
+
+func (q *QA) givenQty(p ProductID, l LocationID, qt int64) int64 {
+
+	if qt > 0 {
+
+		q.step("put %d %s at %s", qt, q.producs[p], q.locs[l])
+	} else {
+
+		q.step("remove %d %s from %s", qt, q.producs[p], q.locs[l])
+	}
+
+	qty, _ := q.service.UpdateQty(nil, &UpdateQtyReq{
+		Location: uint64(l),
+		Product:  uint64(p),
+		Quantity: qt,
 	})
 
-	if qa.assert(r5, err5) {
-		return
+	return qty.Total
+}
+
+func (q *QA) assertInventory(l LocationID, vals map[ProductID]int64) {
+
+	lines := []string{}
+
+	for i, v := range vals {
+		lines = append(lines, fmt.Sprintf("%d x %s", v, q.producs[i]))
 	}
 
-	// TODO: structural compare via text to response
+	q.step("check inventory at %s: %s", q.locs[l], strings.Join(lines, ", "))
 
-	r2, err2 := svc.GetInventory(nil, &GetInventoryReq{Location: resp.Id})
+	resp, _ := q.service.GetInventory(nil, &GetInventoryReq{Location: uint64(l)})
 
-	if qa.assert(r2, err2) {
-		return
+	counts := map[uint64]int64{}
+
+	for _, line := range resp.Items {
+		counts[line.Product] = line.Quantity
 	}
 
+	for i, expected := range vals {
+
+		actual, found := counts[uint64(i)]
+		if !found {
+			q.fail("not found %s in stock", q.producs[i], i)
+		} else {
+			if actual != expected {
+				q.fail("expected %d x %s to be in stock at %s but got %d", expected, q.producs[i], q.locs[l], actual)
+			}
+		}
+
+	}
+
+}
+
+func (q *QA) title(s string) {
+	q.text = s
+}
+
+func (q *QA) step(format string, args ...any) {
+	q.steps = append(q.steps, fmt.Sprintf(format, args...))
+}
+
+func (q *QA) fail(format string, args ...any) {
+
+	stepNum := len(q.steps)
+
+	err := fmt.Sprintf("Problem at step %d: ", stepNum)
+
+	q.fails = append(q.fails, err+fmt.Sprintf(format, args...))
+
+}
+
+func teees(q *QA) {
+
+	q.title("check if quantity is added properly")
+
+	p := q.givenProduct("cola")
+	l1 := q.givenLoc("Shelf")
+
+	q.givenQty(p, l1, 2)
+	q.givenQty(p, l1, 3)
+
+	q.assertInventory(l1, map[ProductID]int64{p: 6})
 }

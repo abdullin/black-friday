@@ -16,17 +16,7 @@ func main() {
 
 	svc := inventory.NewService()
 
-	ctx := &qa.QAContext{}
-
-	qa.RunCommandDrivenSpec(svc, ctx)
-
-	problems := ctx.Problems()
-
-	if len(problems) > 0 {
-		for _, r := range problems {
-			println("QA: " + r)
-		}
-	}
+	qa.RunCommandDrivenSpec(svc)
 
 }
 

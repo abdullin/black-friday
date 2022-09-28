@@ -68,9 +68,20 @@ func (s *Service) UpdateQty(ctx c.Context, req *UpdateQtyReq) (*UpdateQtyResp, e
 	}, nil
 }
 
-func (s *Service) GetInventory(c.Context, *GetInventoryReq) (*GetInventoryResp, error) {
+func (s *Service) GetInventory(c c.Context, r *GetInventoryReq) (*GetInventoryResp, error) {
 
-	rep := &GetInventoryResp{Items: nil}
+	var items []*GetInventoryResp_Item
+
+	for id, p := range s.products {
+		if qty, found := p.quantity[r.Location]; found && qty != 0 {
+			items = append(items, &GetInventoryResp_Item{
+				Product:  id,
+				Quantity: qty,
+			})
+		}
+	}
+
+	rep := &GetInventoryResp{Items: items}
 
 	return rep, nil
 
