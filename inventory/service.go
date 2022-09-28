@@ -2,6 +2,8 @@ package inventory
 
 import (
 	c "context"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	. "sdk-go/protos"
 )
 
@@ -60,8 +62,13 @@ func (s *Service) UpdateQty(ctx c.Context, req *UpdateQtyReq) (*UpdateQtyResp, e
 	if qty, ok := prod.quantity[req.Location]; ok {
 		current = qty
 	}
-	// TODO: handle negatives!
-	prod.quantity[req.Location] = current + req.Quantity
+
+	total := current + req.Quantity
+
+	if total < 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "Can't be negative!")
+	}
+	prod.quantity[req.Location] = total
 
 	return &UpdateQtyResp{
 		Total: current + req.Quantity,

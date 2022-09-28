@@ -3,6 +3,8 @@ package qa
 import (
 	"context"
 	"fmt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	. "sdk-go/protos"
 	"strings"
@@ -90,9 +92,9 @@ func NewQA(svc InventoryServiceServer) *QA {
 type ProductID uint64
 type LocationID uint64
 
-func (q *QA) product(name string) ProductID {
+func (q *QA) AddProduct(name string) ProductID {
 
-	q.step("add product %s", name)
+	q.step("add AddProduct %s", name)
 	prod, _ := q.service.AddProduct(nil, &AddProductReq{Name: name})
 
 	result := ProductID(prod.Id)
@@ -102,7 +104,7 @@ func (q *QA) product(name string) ProductID {
 
 }
 
-func (q *QA) loc(name string) LocationID {
+func (q *QA) AddLoc(name string) LocationID {
 
 	q.step("add location %s", name)
 	loc, _ := q.service.AddLocation(nil, &AddLocationReq{Name: name})
@@ -111,7 +113,7 @@ func (q *QA) loc(name string) LocationID {
 	return LocationID(loc.Id)
 }
 
-func (q *QA) qty(p ProductID, l LocationID, qt int64) int64 {
+func (q *QA) UpdateQty(p ProductID, l LocationID, qt int64) int64 {
 
 	if qt > 0 {
 
@@ -130,7 +132,7 @@ func (q *QA) qty(p ProductID, l LocationID, qt int64) int64 {
 	return qty.Total
 }
 
-func (q *QA) assertQty(l LocationID, vals map[ProductID]int64) {
+func (q *QA) expectInventory(l LocationID, vals map[ProductID]int64) {
 
 	lines := []string{}
 
@@ -181,21 +183,63 @@ func (q *QA) fail(format string, args ...any) {
 
 }
 
+func (q *QA) expectUpdateQtyError(p ProductID, l LocationID, qt int64, c codes.Code) {
+	if qt > 0 {
+
+		q.step("put %d %s at %s", qt, q.producs[p], q.locs[l])
+	} else {
+		q.step("remove %d %s from %s", -qt, q.producs[p], q.locs[l])
+	}
+
+	qty, err := q.service.UpdateQty(nil, &UpdateQtyReq{
+		Location: uint64(l),
+		Product:  uint64(p),
+		Quantity: qt,
+	})
+
+	if qty != nil {
+		q.fail("expected no response, but got result with quantity %d", qty.Total)
+	}
+	if err == nil {
+		q.fail("Expected error, but got nothing")
+	} else {
+		st, ok := status.FromError(err)
+		if !ok {
+			q.fail("got unexpected error %s", err.Error())
+		} else {
+			if st.Code() != c {
+				q.fail("expected error %v got %v", c, st.Code())
+			}
+
+		}
+	}
+
+}
+
 type Test func(q *QA)
 
 var tests = []Test{
 	additive_quantity,
+	negative_qty,
 }
 
 func additive_quantity(q *QA) {
 
 	q.title("check if quantity is added properly")
 
-	p := q.product("cola")
-	l1 := q.loc("Shelf")
+	p := q.AddProduct("cola")
+	l1 := q.AddLoc("Shelf")
 
-	q.qty(p, l1, 2)
-	q.qty(p, l1, 3)
+	q.UpdateQty(p, l1, 2)
+	q.UpdateQty(p, l1, 3)
 
-	q.assertQty(l1, map[ProductID]int64{p: 5})
+	q.expectInventory(l1, map[ProductID]int64{p: 5})
+}
+
+func negative_qty(q *QA) {
+	q.title("quantity can't go negative")
+
+	p := q.AddProduct("fanta")
+	l1 := q.AddLoc("bar")
+	q.expectUpdateQtyError(p, l1, -1, codes.InvalidArgument)
 }
