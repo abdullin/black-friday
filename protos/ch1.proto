@@ -6,11 +6,11 @@ option go_package = "go-lite/protos";
 
 
 
-message AddLocationRequest {
+message AddLocationReq {
   string name = 1;
 }
 
-message AddLocationResponse {
+message AddLocationResp {
   uint64 id = 2;
 }
 
@@ -21,7 +21,7 @@ message LocationAdded {
 }
 
 
-message AddProductRequest {
+message AddProductReq {
   string name = 1;
 }
 
@@ -35,7 +35,7 @@ message ProductAdded {
   string name = 2;
 }
 
-message ChangeQuantityRequest {
+message ChangeQuantityReq {
   uint64 location = 1;
   uint64 product = 2;
   uint64 quantity = 3;
@@ -48,15 +48,23 @@ message QuantityChanged {
   uint64 total = 4;
 }
 
-message ChangeQuantityResponse {
+message ChangeQuantityResp {
   uint64 total = 1;
 }
 
-message ListLocationRequest {
+message ListLocationsRequest {
   uint64 location = 1;
 }
 
-message ListLocationResponse {
+message ListLocationsResponse {
+
+}
+
+message ListLocationReq {
+  uint64 location = 1;
+}
+
+message ListLocationResp {
   message Item {
     uint64 product =1;
     uint64 quantity = 2;
@@ -65,12 +73,22 @@ message ListLocationResponse {
   repeated Item items = 1;
 }
 
+message ListLocationsReq {
+
+}
+
+message ListLocationsResp {
+
+}
 
 service InventoryService {
-  rpc AddLocation(AddLocationRequest) returns (AddLocationResponse);
-  rpc AddProduct(AddProductRequest) returns (AddProductResponse);
-  rpc ChangeQuantity(ChangeQuantityRequest) returns (ChangeQuantityResponse);
-  rpc ListLocation(ListLocationRequest) returns (ListLocationResponse);
+  rpc AddLocation(AddLocationReq) returns (AddLocationResp);
+  rpc ListLocations(ListLocationReq) returns (ListLocationsResp);
+
+
+  rpc AddProduct(AddProductReq) returns (AddProductResponse);
+  rpc ChangeQuantity(ChangeQuantityReq) returns (ChangeQuantityResp);
+  rpc ListLocation(ListLocationReq) returns (ListLocationResp);
 }
 
 message RewindRequest {

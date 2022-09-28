@@ -1,8 +1,8 @@
 package inventory
 
 import (
-	"context"
-	p "sdk-go/protos"
+	c "context"
+	. "sdk-go/protos"
 )
 
 type Loc struct {
@@ -11,48 +11,43 @@ type Loc struct {
 }
 
 type Service struct {
-	p.UnimplementedInventoryServiceServer
+	UnimplementedInventoryServiceServer
 
 	locs []*Loc
 
 	counter uint64
 }
 
-func (s *Service) AddLocation(ctx context.Context, request *p.AddLocationRequest) (*p.AddLocationResponse, error) {
+func (s *Service) AddLocation(ctx c.Context, req *AddLocationRequest) (*AddLocationResponse, error) {
 
 	s.counter += 1
 	id := s.counter
 	s.locs = append(s.locs, &Loc{
 		Id:   id,
-		Name: request.Name,
+		Name: req.Name,
 	})
 
-	return &p.AddLocationResponse{Id: id}, nil
+	return &AddLocationResponse{Id: id}, nil
 }
 
-func (s *Service) AddProduct(ctx context.Context, request *p.AddProductRequest) (*p.AddProductResponse, error) {
+func (s *Service) AddProduct(ctx c.Context, req *AddProductRequest) (*AddProductResponse, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (s *Service) ChangeQuantity(ctx context.Context, request *p.ChangeQuantityRequest) (*p.ChangeQuantityResponse, error) {
+func (s *Service) ChangeQuantity(ctx c.Context, req *ChangeQuantityRequest) (*ChangeQuantityResponse, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (s *Service) mustEmbedUnimplementedInventoryServiceServer() {
-	//TODO implement me
-	panic("implement me")
-}
+func (s *Service) ListLocation(c.Context, *ListLocationRequest) (*ListLocationResponse, error) {
 
-func (s *Service) ListLocation(context.Context, *p.ListLocationRequest) (*p.ListLocationResponse, error) {
-
-	rep := &p.ListLocationResponse{Items: nil}
+	rep := &ListLocationResponse{Items: nil}
 
 	return rep, nil
 
 }
 
-func NewService() p.InventoryServiceServer {
+func NewService() InventoryServiceServer {
 	return &Service{}
 }

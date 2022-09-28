@@ -8,16 +8,24 @@ def main():
     stub = InventoryServiceStub(channel)
 
 
-    t1(stub)
+    r = t1(stub)
+    if r:
+        print(f"QA: {r}")
 
-    blah: type[str]
 
 
 
 def t1(s: InventoryServiceStub):
 
-    resp = s.AddLocation(AddLocationRequest())
-    
+    # given
+    resp = s.AddLocation(AddLocationRequest(name="test"))
+    l = s.ListLocation(ListLocationRequest(location=resp.id))
+
+    if len(l.items) != 1:
+        return "Expected to see one record for that location"
+
+
+
 
 
 
