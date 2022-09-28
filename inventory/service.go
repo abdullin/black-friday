@@ -4,6 +4,8 @@ import (
 	c "context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
+	"log"
 	. "sdk-go/protos"
 )
 
@@ -20,6 +22,10 @@ type product struct {
 type Service struct {
 	UnimplementedInventoryServiceServer
 
+	store *Store
+}
+
+type Store struct {
 	locs           []*Loc
 	products       map[uint64]*product
 	products_index map[string]uint64
@@ -28,41 +34,70 @@ type Service struct {
 	prod_counter uint64
 }
 
+func (s *Store) Apply(e proto.Message) {
+
+	switch t := e.(type) {
+	case *LocationAdded:
+		s.locs = append(s.locs, &Loc{
+			Id:   t.Id,
+			Name: t.Name,
+		})
+		s.loc_counter = t.Id
+
+	case *ProductAdded:
+		s.products[t.Id] = &product{
+			name:     t.Sku,
+			quantity: map[uint64]int64{},
+		}
+		s.products_index[t.Sku] = t.Id
+		s.prod_counter = t.Id
+	case *QuantityUpdated:
+		s.products[t.Product].quantity[t.Location] = t.Total
+
+	default:
+		panic("UNKNOWN EVENT")
+
+	}
+
+}
+
 func (s *Service) AddLocation(ctx c.Context, req *AddLocationReq) (*AddLocationResp, error) {
 
-	s.loc_counter += 1
-	id := s.loc_counter
-	s.locs = append(s.locs, &Loc{
-		Id:   id,
+	e := &LocationAdded{
 		Name: req.Name,
-	})
+		Id:   s.store.loc_counter + 1,
+	}
 
-	return &AddLocationResp{Id: id}, nil
+	s.store.Apply(e)
+
+	return &AddLocationResp{Id: e.Id}, nil
 }
 
 func (s *Service) AddProduct(ctx c.Context, req *AddProductReq) (*AddProductResp, error) {
 
-	s.prod_counter += 1
-
-	if _, found := s.products_index[req.Sku]; found {
+	if _, found := s.store.products_index[req.Sku]; found {
 		return nil, status.Errorf(codes.AlreadyExists, "SKU %s already exists", req.Sku)
 	}
 
-	s.products[s.prod_counter] = &product{
-		name:     req.Sku,
-		quantity: map[uint64]int64{},
+	e := &ProductAdded{
+		Id:  s.store.prod_counter + 1,
+		Sku: req.Sku,
 	}
-	s.products_index[req.Sku] = s.prod_counter
+	s.store.Apply(e)
 
 	return &AddProductResp{
-		Id: s.prod_counter,
+		Id: e.Id,
 	}, nil
 }
 
 func (s *Service) UpdateQty(ctx c.Context, req *UpdateQtyReq) (*UpdateQtyResp, error) {
 	//TODO implement me
 
-	prod := s.products[req.Product]
+	prod := s.store.products[req.Product]
+
+	if prod == nil {
+		log.Panicln("NIIIL for product ", req.Product)
+	}
 
 	var current int64
 	if qty, ok := prod.quantity[req.Location]; ok {
@@ -74,10 +109,18 @@ func (s *Service) UpdateQty(ctx c.Context, req *UpdateQtyReq) (*UpdateQtyResp, e
 	if total < 0 {
 		return nil, status.Errorf(codes.InvalidArgument, "Can't be negative!")
 	}
-	prod.quantity[req.Location] = total
+
+	e := &QuantityUpdated{
+		Location: req.Location,
+		Product:  req.Product,
+		Quantity: req.Quantity,
+		Total:    total,
+	}
+
+	s.store.Apply(e)
 
 	return &UpdateQtyResp{
-		Total: current + req.Quantity,
+		Total: e.Total,
 	}, nil
 }
 
@@ -85,7 +128,7 @@ func (s *Service) GetInventory(c c.Context, r *GetInventoryReq) (*GetInventoryRe
 
 	var items []*GetInventoryResp_Item
 
-	for id, p := range s.products {
+	for id, p := range s.store.products {
 		if qty, found := p.quantity[r.Location]; found && qty != 0 {
 			items = append(items, &GetInventoryResp_Item{
 				Product:  id,
@@ -101,8 +144,13 @@ func (s *Service) GetInventory(c c.Context, r *GetInventoryReq) (*GetInventoryRe
 }
 
 func NewService() InventoryServiceServer {
-	return &Service{
+
+	s := &Store{
+
 		products:       map[uint64]*product{},
 		products_index: map[string]uint64{},
+	}
+	return &Service{
+		store: s,
 	}
 }

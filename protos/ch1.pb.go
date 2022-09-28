@@ -115,6 +115,61 @@ func (x *AddLocationResp) GetId() uint64 {
 	return 0
 }
 
+type LocationAdded struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id   uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+}
+
+func (x *LocationAdded) Reset() {
+	*x = LocationAdded{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_protos_ch1_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *LocationAdded) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LocationAdded) ProtoMessage() {}
+
+func (x *LocationAdded) ProtoReflect() protoreflect.Message {
+	mi := &file_protos_ch1_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LocationAdded.ProtoReflect.Descriptor instead.
+func (*LocationAdded) Descriptor() ([]byte, []int) {
+	return file_protos_ch1_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *LocationAdded) GetId() uint64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *LocationAdded) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
 type AddProductReq struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -126,7 +181,7 @@ type AddProductReq struct {
 func (x *AddProductReq) Reset() {
 	*x = AddProductReq{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protos_ch1_proto_msgTypes[2]
+		mi := &file_protos_ch1_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -139,7 +194,7 @@ func (x *AddProductReq) String() string {
 func (*AddProductReq) ProtoMessage() {}
 
 func (x *AddProductReq) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_ch1_proto_msgTypes[2]
+	mi := &file_protos_ch1_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -152,7 +207,7 @@ func (x *AddProductReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddProductReq.ProtoReflect.Descriptor instead.
 func (*AddProductReq) Descriptor() ([]byte, []int) {
-	return file_protos_ch1_proto_rawDescGZIP(), []int{2}
+	return file_protos_ch1_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *AddProductReq) GetSku() string {
@@ -173,7 +228,7 @@ type AddProductResp struct {
 func (x *AddProductResp) Reset() {
 	*x = AddProductResp{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protos_ch1_proto_msgTypes[3]
+		mi := &file_protos_ch1_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -186,7 +241,7 @@ func (x *AddProductResp) String() string {
 func (*AddProductResp) ProtoMessage() {}
 
 func (x *AddProductResp) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_ch1_proto_msgTypes[3]
+	mi := &file_protos_ch1_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -199,7 +254,7 @@ func (x *AddProductResp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddProductResp.ProtoReflect.Descriptor instead.
 func (*AddProductResp) Descriptor() ([]byte, []int) {
-	return file_protos_ch1_proto_rawDescGZIP(), []int{3}
+	return file_protos_ch1_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *AddProductResp) GetId() uint64 {
@@ -221,7 +276,7 @@ type ProductAdded struct {
 func (x *ProductAdded) Reset() {
 	*x = ProductAdded{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protos_ch1_proto_msgTypes[4]
+		mi := &file_protos_ch1_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -234,7 +289,7 @@ func (x *ProductAdded) String() string {
 func (*ProductAdded) ProtoMessage() {}
 
 func (x *ProductAdded) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_ch1_proto_msgTypes[4]
+	mi := &file_protos_ch1_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -247,7 +302,7 @@ func (x *ProductAdded) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ProductAdded.ProtoReflect.Descriptor instead.
 func (*ProductAdded) Descriptor() ([]byte, []int) {
-	return file_protos_ch1_proto_rawDescGZIP(), []int{4}
+	return file_protos_ch1_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ProductAdded) GetId() uint64 {
@@ -277,7 +332,7 @@ type UpdateQtyReq struct {
 func (x *UpdateQtyReq) Reset() {
 	*x = UpdateQtyReq{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protos_ch1_proto_msgTypes[5]
+		mi := &file_protos_ch1_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -290,7 +345,7 @@ func (x *UpdateQtyReq) String() string {
 func (*UpdateQtyReq) ProtoMessage() {}
 
 func (x *UpdateQtyReq) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_ch1_proto_msgTypes[5]
+	mi := &file_protos_ch1_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -303,7 +358,7 @@ func (x *UpdateQtyReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateQtyReq.ProtoReflect.Descriptor instead.
 func (*UpdateQtyReq) Descriptor() ([]byte, []int) {
-	return file_protos_ch1_proto_rawDescGZIP(), []int{5}
+	return file_protos_ch1_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *UpdateQtyReq) GetLocation() uint64 {
@@ -338,7 +393,7 @@ type UpdateQtyResp struct {
 func (x *UpdateQtyResp) Reset() {
 	*x = UpdateQtyResp{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protos_ch1_proto_msgTypes[6]
+		mi := &file_protos_ch1_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -351,7 +406,7 @@ func (x *UpdateQtyResp) String() string {
 func (*UpdateQtyResp) ProtoMessage() {}
 
 func (x *UpdateQtyResp) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_ch1_proto_msgTypes[6]
+	mi := &file_protos_ch1_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -364,10 +419,81 @@ func (x *UpdateQtyResp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateQtyResp.ProtoReflect.Descriptor instead.
 func (*UpdateQtyResp) Descriptor() ([]byte, []int) {
-	return file_protos_ch1_proto_rawDescGZIP(), []int{6}
+	return file_protos_ch1_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *UpdateQtyResp) GetTotal() int64 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+type QuantityUpdated struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Location uint64 `protobuf:"varint,1,opt,name=location,proto3" json:"location,omitempty"`
+	Product  uint64 `protobuf:"varint,2,opt,name=product,proto3" json:"product,omitempty"`
+	Quantity int64  `protobuf:"varint,3,opt,name=quantity,proto3" json:"quantity,omitempty"`
+	Total    int64  `protobuf:"varint,4,opt,name=total,proto3" json:"total,omitempty"`
+}
+
+func (x *QuantityUpdated) Reset() {
+	*x = QuantityUpdated{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_protos_ch1_proto_msgTypes[8]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *QuantityUpdated) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*QuantityUpdated) ProtoMessage() {}
+
+func (x *QuantityUpdated) ProtoReflect() protoreflect.Message {
+	mi := &file_protos_ch1_proto_msgTypes[8]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use QuantityUpdated.ProtoReflect.Descriptor instead.
+func (*QuantityUpdated) Descriptor() ([]byte, []int) {
+	return file_protos_ch1_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *QuantityUpdated) GetLocation() uint64 {
+	if x != nil {
+		return x.Location
+	}
+	return 0
+}
+
+func (x *QuantityUpdated) GetProduct() uint64 {
+	if x != nil {
+		return x.Product
+	}
+	return 0
+}
+
+func (x *QuantityUpdated) GetQuantity() int64 {
+	if x != nil {
+		return x.Quantity
+	}
+	return 0
+}
+
+func (x *QuantityUpdated) GetTotal() int64 {
 	if x != nil {
 		return x.Total
 	}
@@ -385,7 +511,7 @@ type ListLocationsRequest struct {
 func (x *ListLocationsRequest) Reset() {
 	*x = ListLocationsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protos_ch1_proto_msgTypes[7]
+		mi := &file_protos_ch1_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -398,7 +524,7 @@ func (x *ListLocationsRequest) String() string {
 func (*ListLocationsRequest) ProtoMessage() {}
 
 func (x *ListLocationsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_ch1_proto_msgTypes[7]
+	mi := &file_protos_ch1_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -411,7 +537,7 @@ func (x *ListLocationsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListLocationsRequest.ProtoReflect.Descriptor instead.
 func (*ListLocationsRequest) Descriptor() ([]byte, []int) {
-	return file_protos_ch1_proto_rawDescGZIP(), []int{7}
+	return file_protos_ch1_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *ListLocationsRequest) GetLocation() uint64 {
@@ -430,7 +556,7 @@ type ListLocationsResponse struct {
 func (x *ListLocationsResponse) Reset() {
 	*x = ListLocationsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protos_ch1_proto_msgTypes[8]
+		mi := &file_protos_ch1_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -443,7 +569,7 @@ func (x *ListLocationsResponse) String() string {
 func (*ListLocationsResponse) ProtoMessage() {}
 
 func (x *ListLocationsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_ch1_proto_msgTypes[8]
+	mi := &file_protos_ch1_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -456,7 +582,7 @@ func (x *ListLocationsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListLocationsResponse.ProtoReflect.Descriptor instead.
 func (*ListLocationsResponse) Descriptor() ([]byte, []int) {
-	return file_protos_ch1_proto_rawDescGZIP(), []int{8}
+	return file_protos_ch1_proto_rawDescGZIP(), []int{10}
 }
 
 type GetInventoryReq struct {
@@ -470,7 +596,7 @@ type GetInventoryReq struct {
 func (x *GetInventoryReq) Reset() {
 	*x = GetInventoryReq{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protos_ch1_proto_msgTypes[9]
+		mi := &file_protos_ch1_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -483,7 +609,7 @@ func (x *GetInventoryReq) String() string {
 func (*GetInventoryReq) ProtoMessage() {}
 
 func (x *GetInventoryReq) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_ch1_proto_msgTypes[9]
+	mi := &file_protos_ch1_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -496,7 +622,7 @@ func (x *GetInventoryReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetInventoryReq.ProtoReflect.Descriptor instead.
 func (*GetInventoryReq) Descriptor() ([]byte, []int) {
-	return file_protos_ch1_proto_rawDescGZIP(), []int{9}
+	return file_protos_ch1_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *GetInventoryReq) GetLocation() uint64 {
@@ -517,7 +643,7 @@ type GetInventoryResp struct {
 func (x *GetInventoryResp) Reset() {
 	*x = GetInventoryResp{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protos_ch1_proto_msgTypes[10]
+		mi := &file_protos_ch1_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -530,7 +656,7 @@ func (x *GetInventoryResp) String() string {
 func (*GetInventoryResp) ProtoMessage() {}
 
 func (x *GetInventoryResp) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_ch1_proto_msgTypes[10]
+	mi := &file_protos_ch1_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -543,7 +669,7 @@ func (x *GetInventoryResp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetInventoryResp.ProtoReflect.Descriptor instead.
 func (*GetInventoryResp) Descriptor() ([]byte, []int) {
-	return file_protos_ch1_proto_rawDescGZIP(), []int{10}
+	return file_protos_ch1_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *GetInventoryResp) GetItems() []*GetInventoryResp_Item {
@@ -562,7 +688,7 @@ type ListLocationsReq struct {
 func (x *ListLocationsReq) Reset() {
 	*x = ListLocationsReq{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protos_ch1_proto_msgTypes[11]
+		mi := &file_protos_ch1_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -575,7 +701,7 @@ func (x *ListLocationsReq) String() string {
 func (*ListLocationsReq) ProtoMessage() {}
 
 func (x *ListLocationsReq) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_ch1_proto_msgTypes[11]
+	mi := &file_protos_ch1_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -588,7 +714,7 @@ func (x *ListLocationsReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListLocationsReq.ProtoReflect.Descriptor instead.
 func (*ListLocationsReq) Descriptor() ([]byte, []int) {
-	return file_protos_ch1_proto_rawDescGZIP(), []int{11}
+	return file_protos_ch1_proto_rawDescGZIP(), []int{13}
 }
 
 type ListLocationsResp struct {
@@ -600,7 +726,7 @@ type ListLocationsResp struct {
 func (x *ListLocationsResp) Reset() {
 	*x = ListLocationsResp{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protos_ch1_proto_msgTypes[12]
+		mi := &file_protos_ch1_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -613,7 +739,7 @@ func (x *ListLocationsResp) String() string {
 func (*ListLocationsResp) ProtoMessage() {}
 
 func (x *ListLocationsResp) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_ch1_proto_msgTypes[12]
+	mi := &file_protos_ch1_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -626,7 +752,7 @@ func (x *ListLocationsResp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListLocationsResp.ProtoReflect.Descriptor instead.
 func (*ListLocationsResp) Descriptor() ([]byte, []int) {
-	return file_protos_ch1_proto_rawDescGZIP(), []int{12}
+	return file_protos_ch1_proto_rawDescGZIP(), []int{14}
 }
 
 type RewindRequest struct {
@@ -640,7 +766,7 @@ type RewindRequest struct {
 func (x *RewindRequest) Reset() {
 	*x = RewindRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protos_ch1_proto_msgTypes[13]
+		mi := &file_protos_ch1_proto_msgTypes[15]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -653,7 +779,7 @@ func (x *RewindRequest) String() string {
 func (*RewindRequest) ProtoMessage() {}
 
 func (x *RewindRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_ch1_proto_msgTypes[13]
+	mi := &file_protos_ch1_proto_msgTypes[15]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -666,7 +792,7 @@ func (x *RewindRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RewindRequest.ProtoReflect.Descriptor instead.
 func (*RewindRequest) Descriptor() ([]byte, []int) {
-	return file_protos_ch1_proto_rawDescGZIP(), []int{13}
+	return file_protos_ch1_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *RewindRequest) GetEvents() []*anypb.Any {
@@ -685,7 +811,7 @@ type RewindResponse struct {
 func (x *RewindResponse) Reset() {
 	*x = RewindResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protos_ch1_proto_msgTypes[14]
+		mi := &file_protos_ch1_proto_msgTypes[16]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -698,7 +824,7 @@ func (x *RewindResponse) String() string {
 func (*RewindResponse) ProtoMessage() {}
 
 func (x *RewindResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_ch1_proto_msgTypes[14]
+	mi := &file_protos_ch1_proto_msgTypes[16]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -711,7 +837,7 @@ func (x *RewindResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RewindResponse.ProtoReflect.Descriptor instead.
 func (*RewindResponse) Descriptor() ([]byte, []int) {
-	return file_protos_ch1_proto_rawDescGZIP(), []int{14}
+	return file_protos_ch1_proto_rawDescGZIP(), []int{16}
 }
 
 type TestCase struct {
@@ -723,7 +849,7 @@ type TestCase struct {
 func (x *TestCase) Reset() {
 	*x = TestCase{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protos_ch1_proto_msgTypes[15]
+		mi := &file_protos_ch1_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -736,7 +862,7 @@ func (x *TestCase) String() string {
 func (*TestCase) ProtoMessage() {}
 
 func (x *TestCase) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_ch1_proto_msgTypes[15]
+	mi := &file_protos_ch1_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -749,7 +875,7 @@ func (x *TestCase) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TestCase.ProtoReflect.Descriptor instead.
 func (*TestCase) Descriptor() ([]byte, []int) {
-	return file_protos_ch1_proto_rawDescGZIP(), []int{15}
+	return file_protos_ch1_proto_rawDescGZIP(), []int{17}
 }
 
 type GetInventoryResp_Item struct {
@@ -764,7 +890,7 @@ type GetInventoryResp_Item struct {
 func (x *GetInventoryResp_Item) Reset() {
 	*x = GetInventoryResp_Item{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protos_ch1_proto_msgTypes[16]
+		mi := &file_protos_ch1_proto_msgTypes[18]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -777,7 +903,7 @@ func (x *GetInventoryResp_Item) String() string {
 func (*GetInventoryResp_Item) ProtoMessage() {}
 
 func (x *GetInventoryResp_Item) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_ch1_proto_msgTypes[16]
+	mi := &file_protos_ch1_proto_msgTypes[18]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -790,7 +916,7 @@ func (x *GetInventoryResp_Item) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetInventoryResp_Item.ProtoReflect.Descriptor instead.
 func (*GetInventoryResp_Item) Descriptor() ([]byte, []int) {
-	return file_protos_ch1_proto_rawDescGZIP(), []int{10, 0}
+	return file_protos_ch1_proto_rawDescGZIP(), []int{12, 0}
 }
 
 func (x *GetInventoryResp_Item) GetProduct() uint64 {
@@ -817,23 +943,34 @@ var file_protos_ch1_proto_rawDesc = []byte{
 	0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18,
 	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x21, 0x0a, 0x0f, 0x41,
 	0x64, 0x64, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x12, 0x0e,
-	0x0a, 0x02, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x69, 0x64, 0x22, 0x21,
-	0x0a, 0x0d, 0x41, 0x64, 0x64, 0x50, 0x72, 0x6f, 0x64, 0x75, 0x63, 0x74, 0x52, 0x65, 0x71, 0x12,
-	0x10, 0x0a, 0x03, 0x73, 0x6b, 0x75, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x73, 0x6b,
-	0x75, 0x22, 0x20, 0x0a, 0x0e, 0x41, 0x64, 0x64, 0x50, 0x72, 0x6f, 0x64, 0x75, 0x63, 0x74, 0x52,
-	0x65, 0x73, 0x70, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52,
-	0x02, 0x69, 0x64, 0x22, 0x30, 0x0a, 0x0c, 0x50, 0x72, 0x6f, 0x64, 0x75, 0x63, 0x74, 0x41, 0x64,
-	0x64, 0x65, 0x64, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52,
-	0x02, 0x69, 0x64, 0x12, 0x10, 0x0a, 0x03, 0x73, 0x6b, 0x75, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x03, 0x73, 0x6b, 0x75, 0x22, 0x60, 0x0a, 0x0c, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x51,
-	0x74, 0x79, 0x52, 0x65, 0x71, 0x12, 0x1a, 0x0a, 0x08, 0x6c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f,
-	0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x08, 0x6c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f,
-	0x6e, 0x12, 0x18, 0x0a, 0x07, 0x70, 0x72, 0x6f, 0x64, 0x75, 0x63, 0x74, 0x18, 0x02, 0x20, 0x01,
-	0x28, 0x04, 0x52, 0x07, 0x70, 0x72, 0x6f, 0x64, 0x75, 0x63, 0x74, 0x12, 0x1a, 0x0a, 0x08, 0x71,
-	0x75, 0x61, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x08, 0x71,
-	0x75, 0x61, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x22, 0x25, 0x0a, 0x0d, 0x55, 0x70, 0x64, 0x61, 0x74,
-	0x65, 0x51, 0x74, 0x79, 0x52, 0x65, 0x73, 0x70, 0x12, 0x14, 0x0a, 0x05, 0x74, 0x6f, 0x74, 0x61,
-	0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x05, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x22, 0x32,
+	0x0a, 0x02, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x69, 0x64, 0x22, 0x33,
+	0x0a, 0x0d, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x41, 0x64, 0x64, 0x65, 0x64, 0x12,
+	0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x69, 0x64, 0x12,
+	0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e,
+	0x61, 0x6d, 0x65, 0x22, 0x21, 0x0a, 0x0d, 0x41, 0x64, 0x64, 0x50, 0x72, 0x6f, 0x64, 0x75, 0x63,
+	0x74, 0x52, 0x65, 0x71, 0x12, 0x10, 0x0a, 0x03, 0x73, 0x6b, 0x75, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x03, 0x73, 0x6b, 0x75, 0x22, 0x20, 0x0a, 0x0e, 0x41, 0x64, 0x64, 0x50, 0x72, 0x6f,
+	0x64, 0x75, 0x63, 0x74, 0x52, 0x65, 0x73, 0x70, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x69, 0x64, 0x22, 0x30, 0x0a, 0x0c, 0x50, 0x72, 0x6f, 0x64,
+	0x75, 0x63, 0x74, 0x41, 0x64, 0x64, 0x65, 0x64, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x69, 0x64, 0x12, 0x10, 0x0a, 0x03, 0x73, 0x6b, 0x75, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x73, 0x6b, 0x75, 0x22, 0x60, 0x0a, 0x0c, 0x55, 0x70,
+	0x64, 0x61, 0x74, 0x65, 0x51, 0x74, 0x79, 0x52, 0x65, 0x71, 0x12, 0x1a, 0x0a, 0x08, 0x6c, 0x6f,
+	0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x08, 0x6c, 0x6f,
+	0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x18, 0x0a, 0x07, 0x70, 0x72, 0x6f, 0x64, 0x75, 0x63,
+	0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x70, 0x72, 0x6f, 0x64, 0x75, 0x63, 0x74,
+	0x12, 0x1a, 0x0a, 0x08, 0x71, 0x75, 0x61, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x18, 0x03, 0x20, 0x01,
+	0x28, 0x03, 0x52, 0x08, 0x71, 0x75, 0x61, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x22, 0x25, 0x0a, 0x0d,
+	0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x51, 0x74, 0x79, 0x52, 0x65, 0x73, 0x70, 0x12, 0x14, 0x0a,
+	0x05, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x05, 0x74, 0x6f,
+	0x74, 0x61, 0x6c, 0x22, 0x79, 0x0a, 0x0f, 0x51, 0x75, 0x61, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x55,
+	0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x12, 0x1a, 0x0a, 0x08, 0x6c, 0x6f, 0x63, 0x61, 0x74, 0x69,
+	0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x08, 0x6c, 0x6f, 0x63, 0x61, 0x74, 0x69,
+	0x6f, 0x6e, 0x12, 0x18, 0x0a, 0x07, 0x70, 0x72, 0x6f, 0x64, 0x75, 0x63, 0x74, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x04, 0x52, 0x07, 0x70, 0x72, 0x6f, 0x64, 0x75, 0x63, 0x74, 0x12, 0x1a, 0x0a, 0x08,
+	0x71, 0x75, 0x61, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x08,
+	0x71, 0x75, 0x61, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x74, 0x6f, 0x74, 0x61,
+	0x6c, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03, 0x52, 0x05, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x22, 0x32,
 	0x0a, 0x14, 0x4c, 0x69, 0x73, 0x74, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52,
 	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1a, 0x0a, 0x08, 0x6c, 0x6f, 0x63, 0x61, 0x74, 0x69,
 	0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x08, 0x6c, 0x6f, 0x63, 0x61, 0x74, 0x69,
@@ -896,40 +1033,42 @@ func file_protos_ch1_proto_rawDescGZIP() []byte {
 	return file_protos_ch1_proto_rawDescData
 }
 
-var file_protos_ch1_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
+var file_protos_ch1_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
 var file_protos_ch1_proto_goTypes = []interface{}{
 	(*AddLocationReq)(nil),        // 0: protos.AddLocationReq
 	(*AddLocationResp)(nil),       // 1: protos.AddLocationResp
-	(*AddProductReq)(nil),         // 2: protos.AddProductReq
-	(*AddProductResp)(nil),        // 3: protos.AddProductResp
-	(*ProductAdded)(nil),          // 4: protos.ProductAdded
-	(*UpdateQtyReq)(nil),          // 5: protos.UpdateQtyReq
-	(*UpdateQtyResp)(nil),         // 6: protos.UpdateQtyResp
-	(*ListLocationsRequest)(nil),  // 7: protos.ListLocationsRequest
-	(*ListLocationsResponse)(nil), // 8: protos.ListLocationsResponse
-	(*GetInventoryReq)(nil),       // 9: protos.GetInventoryReq
-	(*GetInventoryResp)(nil),      // 10: protos.GetInventoryResp
-	(*ListLocationsReq)(nil),      // 11: protos.ListLocationsReq
-	(*ListLocationsResp)(nil),     // 12: protos.ListLocationsResp
-	(*RewindRequest)(nil),         // 13: protos.RewindRequest
-	(*RewindResponse)(nil),        // 14: protos.RewindResponse
-	(*TestCase)(nil),              // 15: protos.TestCase
-	(*GetInventoryResp_Item)(nil), // 16: protos.GetInventoryResp.Item
-	(*anypb.Any)(nil),             // 17: google.protobuf.Any
+	(*LocationAdded)(nil),         // 2: protos.LocationAdded
+	(*AddProductReq)(nil),         // 3: protos.AddProductReq
+	(*AddProductResp)(nil),        // 4: protos.AddProductResp
+	(*ProductAdded)(nil),          // 5: protos.ProductAdded
+	(*UpdateQtyReq)(nil),          // 6: protos.UpdateQtyReq
+	(*UpdateQtyResp)(nil),         // 7: protos.UpdateQtyResp
+	(*QuantityUpdated)(nil),       // 8: protos.QuantityUpdated
+	(*ListLocationsRequest)(nil),  // 9: protos.ListLocationsRequest
+	(*ListLocationsResponse)(nil), // 10: protos.ListLocationsResponse
+	(*GetInventoryReq)(nil),       // 11: protos.GetInventoryReq
+	(*GetInventoryResp)(nil),      // 12: protos.GetInventoryResp
+	(*ListLocationsReq)(nil),      // 13: protos.ListLocationsReq
+	(*ListLocationsResp)(nil),     // 14: protos.ListLocationsResp
+	(*RewindRequest)(nil),         // 15: protos.RewindRequest
+	(*RewindResponse)(nil),        // 16: protos.RewindResponse
+	(*TestCase)(nil),              // 17: protos.TestCase
+	(*GetInventoryResp_Item)(nil), // 18: protos.GetInventoryResp.Item
+	(*anypb.Any)(nil),             // 19: google.protobuf.Any
 }
 var file_protos_ch1_proto_depIdxs = []int32{
-	16, // 0: protos.GetInventoryResp.items:type_name -> protos.GetInventoryResp.Item
-	17, // 1: protos.RewindRequest.Events:type_name -> google.protobuf.Any
-	2,  // 2: protos.InventoryService.AddProduct:input_type -> protos.AddProductReq
+	18, // 0: protos.GetInventoryResp.items:type_name -> protos.GetInventoryResp.Item
+	19, // 1: protos.RewindRequest.Events:type_name -> google.protobuf.Any
+	3,  // 2: protos.InventoryService.AddProduct:input_type -> protos.AddProductReq
 	0,  // 3: protos.InventoryService.AddLocation:input_type -> protos.AddLocationReq
-	11, // 4: protos.InventoryService.ListLocations:input_type -> protos.ListLocationsReq
-	5,  // 5: protos.InventoryService.UpdateQty:input_type -> protos.UpdateQtyReq
-	9,  // 6: protos.InventoryService.GetInventory:input_type -> protos.GetInventoryReq
-	3,  // 7: protos.InventoryService.AddProduct:output_type -> protos.AddProductResp
+	13, // 4: protos.InventoryService.ListLocations:input_type -> protos.ListLocationsReq
+	6,  // 5: protos.InventoryService.UpdateQty:input_type -> protos.UpdateQtyReq
+	11, // 6: protos.InventoryService.GetInventory:input_type -> protos.GetInventoryReq
+	4,  // 7: protos.InventoryService.AddProduct:output_type -> protos.AddProductResp
 	1,  // 8: protos.InventoryService.AddLocation:output_type -> protos.AddLocationResp
-	12, // 9: protos.InventoryService.ListLocations:output_type -> protos.ListLocationsResp
-	6,  // 10: protos.InventoryService.UpdateQty:output_type -> protos.UpdateQtyResp
-	10, // 11: protos.InventoryService.GetInventory:output_type -> protos.GetInventoryResp
+	14, // 9: protos.InventoryService.ListLocations:output_type -> protos.ListLocationsResp
+	7,  // 10: protos.InventoryService.UpdateQty:output_type -> protos.UpdateQtyResp
+	12, // 11: protos.InventoryService.GetInventory:output_type -> protos.GetInventoryResp
 	7,  // [7:12] is the sub-list for method output_type
 	2,  // [2:7] is the sub-list for method input_type
 	2,  // [2:2] is the sub-list for extension type_name
@@ -968,7 +1107,7 @@ func file_protos_ch1_proto_init() {
 			}
 		}
 		file_protos_ch1_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AddProductReq); i {
+			switch v := v.(*LocationAdded); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -980,7 +1119,7 @@ func file_protos_ch1_proto_init() {
 			}
 		}
 		file_protos_ch1_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AddProductResp); i {
+			switch v := v.(*AddProductReq); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -992,7 +1131,7 @@ func file_protos_ch1_proto_init() {
 			}
 		}
 		file_protos_ch1_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ProductAdded); i {
+			switch v := v.(*AddProductResp); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1004,7 +1143,7 @@ func file_protos_ch1_proto_init() {
 			}
 		}
 		file_protos_ch1_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UpdateQtyReq); i {
+			switch v := v.(*ProductAdded); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1016,7 +1155,7 @@ func file_protos_ch1_proto_init() {
 			}
 		}
 		file_protos_ch1_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UpdateQtyResp); i {
+			switch v := v.(*UpdateQtyReq); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1028,7 +1167,7 @@ func file_protos_ch1_proto_init() {
 			}
 		}
 		file_protos_ch1_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ListLocationsRequest); i {
+			switch v := v.(*UpdateQtyResp); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1040,7 +1179,7 @@ func file_protos_ch1_proto_init() {
 			}
 		}
 		file_protos_ch1_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ListLocationsResponse); i {
+			switch v := v.(*QuantityUpdated); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1052,7 +1191,7 @@ func file_protos_ch1_proto_init() {
 			}
 		}
 		file_protos_ch1_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetInventoryReq); i {
+			switch v := v.(*ListLocationsRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1064,7 +1203,7 @@ func file_protos_ch1_proto_init() {
 			}
 		}
 		file_protos_ch1_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetInventoryResp); i {
+			switch v := v.(*ListLocationsResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1076,7 +1215,7 @@ func file_protos_ch1_proto_init() {
 			}
 		}
 		file_protos_ch1_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ListLocationsReq); i {
+			switch v := v.(*GetInventoryReq); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1088,7 +1227,7 @@ func file_protos_ch1_proto_init() {
 			}
 		}
 		file_protos_ch1_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ListLocationsResp); i {
+			switch v := v.(*GetInventoryResp); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1100,7 +1239,7 @@ func file_protos_ch1_proto_init() {
 			}
 		}
 		file_protos_ch1_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RewindRequest); i {
+			switch v := v.(*ListLocationsReq); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1112,7 +1251,7 @@ func file_protos_ch1_proto_init() {
 			}
 		}
 		file_protos_ch1_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RewindResponse); i {
+			switch v := v.(*ListLocationsResp); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1124,7 +1263,7 @@ func file_protos_ch1_proto_init() {
 			}
 		}
 		file_protos_ch1_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TestCase); i {
+			switch v := v.(*RewindRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1136,6 +1275,30 @@ func file_protos_ch1_proto_init() {
 			}
 		}
 		file_protos_ch1_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*RewindResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_protos_ch1_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*TestCase); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_protos_ch1_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetInventoryResp_Item); i {
 			case 0:
 				return &v.state
@@ -1154,7 +1317,7 @@ func file_protos_ch1_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_protos_ch1_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   17,
+			NumMessages:   19,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

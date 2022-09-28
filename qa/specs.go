@@ -273,5 +273,5 @@ func negative_qty(q *QA) {
 
 	fanta := q.AddProduct("fanta")
 	bar := q.AddLoc("bar")
-	q.expectUpdateQtyError(bar, fanta, -1, codes.InvalidArgument)
+	q.expectUpdateQtyError(bar, fanta, -1, codes.FailedPrecondition)
 }
