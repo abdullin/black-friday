@@ -79,6 +79,8 @@ func (s *Service) AddProduct(ctx c.Context, req *AddProductReq) (*AddProductResp
 		return nil, status.Errorf(codes.AlreadyExists, "SKU %s already exists", req.Sku)
 	}
 
+	codes.Unauthenticated
+
 	e := &ProductAdded{
 		Id:  s.store.prod_counter + 1,
 		Sku: req.Sku,

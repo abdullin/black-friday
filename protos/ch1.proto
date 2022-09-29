@@ -7,11 +7,11 @@ option go_package = "go-lite/protos";
 
 
 message AddLocationReq {
-  string name = 1;
+  repeated string name = 1;
 }
 
 message AddLocationResp {
-  uint64 id = 2;
+  repeated uint64 id = 2;
 }
 
 message LocationAdded {
@@ -21,12 +21,12 @@ message LocationAdded {
 
 
 message AddProductReq {
-  string sku = 1;
+  repeated string sku = 1;
 }
 
 
 message AddProductResp {
-  uint64 id = 2;
+  repeated uint64 id = 2;
 }
 
 message ProductAdded {
@@ -93,12 +93,3 @@ service InventoryService {
   rpc GetInventory(GetInventoryReq) returns (GetInventoryResp);
 }
 
-message RewindRequest {
-  repeated google.protobuf.Any Events = 1;
-}
-message RewindResponse {
-
-}
-
-message TestCase {
-}
