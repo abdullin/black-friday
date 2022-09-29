@@ -92,25 +92,34 @@ func NewQA(svc InventoryServiceServer) *QA {
 type ProductID uint64
 type LocationID uint64
 
-func (q *QA) AddProduct(sku string) ProductID {
+func (q *QA) AddProducts(skus ...string) []ProductID {
 
-	q.step("add SKU %s", sku)
-	prod, _ := q.service.AddProduct(nil, &AddProductReq{Sku: sku})
+	q.step("add SKU %s", strings.Join(skus, ", "))
+	prod, _ := q.service.AddProducts(nil, &AddProductsReq{Skus: skus})
 
-	result := ProductID(prod.Id)
+	results := make([]ProductID, len(skus))
 
-	q.producs[result] = sku
-	return result
+	for i, id := range prod.Ids {
+		results[i] = ProductID(id)
+		q.producs[results[i]] = skus[i]
+	}
+	return results
 
 }
 
-func (q *QA) AddLoc(name string) LocationID {
+func (q *QA) AddLocs(names ...string) []LocationID {
 
-	q.step("add location %s", name)
-	loc, _ := q.service.AddLocation(nil, &AddLocationReq{Name: name})
+	q.step("add locations %s", strings.Join(names, ", "))
+	locs, _ := q.service.AddLocations(nil, &AddLocationsReq{Names: names})
 
-	q.locs[LocationID(loc.Id)] = name
-	return LocationID(loc.Id)
+	results := make([]LocationID, len(names))
+
+	for i, id := range locs.Ids {
+		lid := LocationID(id)
+		q.locs[lid] = names[i]
+		results[i] = lid
+	}
+	return results
 }
 
 func (q *QA) UpdateQty(l LocationID, p ProductID, qt int64) int64 {
@@ -216,9 +225,9 @@ func (q *QA) expectUpdateQtyError(l LocationID, p ProductID, qt int64, c codes.C
 
 }
 
-func (q *QA) expectAddProductErr(sku string, code codes.Code) {
-	q.step("add SKU %s", sku)
-	prod, err := q.service.AddProduct(nil, &AddProductReq{Sku: sku})
+func (q *QA) expectAddProductsErr(code codes.Code, skus ...string) {
+	q.step("add SKU %s", strings.Join(skus, ", "))
+	prod, err := q.service.AddProducts(nil, &AddProductsReq{Skus: skus})
 
 	if prod != nil {
 		q.fail("expected no response, but got it")
@@ -251,27 +260,25 @@ func additive_quantity(q *QA) {
 
 	q.title("check if quantity is added properly")
 
-	cola := q.AddProduct("cola")
-	shelf := q.AddLoc("shelf")
+	cola := q.AddProducts("cola")
+	shelf := q.AddLocs("shelf")
 
-	q.UpdateQty(shelf, cola, 2)
-	q.UpdateQty(shelf, cola, 3)
+	q.UpdateQty(shelf[0], cola[0], 2)
+	q.UpdateQty(shelf[0], cola[0], 3)
 
-	q.expectInventory(shelf, map[ProductID]int64{cola: 5})
+	q.expectInventory(shelf[0], map[ProductID]int64{cola[0]: 5})
 }
 
 func product_names_are_unique(q *QA) {
 	q.title("We can't have duplicate product names")
 
-	_ = q.AddProduct("milk")
-
-	q.expectAddProductErr("milk", codes.AlreadyExists)
+	q.expectAddProductsErr(codes.AlreadyExists, "milk", "milk")
 }
 
 func negative_qty(q *QA) {
 	q.title("quantity can't go negative")
 
-	fanta := q.AddProduct("fanta")
-	bar := q.AddLoc("bar")
-	q.expectUpdateQtyError(bar, fanta, -1, codes.FailedPrecondition)
+	fanta := q.AddProducts("fanta")
+	bar := q.AddLocs("bar")
+	q.expectUpdateQtyError(bar[0], fanta[0], -1, codes.FailedPrecondition)
 }

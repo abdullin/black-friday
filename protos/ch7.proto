@@ -1,17 +1,14 @@
 syntax = "proto3";
-//import "google/protobuf/any.proto";
+import "google/protobuf/any.proto";
 package protos;
 option go_package = "go-lite/protos";
 
-
-
-
-message AddLocationsReq {
-  repeated string names = 1;
+message AddLocationReq {
+  repeated string name = 1;
 }
 
-message AddLocationsResp {
-  repeated uint64 ids = 1;
+message AddLocationResp {
+  repeated uint64 id = 2;
 }
 
 message LocationAdded {
@@ -20,13 +17,13 @@ message LocationAdded {
 }
 
 
-message AddProductsReq {
-  repeated string skus = 1;
+message AddProductReq {
+  repeated string sku = 1;
 }
 
 
-message AddProductsResp {
-  repeated uint64 ids = 2;
+message AddProductResp {
+  repeated uint64 id = 2;
 }
 
 message ProductAdded {
@@ -74,26 +71,19 @@ message GetInventoryResp {
 }
 
 message ListLocationsReq {
-;
 
 }
 
 message ListLocationsResp {
-  message Loc {
-    uint64 id = 1;
-    string name = 2;
-  }
 
-  repeated Loc locs = 1;
 }
 
 
 
 service InventoryService {
-  rpc AddLocations(AddLocationsReq) returns (AddLocationsResp);
+  rpc AddProduct(AddProductReq) returns (AddProductResp);
 
-  rpc AddProducts(AddProductsReq) returns (AddProductsResp);
-
+  rpc AddLocation(AddLocationReq) returns (AddLocationResp);
   rpc ListLocations(ListLocationsReq) returns (ListLocationsResp);
 
   rpc UpdateQty(UpdateQtyReq) returns (UpdateQtyResp);

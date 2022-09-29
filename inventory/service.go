@@ -20,9 +20,21 @@ type product struct {
 }
 
 type Service struct {
-	UnimplementedInventoryServiceServer
-
 	store *Store
+	UnimplementedInventoryServiceServer
+}
+
+func (s *Service) ListLocations(ctx c.Context, req *ListLocationsReq) (*ListLocationsResp, error) {
+
+	results := make([]*ListLocationsResp_Loc, len(s.store.locs))
+	for i, l := range s.store.locs {
+		results[i] = &ListLocationsResp_Loc{
+			Id:   l.Id,
+			Name: l.Name,
+		}
+
+	}
+	return &ListLocationsResp{Locs: results}, nil
 }
 
 type Store struct {
@@ -61,35 +73,47 @@ func (s *Store) Apply(e proto.Message) {
 
 }
 
-func (s *Service) AddLocation(ctx c.Context, req *AddLocationReq) (*AddLocationResp, error) {
+func (s *Service) AddLocations(ctx c.Context, req *AddLocationsReq) (*AddLocationsResp, error) {
 
-	e := &LocationAdded{
-		Name: req.Name,
-		Id:   s.store.loc_counter + 1,
+	results := make([]uint64, len(req.Names))
+
+	for i, name := range req.Names {
+
+		var id = s.store.loc_counter + 1
+
+		e := &LocationAdded{
+			Name: name,
+			Id:   id,
+		}
+		results[i] = id
+
+		s.store.Apply(e)
 	}
 
-	s.store.Apply(e)
-
-	return &AddLocationResp{Id: e.Id}, nil
+	return &AddLocationsResp{Ids: results}, nil
 }
 
-func (s *Service) AddProduct(ctx c.Context, req *AddProductReq) (*AddProductResp, error) {
+func (s *Service) AddProducts(ctx c.Context, req *AddProductsReq) (*AddProductsResp, error) {
 
-	if _, found := s.store.products_index[req.Sku]; found {
-		return nil, status.Errorf(codes.AlreadyExists, "SKU %s already exists", req.Sku)
+	results := make([]uint64, len(req.Skus))
+	for i, sku := range req.Skus {
+		if _, found := s.store.products_index[sku]; found {
+			return nil, status.Errorf(codes.AlreadyExists, "SKU %s already exists", sku)
+		}
+
+		id := s.store.prod_counter + 1
+
+		e := &ProductAdded{
+			Id:  id,
+			Sku: sku,
+		}
+		s.store.Apply(e)
+
+		results[i] = id
+
 	}
 
-	codes.Unauthenticated
-
-	e := &ProductAdded{
-		Id:  s.store.prod_counter + 1,
-		Sku: req.Sku,
-	}
-	s.store.Apply(e)
-
-	return &AddProductResp{
-		Id: e.Id,
-	}, nil
+	return &AddProductsResp{Ids: results}, nil
 }
 
 func (s *Service) UpdateQty(ctx c.Context, req *UpdateQtyReq) (*UpdateQtyResp, error) {
@@ -109,7 +133,7 @@ func (s *Service) UpdateQty(ctx c.Context, req *UpdateQtyReq) (*UpdateQtyResp, e
 	total := current + req.Quantity
 
 	if total < 0 {
-		return nil, status.Errorf(codes.InvalidArgument, "Can't be negative!")
+		return nil, status.Errorf(codes.FailedPrecondition, "Can't be negative!")
 	}
 
 	e := &QuantityUpdated{

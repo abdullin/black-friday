@@ -22,8 +22,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type InventoryServiceClient interface {
-	AddProduct(ctx context.Context, in *AddProductReq, opts ...grpc.CallOption) (*AddProductResp, error)
-	AddLocation(ctx context.Context, in *AddLocationReq, opts ...grpc.CallOption) (*AddLocationResp, error)
+	AddLocations(ctx context.Context, in *AddLocationsReq, opts ...grpc.CallOption) (*AddLocationsResp, error)
+	AddProducts(ctx context.Context, in *AddProductsReq, opts ...grpc.CallOption) (*AddProductsResp, error)
 	ListLocations(ctx context.Context, in *ListLocationsReq, opts ...grpc.CallOption) (*ListLocationsResp, error)
 	UpdateQty(ctx context.Context, in *UpdateQtyReq, opts ...grpc.CallOption) (*UpdateQtyResp, error)
 	GetInventory(ctx context.Context, in *GetInventoryReq, opts ...grpc.CallOption) (*GetInventoryResp, error)
@@ -37,18 +37,18 @@ func NewInventoryServiceClient(cc grpc.ClientConnInterface) InventoryServiceClie
 	return &inventoryServiceClient{cc}
 }
 
-func (c *inventoryServiceClient) AddProduct(ctx context.Context, in *AddProductReq, opts ...grpc.CallOption) (*AddProductResp, error) {
-	out := new(AddProductResp)
-	err := c.cc.Invoke(ctx, "/protos.InventoryService/AddProduct", in, out, opts...)
+func (c *inventoryServiceClient) AddLocations(ctx context.Context, in *AddLocationsReq, opts ...grpc.CallOption) (*AddLocationsResp, error) {
+	out := new(AddLocationsResp)
+	err := c.cc.Invoke(ctx, "/protos.InventoryService/AddLocations", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *inventoryServiceClient) AddLocation(ctx context.Context, in *AddLocationReq, opts ...grpc.CallOption) (*AddLocationResp, error) {
-	out := new(AddLocationResp)
-	err := c.cc.Invoke(ctx, "/protos.InventoryService/AddLocation", in, out, opts...)
+func (c *inventoryServiceClient) AddProducts(ctx context.Context, in *AddProductsReq, opts ...grpc.CallOption) (*AddProductsResp, error) {
+	out := new(AddProductsResp)
+	err := c.cc.Invoke(ctx, "/protos.InventoryService/AddProducts", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -86,8 +86,8 @@ func (c *inventoryServiceClient) GetInventory(ctx context.Context, in *GetInvent
 // All implementations must embed UnimplementedInventoryServiceServer
 // for forward compatibility
 type InventoryServiceServer interface {
-	AddProduct(context.Context, *AddProductReq) (*AddProductResp, error)
-	AddLocation(context.Context, *AddLocationReq) (*AddLocationResp, error)
+	AddLocations(context.Context, *AddLocationsReq) (*AddLocationsResp, error)
+	AddProducts(context.Context, *AddProductsReq) (*AddProductsResp, error)
 	ListLocations(context.Context, *ListLocationsReq) (*ListLocationsResp, error)
 	UpdateQty(context.Context, *UpdateQtyReq) (*UpdateQtyResp, error)
 	GetInventory(context.Context, *GetInventoryReq) (*GetInventoryResp, error)
@@ -98,11 +98,11 @@ type InventoryServiceServer interface {
 type UnimplementedInventoryServiceServer struct {
 }
 
-func (UnimplementedInventoryServiceServer) AddProduct(context.Context, *AddProductReq) (*AddProductResp, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddProduct not implemented")
+func (UnimplementedInventoryServiceServer) AddLocations(context.Context, *AddLocationsReq) (*AddLocationsResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddLocations not implemented")
 }
-func (UnimplementedInventoryServiceServer) AddLocation(context.Context, *AddLocationReq) (*AddLocationResp, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddLocation not implemented")
+func (UnimplementedInventoryServiceServer) AddProducts(context.Context, *AddProductsReq) (*AddProductsResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddProducts not implemented")
 }
 func (UnimplementedInventoryServiceServer) ListLocations(context.Context, *ListLocationsReq) (*ListLocationsResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListLocations not implemented")
@@ -126,38 +126,38 @@ func RegisterInventoryServiceServer(s grpc.ServiceRegistrar, srv InventoryServic
 	s.RegisterService(&InventoryService_ServiceDesc, srv)
 }
 
-func _InventoryService_AddProduct_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddProductReq)
+func _InventoryService_AddLocations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddLocationsReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(InventoryServiceServer).AddProduct(ctx, in)
+		return srv.(InventoryServiceServer).AddLocations(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.InventoryService/AddProduct",
+		FullMethod: "/protos.InventoryService/AddLocations",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(InventoryServiceServer).AddProduct(ctx, req.(*AddProductReq))
+		return srv.(InventoryServiceServer).AddLocations(ctx, req.(*AddLocationsReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _InventoryService_AddLocation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddLocationReq)
+func _InventoryService_AddProducts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddProductsReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(InventoryServiceServer).AddLocation(ctx, in)
+		return srv.(InventoryServiceServer).AddProducts(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.InventoryService/AddLocation",
+		FullMethod: "/protos.InventoryService/AddProducts",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(InventoryServiceServer).AddLocation(ctx, req.(*AddLocationReq))
+		return srv.(InventoryServiceServer).AddProducts(ctx, req.(*AddProductsReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -224,12 +224,12 @@ var InventoryService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*InventoryServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "AddProduct",
-			Handler:    _InventoryService_AddProduct_Handler,
+			MethodName: "AddLocations",
+			Handler:    _InventoryService_AddLocations_Handler,
 		},
 		{
-			MethodName: "AddLocation",
-			Handler:    _InventoryService_AddLocation_Handler,
+			MethodName: "AddProducts",
+			Handler:    _InventoryService_AddProducts_Handler,
 		},
 		{
 			MethodName: "ListLocations",
