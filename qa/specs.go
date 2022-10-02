@@ -2,10 +2,14 @@ package qa
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
+	"io"
+	"log"
+	"os"
 	. "sdk-go/protos"
 	"strings"
 )
@@ -42,7 +46,23 @@ func (q *QAContext) assert(resp proto.Message, err error) bool {
 	return q.stop()
 }
 
+func Dispose(e io.Closer) {
+	err := e.Close()
+	if err != nil {
+		log.Println(err.Error())
+	}
+}
+
 func RunCommandDrivenSpec(svc InventoryServiceServer) {
+
+	f, err := os.Create("/tmp/dat2.json")
+	if err != nil {
+		panic(err)
+	}
+
+	encoder := json.NewEncoder(f)
+
+	defer Dispose(f)
 
 	for _, r := range tests {
 
@@ -64,19 +84,37 @@ func RunCommandDrivenSpec(svc InventoryServiceServer) {
 			fmt.Println(f)
 		}
 
-		return
+		r := &Result{
+			Text:  q.text,
+			Steps: q.steps,
+			Fails: q.fails,
+		}
+
+		err := encoder.Encode(r)
+		if err != nil {
+			panic(err)
+		}
+		_, err = f.WriteString("\n")
+		if err != nil {
+			panic(err)
+		}
+
 	}
 
+}
+
+type Result struct {
+	Text  string   `json:"text,omitempty"`
+	Steps []string `json:"steps,omitempty"`
+	Fails []string `json:"fails,omitempty"`
 }
 
 type QA struct {
 	service InventoryServiceServer
 	text    string
 
-	steps []string
-
-	fails []string
-
+	steps   []string
+	fails   []string
 	locs    map[LocationID]string
 	producs map[ProductID]string
 }
