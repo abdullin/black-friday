@@ -55,7 +55,9 @@ func Dispose(e io.Closer) {
 
 func RunCommandDrivenSpec(svc InventoryServiceServer) {
 
-	f, err := os.Create("/tmp/dat2.json")
+	os.TempDir()
+
+	f, err := os.Create("/tmp/data.txt")
 	if err != nil {
 		panic(err)
 	}
