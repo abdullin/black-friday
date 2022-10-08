@@ -2,7 +2,6 @@ package qa
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -62,8 +61,6 @@ func RunCommandDrivenSpec(svc InventoryServiceServer) {
 		panic(err)
 	}
 
-	encoder := json.NewEncoder(f)
-
 	defer Dispose(f)
 
 	for _, r := range tests {
@@ -75,30 +72,15 @@ func RunCommandDrivenSpec(svc InventoryServiceServer) {
 			continue
 		}
 
-		fmt.Println("QA: I got an error when doing " + q.text)
+		f.WriteString("QA: I got an error when doing " + q.text + "\n")
 
 		for i, s := range q.steps {
 
-			fmt.Printf(" %d. %s\n", i+1, s)
+			f.WriteString(fmt.Sprintf(" %d. %s\n", i+1, s))
 		}
 
-		for _, f := range q.fails {
-			fmt.Println(f)
-		}
-
-		r := &Result{
-			Text:  q.text,
-			Steps: q.steps,
-			Fails: q.fails,
-		}
-
-		err := encoder.Encode(r)
-		if err != nil {
-			panic(err)
-		}
-		_, err = f.WriteString("\n")
-		if err != nil {
-			panic(err)
+		for _, fail := range q.fails {
+			f.WriteString(fail + "\n")
 		}
 
 	}
