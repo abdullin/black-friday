@@ -76,9 +76,7 @@ func (s *Store) Apply(e proto.Message) {
 func (s *Service) AddLocations(c c.Context, req *AddLocationsReq) (*AddLocationsResp, error) {
 
 	results := make([]uint64, len(req.Names))
-
 	for i, name := range req.Names {
-
 		var id = s.store.loc_counter + 1
 
 		e := &LocationAdded{
