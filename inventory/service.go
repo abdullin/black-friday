@@ -94,7 +94,7 @@ func (s *Service) AddProducts(_ c.Context, req *AddProductsReq) (*AddProductsRes
 	results := make([]uint64, len(req.Skus))
 	for i, sku := range req.Skus {
 		if _, found := s.store.products_index[sku]; found {
-			return nil, status.Errorf(codes.AlreadyExists, "SKU %s already exists", sku)
+			return nil, status.Errorf(codes.AlreadyExists, "duplicate SKU '%s'", sku)
 		}
 
 		id := s.store.prod_counter + 1
