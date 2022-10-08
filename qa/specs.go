@@ -13,8 +13,6 @@ import (
 	"strings"
 )
 
-// TODO: have unique name generator
-
 type Rpc[T any, K any] func(ctx context.Context, req T) K
 
 type QAContext struct {
