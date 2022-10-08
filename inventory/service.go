@@ -73,7 +73,7 @@ func (s *Store) Apply(e proto.Message) {
 
 }
 
-func (s *Service) AddLocations(ctx c.Context, req *AddLocationsReq) (*AddLocationsResp, error) {
+func (s *Service) AddLocations(_ c.Context, req *AddLocationsReq) (*AddLocationsResp, error) {
 
 	results := make([]uint64, len(req.Names))
 
