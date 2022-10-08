@@ -90,8 +90,7 @@ func (s *Service) AddLocations(_ c.Context, req *AddLocationsReq) (*AddLocations
 	return &AddLocationsResp{Ids: results}, nil
 }
 
-func (s *Service) AddProducts(ctx c.Context, req *AddProductsReq) (*AddProductsResp, error) {
-
+func (s *Service) AddProducts(_ c.Context, req *AddProductsReq) (*AddProductsResp, error) {
 	results := make([]uint64, len(req.Skus))
 	for i, sku := range req.Skus {
 		if _, found := s.store.products_index[sku]; found {
@@ -99,17 +98,13 @@ func (s *Service) AddProducts(ctx c.Context, req *AddProductsReq) (*AddProductsR
 		}
 
 		id := s.store.prod_counter + 1
-
 		e := &ProductAdded{
 			Id:  id,
 			Sku: sku,
 		}
 		s.store.Apply(e)
-
 		results[i] = id
-
 	}
-
 	return &AddProductsResp{Ids: results}, nil
 }
 
