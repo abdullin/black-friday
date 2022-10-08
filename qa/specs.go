@@ -72,11 +72,15 @@ func RunCommandDrivenSpec(svc InventoryServiceServer) {
 			continue
 		}
 
-		f.WriteString("QA: I got an error when doing " + q.text + "\n")
+		f.WriteString("QA: I got an error when doing " + q.text + "\n\n")
 
 		for i, s := range q.steps {
 
 			f.WriteString(fmt.Sprintf(" %d. %s\n", i+1, s))
+		}
+
+		if len(q.fails) > 0 {
+			f.WriteString("\n")
 		}
 
 		for _, fail := range q.fails {
