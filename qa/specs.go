@@ -86,9 +86,7 @@ func RunCommandDrivenSpec(svc InventoryServiceServer) {
 		for _, fail := range q.fails {
 			f.WriteString(fail + "\n")
 		}
-
 	}
-
 }
 
 type Result struct {
