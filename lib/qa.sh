@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eu -o pipefail
+set -eu -o pipefail -o xtrace
 TARGET=$1
 GIT=$2
 BRANCH=$3
