@@ -19,10 +19,4 @@ def send(text):
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text={safe_string}"
     requests.get(url).json() # this sends the message
 
-
-import time
 send(data)
-
-time.sleep(1.7)
-
-send("Could you check this out?")
