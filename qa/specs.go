@@ -64,7 +64,7 @@ func RunCommandDrivenSpec(svc InventoryServiceServer) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			f.WriteString(fmt.Sprintln("Your code doesn't run on my machine :( ", r, "\n```\n", string(debug.Stack()), "\n```"))
+			f.WriteString(fmt.Sprintln("Your code doesn't run on my machine 😢\n```\n", r, "\n", string(debug.Stack()), "\n```"))
 		}
 	}()
 
