@@ -3,6 +3,7 @@ package inventory
 import (
 	"context"
 	"database/sql"
+	"google.golang.org/protobuf/proto"
 	. "sdk-go/protos"
 )
 
@@ -33,4 +34,17 @@ func NewService(db *sql.DB) *Service {
 	return &Service{
 		db: db,
 	}
+}
+
+func (s *Service) Apply(events []proto.Message) error {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	for _, e := range events {
+		Apply(tx, e)
+	}
+	return tx.Commit()
 }
