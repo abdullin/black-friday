@@ -47,8 +47,6 @@ func Test_Spec(t *testing.T) {
 
 	s := inventory.NewService(db)
 
-	//ctx := context.Background()
-
 	check(s.Apply(spec.Given))
 
 	resp, err := s.GetInventory(context.Background(), &GetInventoryReq{Location: 1})
