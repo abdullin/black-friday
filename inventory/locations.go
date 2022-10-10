@@ -2,27 +2,61 @@ package inventory
 
 import (
 	"context"
+	"google.golang.org/protobuf/proto"
 	"sdk-go/protos"
 )
 
-func (s *Service) ListLocations(ctx context.Context, req *protos.ListLocationsReq) (*protos.ListLocationsResp, error) {
+func re[M proto.Message](m M, err error) (M, error) {
+	return m, err
+}
 
-	results := make([]*protos.ListLocationsResp_Loc, len(s.store.locs))
-	for i, l := range s.store.locs {
-		results[i] = &protos.ListLocationsResp_Loc{
-			Id:   l.Id,
-			Name: l.Name,
+func (s *Service) ListLocations(ctx context.Context, req *protos.ListLocationsReq) (r *protos.ListLocationsResp, e error) {
+
+	tx, err := s.db.Begin()
+	if err != nil {
+		return re(r, err)
+	}
+
+	rows, err := tx.QueryContext(ctx, "SELECT Id, Name FROM Locations")
+
+	if err != nil {
+		return re(r, err)
+	}
+
+	var results []*protos.ListLocationsResp_Loc
+
+	for rows.Next() {
+		var id uint64
+		var name string
+		err := rows.Scan(&id, &name)
+		if err != nil {
+			return re(r, err)
 		}
-
+		results = append(results, &protos.ListLocationsResp_Loc{
+			Id:   id,
+			Name: name,
+		})
 	}
 	return &protos.ListLocationsResp{Locs: results}, nil
 }
 
-func (s *Service) AddLocations(_ context.Context, req *protos.AddLocationsReq) (*protos.AddLocationsResp, error) {
+func (s *Service) AddLocations(ctx context.Context, req *protos.AddLocationsReq) (r *protos.AddLocationsResp, e error) {
+
+	tx, err := s.db.Begin()
+	if err != nil {
+		return re(r, err)
+	}
+
+	row := tx.QueryRowContext(ctx, "select seq from sqlite_sequence where name='Locations'")
+	var id uint64
+	err = row.Scan(&id)
+	if err != nil {
+		return re(r, err)
+	}
 
 	results := make([]uint64, len(req.Names))
 	for i, name := range req.Names {
-		var id = s.store.loc_counter + 1
+		id += 1
 
 		e := &protos.LocationAdded{
 			Name: name,
@@ -30,8 +64,10 @@ func (s *Service) AddLocations(_ context.Context, req *protos.AddLocationsReq) (
 		}
 		results[i] = id
 
-		s.store.Apply(e)
+		Apply(tx, e)
 	}
+
+	tx.Commit()
 
 	return &protos.AddLocationsResp{Ids: results}, nil
 }

@@ -14,7 +14,7 @@ import (
 
 func main() {
 
-	svc := inventory.NewService()
+	svc := inventory.NewService(nil)
 
 	qa.RunCommandDrivenSpec(svc)
 
@@ -31,7 +31,7 @@ func run() {
 	}
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
-	protos.RegisterInventoryServiceServer(grpcServer, inventory.NewService())
+	protos.RegisterInventoryServiceServer(grpcServer, inventory.NewService(nil))
 
 	// this allows to call this server with commands like:
 	// grpcurl -plaintext localhost:8080 schema.InventoryService/ListLocation

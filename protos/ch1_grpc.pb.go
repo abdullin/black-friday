@@ -27,6 +27,7 @@ type InventoryServiceClient interface {
 	ListLocations(ctx context.Context, in *ListLocationsReq, opts ...grpc.CallOption) (*ListLocationsResp, error)
 	UpdateQty(ctx context.Context, in *UpdateQtyReq, opts ...grpc.CallOption) (*UpdateQtyResp, error)
 	GetInventory(ctx context.Context, in *GetInventoryReq, opts ...grpc.CallOption) (*GetInventoryResp, error)
+	Reset(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type inventoryServiceClient struct {
@@ -82,6 +83,15 @@ func (c *inventoryServiceClient) GetInventory(ctx context.Context, in *GetInvent
 	return out, nil
 }
 
+func (c *inventoryServiceClient) Reset(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/protos.InventoryService/Reset", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // InventoryServiceServer is the server API for InventoryService service.
 // All implementations must embed UnimplementedInventoryServiceServer
 // for forward compatibility
@@ -91,6 +101,7 @@ type InventoryServiceServer interface {
 	ListLocations(context.Context, *ListLocationsReq) (*ListLocationsResp, error)
 	UpdateQty(context.Context, *UpdateQtyReq) (*UpdateQtyResp, error)
 	GetInventory(context.Context, *GetInventoryReq) (*GetInventoryResp, error)
+	Reset(context.Context, *Empty) (*Empty, error)
 	mustEmbedUnimplementedInventoryServiceServer()
 }
 
@@ -112,6 +123,9 @@ func (UnimplementedInventoryServiceServer) UpdateQty(context.Context, *UpdateQty
 }
 func (UnimplementedInventoryServiceServer) GetInventory(context.Context, *GetInventoryReq) (*GetInventoryResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetInventory not implemented")
+}
+func (UnimplementedInventoryServiceServer) Reset(context.Context, *Empty) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Reset not implemented")
 }
 func (UnimplementedInventoryServiceServer) mustEmbedUnimplementedInventoryServiceServer() {}
 
@@ -216,6 +230,24 @@ func _InventoryService_GetInventory_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _InventoryService_Reset_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).Reset(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.InventoryService/Reset",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).Reset(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // InventoryService_ServiceDesc is the grpc.ServiceDesc for InventoryService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -242,6 +274,10 @@ var InventoryService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetInventory",
 			Handler:    _InventoryService_GetInventory_Handler,
+		},
+		{
+			MethodName: "Reset",
+			Handler:    _InventoryService_Reset_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

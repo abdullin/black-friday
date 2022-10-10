@@ -2,27 +2,34 @@ package inventory
 
 import (
 	"context"
+	"database/sql"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"log"
 	"sdk-go/protos"
 )
 
-func (s *Service) UpdateQty(ctx context.Context, req *protos.UpdateQtyReq) (*protos.UpdateQtyResp, error) {
-	//TODO implement me
+func (s *Service) UpdateQty(ctx context.Context, req *protos.UpdateQtyReq) (r *protos.UpdateQtyResp, err error) {
 
-	prod := s.store.products[req.Product]
-
-	if prod == nil {
-		log.Panicln("NIIIL for product ", req.Product)
+	tx, err := s.db.Begin()
+	if err != nil {
+		return re(r, err)
 	}
 
-	var current int64
-	if qty, ok := prod.quantity[req.Location]; ok {
-		current = qty
+	defer tx.Rollback()
+
+	row := tx.QueryRowContext(ctx,
+		"SELECT Quantity FROM Inventory WHERE Location=? AND Product=?",
+		req.Location,
+		req.Product)
+
+	var quantity int64
+
+	err = row.Scan(&quantity)
+	if err != nil && err != sql.ErrNoRows {
+		return re(r, err)
 	}
 
-	total := current + req.Quantity
+	total := quantity + req.Quantity
 
 	if total < 0 {
 		return nil, status.Errorf(codes.FailedPrecondition, "Can't be negative!")
@@ -33,29 +40,51 @@ func (s *Service) UpdateQty(ctx context.Context, req *protos.UpdateQtyReq) (*pro
 		Product:  req.Product,
 		Quantity: req.Quantity,
 		Total:    total,
+		Before:   quantity,
 	}
 
-	s.store.Apply(e)
+	Apply(tx, e)
+
+	tx.Commit()
 
 	return &protos.UpdateQtyResp{
 		Total: e.Total,
 	}, nil
 }
 
-func (s *Service) GetInventory(c context.Context, r *protos.GetInventoryReq) (*protos.GetInventoryResp, error) {
+func (s *Service) GetInventory(c context.Context, req *protos.GetInventoryReq) (r *protos.GetInventoryResp, err error) {
+
+	tx, err := s.db.Begin()
+	if err != nil {
+		return re(r, err)
+	}
+
+	defer tx.Rollback()
+
+	rows, err := tx.QueryContext(c, "SELECT Product, Quantity FROM Inventory WHERE Location=?", req.Location)
+	if err != nil {
+		return re(r, err)
+	}
 
 	var items []*protos.GetInventoryResp_Item
+	for rows.Next() {
+		var product uint64
+		var quantity int64
 
-	for id, p := range s.store.products {
-		if qty, found := p.quantity[r.Location]; found && qty != 0 {
-			items = append(items, &protos.GetInventoryResp_Item{
-				Product:  id,
-				Quantity: qty,
-			})
+		err := rows.Scan(&product, &quantity)
+		if err != nil {
+			return re(r, err)
 		}
+
+		items = append(items, &protos.GetInventoryResp_Item{
+			Product:  product,
+			Quantity: quantity,
+		})
 	}
 
 	rep := &protos.GetInventoryResp{Items: items}
+
+	tx.Commit()
 
 	return rep, nil
 

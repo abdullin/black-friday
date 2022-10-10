@@ -1,7 +1,8 @@
 package inventory
 
 import (
-	"google.golang.org/protobuf/proto"
+	"context"
+	"database/sql"
 	. "sdk-go/protos"
 )
 
@@ -16,53 +17,20 @@ type product struct {
 }
 
 type Service struct {
-	store *Store
+	db *sql.DB
+
 	UnimplementedInventoryServiceServer
 }
 
-type Store struct {
-	locs           []*Loc
-	products       map[uint64]*product
-	products_index map[string]uint64
+func (s *Service) Reset(ctx context.Context, empty *Empty) (*Empty, error) {
+	//TODO implement me
 
-	loc_counter  uint64
-	prod_counter uint64
+	return nil, nil
 }
 
-func (s *Store) Apply(e proto.Message) {
+func NewService(db *sql.DB) *Service {
 
-	switch t := e.(type) {
-	case *LocationAdded:
-		s.locs = append(s.locs, &Loc{
-			Id:   t.Id,
-			Name: t.Name,
-		})
-		s.loc_counter = t.Id
-
-	case *ProductAdded:
-		s.products[t.Id] = &product{
-			name:     t.Sku,
-			quantity: map[uint64]int64{},
-		}
-		s.products_index[t.Sku] = t.Id
-		s.prod_counter = t.Id
-	case *QuantityUpdated:
-		s.products[t.Product].quantity[t.Location] = t.Total
-
-	default:
-		panic("UNKNOWN EVENT")
-
-	}
-}
-
-func NewService() InventoryServiceServer {
-
-	s := &Store{
-
-		products:       map[uint64]*product{},
-		products_index: map[string]uint64{},
-	}
 	return &Service{
-		store: s,
+		db: db,
 	}
 }

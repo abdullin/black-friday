@@ -50,6 +50,7 @@ message QuantityUpdated{
   uint64 product = 2;
   int64 quantity = 3;
   int64 total = 4;
+  int64 before = 5;
 }
 
 message ListLocationsRequest {
@@ -88,6 +89,13 @@ message ListLocationsResp {
 }
 
 
+message Empty { }
+
+
+message Event {
+  string type = 1;
+  bytes data = 2;
+}
 
 service InventoryService {
   rpc AddLocations(AddLocationsReq) returns (AddLocationsResp);
@@ -98,5 +106,7 @@ service InventoryService {
 
   rpc UpdateQty(UpdateQtyReq) returns (UpdateQtyResp);
   rpc GetInventory(GetInventoryReq) returns (GetInventoryResp);
+
+  rpc Reset(Empty) returns (Empty);
 }
 

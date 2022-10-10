@@ -2,25 +2,38 @@ package inventory
 
 import (
 	"context"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"database/sql"
 	"sdk-go/protos"
 )
 
-func (s *Service) AddProducts(_ context.Context, req *protos.AddProductsReq) (*protos.AddProductsResp, error) {
+func (s *Service) AddProducts(ctx context.Context, req *protos.AddProductsReq) (r *protos.AddProductsResp, err error) {
+
+	tx, err := s.db.Begin()
+	if err != nil {
+		return re(r, err)
+	}
+
+	defer tx.Rollback()
+
+	row := tx.QueryRowContext(ctx, "select seq from sqlite_sequence where name='Products'")
+	var id uint64
+	err = row.Scan(&id)
+	if err != nil && err != sql.ErrNoRows {
+		return re(r, err)
+	}
+
 	results := make([]uint64, len(req.Skus))
 	for i, sku := range req.Skus {
-		if _, found := s.store.products_index[sku]; found {
-			return nil, status.Errorf(codes.AlreadyExists, "duplicate SKU '%s'", sku)
-		}
 
-		id := s.store.prod_counter + 1
+		id += 1
 		e := &protos.ProductAdded{
 			Id:  id,
 			Sku: sku,
 		}
-		s.store.Apply(e)
+		Apply(tx, e)
 		results[i] = id
 	}
+
+	tx.Commit()
 	return &protos.AddProductsResp{Ids: results}, nil
 }

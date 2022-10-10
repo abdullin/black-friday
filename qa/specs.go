@@ -20,7 +20,7 @@ type QAContext struct {
 }
 
 func (q *QAContext) f(format string, a ...any) {
-	q.problems = append(q.problems, fmt.Sprintf(format, a))
+	q.problems = append(q.problems, fmt.Sprintf(format, a...))
 }
 
 func (q *QAContext) stop() bool {
@@ -187,7 +187,7 @@ func (q *QA) expectInventory(l LocationID, vals map[ProductID]int64) {
 
 		actual, found := counts[uint64(i)]
 		if !found {
-			q.fail("not found %s in stock", q.producs[i], i)
+			q.fail("not found %s in stock", q.producs[i])
 		} else {
 			if actual != expected {
 				q.fail("expected %d x %s to be in stock at %s but got %d", expected, q.producs[i], q.locs[l], actual)
