@@ -61,6 +61,12 @@ func RunCommandDrivenSpec(svc InventoryServiceServer) {
 
 	defer Dispose(f)
 
+	defer func() {
+		if r := recover(); r != nil {
+			f.WriteString(fmt.Sprintln("Your code doesn't run on my machine :( ", r))
+		}
+	}()
+
 	for _, r := range tests {
 
 		q := NewQA(svc)
