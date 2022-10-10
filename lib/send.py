@@ -16,7 +16,7 @@ def send(text):
 
     safe_string = urllib.parse.quote_plus(text)
 
-    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text={safe_string}&parse_mode=MarkdownV2"
+    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text={safe_string}&parse_mode=markdown"
     response = requests.get(url)
 
 
