@@ -35,7 +35,6 @@ func Test_Spec(t *testing.T) {
 	check := func(err error) {
 		if err != nil {
 			panic(err)
-			//t.Fatal(err)
 		}
 	}
 
