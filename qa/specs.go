@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"runtime/debug"
 	. "sdk-go/protos"
 	"strings"
 )
@@ -63,7 +64,7 @@ func RunCommandDrivenSpec(svc InventoryServiceServer) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			f.WriteString(fmt.Sprintln("Your code doesn't run on my machine :( ", r))
+			f.WriteString(fmt.Sprintln("Your code doesn't run on my machine :( ", r, "\n", string(debug.Stack())))
 		}
 	}()
 
