@@ -40,7 +40,6 @@ func Test_Spec(t *testing.T) {
 
 	db, err := sql.Open("sqlite3", ":memory:")
 	check(err)
-
 	defer db.Close()
 
 	check(inventory.CreateSchema(db))
