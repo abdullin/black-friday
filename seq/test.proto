@@ -4,7 +4,7 @@ option go_package = "go-lite/seq";
 
 message Empty{}
 
-message SimpleMessage {
+message Simple {
     int32 I32 = 1;
     int64 I64 = 2;
 
@@ -21,7 +21,7 @@ message Lists {
   repeated int32 Len = 1;
   repeated int32 Missing = 2;
 
-  repeated SimpleMessage Mistake = 4;
+  repeated Simple Mistake = 4;
 }
 
 message Nested {

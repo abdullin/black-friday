@@ -16,8 +16,8 @@ func TestCompare(t *testing.T) {
 
 	empty := &Empty{}
 
-	es := &SimpleMessage{I32: -32, I64: -64, U32: 32, U64: 64, Bool: true, Str: "test"}
-	as := &SimpleMessage{I32: 32, I64: 64, U32: 33, U64: 65, Bool: false, Str: "tost"}
+	es := &Simple{I32: -32, I64: -64, U32: 32, U64: 64, Bool: true, Str: "test"}
+	as := &Simple{I32: 32, I64: 64, U32: 33, U64: 65, Bool: false, Str: "tost"}
 	simpleDeltas := []*Delta{
 		{es.I32, as.I32, "I32"},
 		{es.I64, as.I64, "I64"},
@@ -30,12 +30,12 @@ func TestCompare(t *testing.T) {
 	el := &Lists{
 		Len:     []int32{1, 2, 3, 4},
 		Missing: []int32{1, 2, 3, 4},
-		Mistake: []*SimpleMessage{{I32: 1}},
+		Mistake: []*Simple{{I32: 1}},
 	}
 	al := &Lists{
 		Len:     []int32{1, 2, 3},
 		Missing: []int32{1, 2, 2, 4},
-		Mistake: []*SimpleMessage{{I32: 2}},
+		Mistake: []*Simple{{I32: 2}},
 	}
 
 	listDeltas := []*Delta{
@@ -47,8 +47,8 @@ func TestCompare(t *testing.T) {
 	cases := []*test{
 		{"similar instances", &Empty{}, &Empty{}, nil},
 		{"same instance", empty, empty, nil},
-		{"different instances", &Empty{}, &SimpleMessage{}, []*Delta{
-			{"Empty", "SimpleMessage", "type"},
+		{"different instances", &Empty{}, &Simple{}, []*Delta{
+			{"Empty", "Simple", "type"},
 		}},
 		{"same simple message", es, es, nil},
 		{"same lists", el, el, nil},
@@ -58,8 +58,8 @@ func TestCompare(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			result := Diff(c.e, c.a)
-			diff := cmp.Diff(c.expected, result)
+			actual := Diff(c.e, c.a)
+			diff := cmp.Diff(c.expected, actual)
 			if diff != "" {
 				t.Fatalf(diff)
 			}
