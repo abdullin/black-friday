@@ -1,0 +1,29 @@
+syntax = "proto3";
+package seq;
+option go_package = "go-lite/seq";
+
+message Empty{}
+
+message SimpleMessage {
+    int32 I32 = 1;
+    int64 I64 = 2;
+
+
+  uint32 U32 = 3;
+  uint64 U64 = 4;
+
+
+  bool Bool = 5;
+  string Str = 6;
+}
+
+message Lists {
+  repeated int32 Len = 1;
+  repeated int32 Missing = 2;
+
+  repeated SimpleMessage Mistake = 4;
+}
+
+message Nested {
+
+}

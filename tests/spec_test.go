@@ -3,13 +3,10 @@ package tests
 import (
 	"context"
 	"database/sql"
-	"fmt"
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	"google.golang.org/protobuf/proto"
 	"sdk-go/inventory"
 	. "sdk-go/protos"
-	"strings"
+	"sdk-go/seq"
 	"testing"
 )
 
@@ -48,36 +45,11 @@ func Test_Spec(t *testing.T) {
 
 	check(s.Apply(spec.Given))
 
-	resp, err := s.GetInventory(context.Background(), &GetInventoryReq{Location: 1})
-	var r DiffReporter
-	if diff := cmp.Diff(spec.Expect, resp, cmp.Reporter(&r), cmpopts.IgnoreUnexported(GetInventoryResp{}, GetInventoryResp_Item{})); diff != "" {
-		t.Error(r.String())
+	actual, err := s.GetInventory(context.Background(), &GetInventoryReq{Location: 1})
+
+	deltas := seq.Diff(spec.Expect, actual)
+
+	for _, d := range deltas {
+		t.Error(d.String())
 	}
-}
-
-// DiffReporter is a simple custom reporter that only records differences
-// detected during comparison.
-type DiffReporter struct {
-	path  cmp.Path
-	diffs []string
-}
-
-func (r *DiffReporter) PushStep(ps cmp.PathStep) {
-	r.path = append(r.path, ps)
-}
-
-func (r *DiffReporter) Report(rs cmp.Result) {
-	if !rs.Equal() {
-		vx, vy := r.path.Last().Values()
-		msg := fmt.Sprintf("Expected %#v to be '%+v' but got '%+v'\n", r.path[1:], vx, vy)
-		r.diffs = append(r.diffs, msg)
-	}
-}
-
-func (r *DiffReporter) PopStep() {
-	r.path = r.path[:len(r.path)-1]
-}
-
-func (r *DiffReporter) String() string {
-	return strings.Join(r.diffs, "\n")
 }
