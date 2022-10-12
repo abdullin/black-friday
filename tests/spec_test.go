@@ -13,11 +13,12 @@ import (
 )
 
 type Spec struct {
-	Name           string
-	Given          []proto.Message
-	When           proto.Message
-	ExpectResponse proto.Message
-	ExpectError    codes.Code
+	Name         string
+	Given        []proto.Message
+	When         proto.Message
+	ThenResponse proto.Message
+	ThenError    codes.Code
+	ThenEvents   []proto.Message
 }
 
 func common_spec() *Spec {
@@ -29,8 +30,8 @@ func common_spec() *Spec {
 			&LocationAdded{Id: 1, Name: "Shelf"},
 			&QuantityUpdated{Location: 1, Product: 2, Quantity: 1, Total: 2, Before: 0},
 		},
-		When:           &GetInventoryReq{Location: 1},
-		ExpectResponse: &GetInventoryResp{Items: []*GetInventoryResp_Item{{Product: 2, Quantity: 2}}},
+		When:         &GetInventoryReq{Location: 1},
+		ThenResponse: &GetInventoryResp{Items: []*GetInventoryResp_Item{{Product: 2, Quantity: 2}}},
 	}
 }
 
@@ -42,7 +43,7 @@ func add_locations() *Spec {
 			&LocationAdded{Id: 2, Name: "Shelf2"},
 		},
 		When: &ListLocationsReq{},
-		ExpectResponse: &ListLocationsResp{Locs: []*ListLocationsResp_Loc{
+		ThenResponse: &ListLocationsResp{Locs: []*ListLocationsResp_Loc{
 			{Id: 1, Name: "Shelf1"},
 			{Id: 2, Name: "Shelf2"},
 		}},
@@ -68,13 +69,13 @@ func run_spec(t *testing.T, spec *Spec) {
 
 	actual, err := s.Dispatch(context.Background(), spec.When)
 
-	deltas1 := seq.Diff(spec.ExpectResponse, actual, "response")
+	deltas1 := seq.Diff(spec.ThenResponse, actual, "response")
 
 	actualStatus, _ := status.FromError(err)
 
-	if spec.ExpectError != actualStatus.Code() {
+	if spec.ThenError != actualStatus.Code() {
 		deltas1 = append(deltas1, &seq.Delta{
-			Expected: spec.ExpectError,
+			Expected: spec.ThenError,
 			Actual:   actualStatus.Code(),
 			Path:     "status",
 		})
