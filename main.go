@@ -12,6 +12,15 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+const (
+	CLEAR = "\033[0m"
+	RED   = "\033[91;4m"
+)
+
+func red(s string) string {
+	return fmt.Sprintf("%s%s%s", RED, s, CLEAR)
+}
+
 func main() {
 
 	fmt.Printf("Run %d specs\n", len(tests.Specs))
@@ -22,7 +31,7 @@ func main() {
 		if len(deltas) == 0 {
 			fmt.Printf("✔ %s️\n", s.Name)
 		} else {
-			fmt.Printf("x %s\n", s.Name)
+			fmt.Printf(red("x %s\n"), s.Name)
 
 			for _, d := range deltas {
 				fmt.Printf("  %s\n", d.String())

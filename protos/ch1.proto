@@ -49,8 +49,7 @@ message QuantityUpdated{
   uint64 location = 1;
   uint64 product = 2;
   int64 quantity = 3;
-  int64 total = 4;
-  int64 before = 5;
+  int64 after = 4;
 }
 
 message ListLocationsRequest {

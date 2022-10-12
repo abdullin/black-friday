@@ -26,12 +26,14 @@ func apply(tx *sql.Tx, e proto.Message) {
 		must(tx.Exec("INSERT INTO Products(Id, Sku) VALUES (?,?)", t.Id, t.Sku))
 		must(tx.Exec("UPDATE sqlite_sequence SET seq=? WHERE name=?", t.Id, "Products"))
 	case *protos.QuantityUpdated:
-		if t.Total == 0 {
+
+		before := t.After - t.Quantity
+		if t.After == 0 {
 			must(tx.Exec("DELETE FROM Inventory WHERE Product=? AND Location=?", t.Product, t.Location))
-		} else if t.Before == 0 {
-			must(tx.Exec("INSERT INTO Inventory(Product, Location, Quantity) VALUES(?,?,?)", t.Product, t.Location, t.Total))
+		} else if before == 0 {
+			must(tx.Exec("INSERT INTO Inventory(Product, Location, Quantity) VALUES(?,?,?)", t.Product, t.Location, t.After))
 		} else {
-			must(tx.Exec("UPDATE Inventory SET Quantity=? WHERE Product=? AND Location=?", t.Total, t.Product, t.Location))
+			must(tx.Exec("UPDATE Inventory SET Quantity=? WHERE Product=? AND Location=?", t.After, t.Product, t.Location))
 		}
 
 	default:

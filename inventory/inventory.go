@@ -39,8 +39,7 @@ func (s *Service) UpdateQty(ctx context.Context, req *protos.UpdateQtyReq) (r *p
 		Location: req.Location,
 		Product:  req.Product,
 		Quantity: req.Quantity,
-		Total:    total,
-		Before:   quantity,
+		After:    total,
 	}
 
 	err = s.Apply(tx, e)
@@ -51,7 +50,7 @@ func (s *Service) UpdateQty(ctx context.Context, req *protos.UpdateQtyReq) (r *p
 	tx.Commit()
 
 	return &protos.UpdateQtyResp{
-		Total: e.Total,
+		Total: e.After,
 	}, nil
 }
 
