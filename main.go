@@ -1,41 +1,68 @@
 package main
 
 import (
-	"flag"
+	"context"
+	"database/sql"
 	"fmt"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
-	"log"
-	"net"
+	"google.golang.org/grpc/status"
 	"sdk-go/inventory"
-	"sdk-go/protos"
-	"sdk-go/qa"
+	"sdk-go/seq"
+	"sdk-go/tests"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
 
-	svc := inventory.NewService(nil)
+	fmt.Printf("Run %d specs\n", len(tests.Specs))
 
-	qa.RunCommandDrivenSpec(svc)
+	for _, s := range tests.Specs {
+
+		deltas := run_spec(s)
+		if len(deltas) == 0 {
+			fmt.Printf("✔ %s️\n", s.Name)
+		} else {
+			fmt.Printf("x %s\n", s.Name)
+
+			for _, d := range deltas {
+				fmt.Printf("  %s\n", d.String())
+			}
+		}
+
+	}
 
 }
 
-func run() {
-
-	port := flag.Uint("port", 8080, "port")
-
-	flag.Parse()
-	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", *port))
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+func run_spec(spec *tests.Spec) []*seq.Delta {
+	check := func(err error) {
+		if err != nil {
+			panic(err)
+		}
 	}
-	var opts []grpc.ServerOption
-	grpcServer := grpc.NewServer(opts...)
-	protos.RegisterInventoryServiceServer(grpcServer, inventory.NewService(nil))
 
-	// this allows to call this server with commands like:
-	// grpcurl -plaintext localhost:8080 schema.InventoryService/ListLocation
-	// grpcurl -plaintext localhost:8080 list
-	reflection.Register(grpcServer)
-	log.Panicln(grpcServer.Serve(lis))
+	db, err := sql.Open("sqlite3", ":memory:")
+	check(err)
+	defer db.Close()
+
+	check(inventory.CreateSchema(db))
+
+	s := inventory.NewService(db)
+
+	check(s.ApplyEvents(spec.Given))
+
+	actual, err := s.Dispatch(context.Background(), spec.When)
+
+	deltas1 := seq.Diff(spec.ThenResponse, actual, "response")
+
+	actualStatus, _ := status.FromError(err)
+
+	if spec.ThenError != actualStatus.Code() {
+		deltas1 = append(deltas1, &seq.Delta{
+			Expected: spec.ThenError,
+			Actual:   actualStatus.Code(),
+			Path:     "status",
+		})
+	}
+
+	return deltas1
 }
