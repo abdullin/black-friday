@@ -13,6 +13,7 @@ import (
 )
 
 type Spec struct {
+	Name           string
 	Given          []proto.Message
 	When           proto.Message
 	ExpectResponse proto.Message
@@ -21,6 +22,7 @@ type Spec struct {
 
 func common_spec() *Spec {
 	return &Spec{
+		Name: "query inventory",
 		Given: []proto.Message{
 			&ProductAdded{Id: 1, Sku: "Cola"},
 			&ProductAdded{Id: 2, Sku: "Fanta"},
@@ -32,10 +34,22 @@ func common_spec() *Spec {
 	}
 }
 
-func Test_Spec(t *testing.T) {
+func add_locations() *Spec {
+	return &Spec{
+		Name: "query locations",
+		Given: []proto.Message{
+			&LocationAdded{Id: 1, Name: "Shelf1"},
+			&LocationAdded{Id: 2, Name: "Shelf2"},
+		},
+		When: &ListLocationsReq{},
+		ExpectResponse: &ListLocationsResp{Locs: []*ListLocationsResp_Loc{
+			{Id: 1, Name: "Shelf1"},
+			{Id: 2, Name: "Shelf2"},
+		}},
+	}
+}
 
-	spec := common_spec()
-
+func run_spec(t *testing.T, spec *Spec) {
 	check := func(err error) {
 		if err != nil {
 			panic(err)
@@ -69,4 +83,16 @@ func Test_Spec(t *testing.T) {
 	for _, d := range deltas1 {
 		t.Error(d.String())
 	}
+}
+
+func Test_Spec(t *testing.T) {
+
+	specs := []*Spec{add_locations(), common_spec()}
+
+	for _, s := range specs {
+		t.Run(s.Name, func(t *testing.T) {
+			run_spec(t, s)
+		})
+	}
+
 }
