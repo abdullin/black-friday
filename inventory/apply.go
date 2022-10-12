@@ -13,7 +13,7 @@ func must(r sql.Result, err error) {
 	}
 }
 
-func Apply(tx *sql.Tx, e proto.Message) {
+func apply(tx *sql.Tx, e proto.Message) {
 
 	switch t := e.(type) {
 	case *protos.LocationAdded:

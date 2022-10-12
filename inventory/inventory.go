@@ -43,7 +43,10 @@ func (s *Service) UpdateQty(ctx context.Context, req *protos.UpdateQtyReq) (r *p
 		Before:   quantity,
 	}
 
-	Apply(tx, e)
+	err = s.Apply(tx, e)
+	if err != nil {
+		return re(r, err)
+	}
 
 	tx.Commit()
 

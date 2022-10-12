@@ -64,7 +64,11 @@ func (s *Service) AddLocations(ctx context.Context, req *protos.AddLocationsReq)
 		}
 		results[i] = id
 
-		Apply(tx, e)
+		err = s.Apply(tx, e)
+		if err != nil {
+			return re(r, err)
+		}
+
 	}
 
 	tx.Commit()

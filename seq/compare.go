@@ -13,12 +13,53 @@ type Delta struct {
 	Path             string
 }
 
-func (d *Delta) String() string {
-	return fmt.Sprintf("Expected %v to be %v but got %v", d.Path, d.Expected, d.Actual)
+func format(val any) string {
+	if val == nil {
+		return "<nil>"
+	}
+	switch v := val.(type) {
+	case proto.Message:
+		return string(v.ProtoReflect().Descriptor().Name())
+	case error:
+		return fmt.Sprintf("Error '%v'", v.Error())
+	default:
+		return fmt.Sprintf("'%v'", v)
+	}
 }
 
-func Diff(expected, actual proto.Message) (r []*Delta) {
-	return compare(expected.ProtoReflect(), actual.ProtoReflect())
+func (d *Delta) String() string {
+	return fmt.Sprintf("Expected %v to be %v but got %v",
+		d.Path,
+		format(d.Expected),
+		format(d.Actual))
+}
+
+func Diff(expected, actual proto.Message, prefix string) (r []*Delta) {
+
+	var path []string
+	if prefix != "" {
+		path = append(path, prefix)
+	}
+
+	enil, anil := expected == nil, actual == nil
+	if enil && anil {
+		// both are nil. Good
+		return nil
+	}
+
+	if enil != anil {
+		// one of them is nil. Quit now, too
+		return []*Delta{
+			{
+				Expected: expected,
+
+				Actual: actual,
+				Path:   prefix,
+			},
+		}
+	}
+
+	return compare(expected.ProtoReflect(), actual.ProtoReflect(), path...)
 }
 
 func compare(expected, actual protoreflect.Message, path ...string) (r []*Delta) {

@@ -30,7 +30,11 @@ func (s *Service) AddProducts(ctx context.Context, req *protos.AddProductsReq) (
 			Id:  id,
 			Sku: sku,
 		}
-		Apply(tx, e)
+
+		err = s.Apply(tx, e)
+		if err != nil {
+			return re(r, err)
+		}
 		results[i] = id
 	}
 

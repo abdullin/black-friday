@@ -37,7 +37,6 @@ func TestCompare(t *testing.T) {
 		Missing: []int32{1, 2, 2, 4},
 		Mistake: []*Simple{{I32: 2}},
 	}
-
 	listDeltas := []*Delta{
 		{4, 3, "Len.length"},
 		{int32(3), int32(2), "Missing[2]"},

@@ -30,13 +30,17 @@ func (s *Service) Reset(ctx context.Context, empty *Empty) (*Empty, error) {
 }
 
 func NewService(db *sql.DB) *Service {
-
 	return &Service{
 		db: db,
 	}
 }
 
-func (s *Service) Apply(events []proto.Message) error {
+func (s *Service) Apply(tx *sql.Tx, e proto.Message) error {
+	apply(tx, e)
+	return nil
+}
+
+func (s *Service) ApplyEvents(events []proto.Message) error {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return err
@@ -44,7 +48,7 @@ func (s *Service) Apply(events []proto.Message) error {
 	defer tx.Rollback()
 
 	for _, e := range events {
-		Apply(tx, e)
+		apply(tx, e)
 	}
 	return tx.Commit()
 }

@@ -3,6 +3,8 @@ package tests
 import (
 	"context"
 	"database/sql"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"sdk-go/inventory"
 	. "sdk-go/protos"
@@ -11,23 +13,28 @@ import (
 )
 
 type Spec struct {
-	Given  []proto.Message
-	When   proto.Message
-	Expect proto.Message
+	Given          []proto.Message
+	When           proto.Message
+	ExpectResponse proto.Message
+	ExpectError    codes.Code
 }
 
-func Test_Spec(t *testing.T) {
-
-	spec := &Spec{
+func common_spec() *Spec {
+	return &Spec{
 		Given: []proto.Message{
 			&ProductAdded{Id: 1, Sku: "Cola"},
 			&ProductAdded{Id: 2, Sku: "Fanta"},
 			&LocationAdded{Id: 1, Name: "Shelf"},
 			&QuantityUpdated{Location: 1, Product: 2, Quantity: 1, Total: 2, Before: 0},
 		},
-		When:   &GetInventoryReq{Location: 1},
-		Expect: &GetInventoryResp{Items: []*GetInventoryResp_Item{{Product: 2, Quantity: -1}}},
+		When:           &GetInventoryReq{Location: 1},
+		ExpectResponse: &GetInventoryResp{Items: []*GetInventoryResp_Item{{Product: 2, Quantity: 2}}},
 	}
+}
+
+func Test_Spec(t *testing.T) {
+
+	spec := common_spec()
 
 	check := func(err error) {
 		if err != nil {
@@ -43,13 +50,23 @@ func Test_Spec(t *testing.T) {
 
 	s := inventory.NewService(db)
 
-	check(s.Apply(spec.Given))
+	check(s.ApplyEvents(spec.Given))
 
-	actual, err := s.GetInventory(context.Background(), &GetInventoryReq{Location: 1})
+	actual, err := s.Dispatch(context.Background(), spec.When)
 
-	deltas := seq.Diff(spec.Expect, actual)
+	deltas1 := seq.Diff(spec.ExpectResponse, actual, "response")
 
-	for _, d := range deltas {
+	actualStatus, _ := status.FromError(err)
+
+	if spec.ExpectError != actualStatus.Code() {
+		deltas1 = append(deltas1, &seq.Delta{
+			Expected: spec.ExpectError,
+			Actual:   actualStatus.Code(),
+			Path:     "status",
+		})
+	}
+
+	for _, d := range deltas1 {
 		t.Error(d.String())
 	}
 }
