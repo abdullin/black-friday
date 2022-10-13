@@ -38,7 +38,7 @@ func init() {
 			&LocationAdded{Id: 1, Name: "Shelf"},
 			&ProductAdded{Id: 1, Sku: "NVidia"},
 			&QuantityUpdated{Product: 1, Location: 1, Quantity: 3, After: 3},
-			&QuantityUpdated{Product: 1, Location: 1, Quantity: -3, After: 1},
+			&QuantityUpdated{Product: 1, Location: 1, Quantity: -3, After: 0},
 		},
 		When:         &GetInventoryReq{Location: 1},
 		ThenResponse: &GetInventoryResp{Items: []*GetInventoryResp_Item{}},
