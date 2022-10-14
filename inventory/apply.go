@@ -31,9 +31,9 @@ UPDATE sqlite_sequence SET seq=? WHERE name=?`,
 			t.Id, t.Name, t.Id, "Warehouses"))
 	case *protos.LocationAdded:
 		return lift(tx.Exec(`
-INSERT INTO Locations(Id, Name, Warehouses) VALUES (?,?,?);
+INSERT INTO Locations(Id, Name, Warehouse) VALUES (?,?,?);
 UPDATE sqlite_sequence SET seq=? WHERE name=?
-`, t.Id, t.Name, t.Id, "Locations"))
+`, t.Id, t.Name, t.Warehouse, t.Id, "Locations"))
 	case *protos.ProductAdded:
 		return lift(tx.Exec(`
 INSERT INTO Products(Id, Sku) VALUES (?,?);
