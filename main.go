@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"os"
 	"sdk-go/inventory"
@@ -39,9 +38,11 @@ func main() {
 
 	svc := inventory.NewService(db)
 
+	ctx := context.Background()
+
 	for _, s := range tests.Specs {
 
-		deltas, err := run_spec(svc, s)
+		deltas, err := run_spec(ctx, svc, s)
 		if len(deltas) == 0 && err == nil {
 			fmt.Printf("✔ %s️\n", s.Name)
 		} else {
@@ -66,9 +67,8 @@ func guard(err error) {
 	}
 }
 
-func run_spec(svc *inventory.Service, spec *tests.Spec) ([]*seq.Delta, error) {
+func run_spec(ctx context.Context, svc *inventory.Service, spec *tests.Spec) ([]*seq.Delta, error) {
 
-	ctx := context.Background()
 	tx := svc.GetTx(ctx)
 
 	defer tx.Rollback()
@@ -77,27 +77,21 @@ func run_spec(svc *inventory.Service, spec *tests.Spec) ([]*seq.Delta, error) {
 		tx.Apply(e)
 	}
 
-	actual, err := svc.Dispatch(context.WithValue(ctx, "tx", tx), spec.When)
-
-	deltas1 := seq.Diff(spec.ThenResponse, actual, "response")
+	nested := context.WithValue(ctx, "tx", tx)
+	actual, err := svc.Dispatch(nested, spec.When)
 
 	actualStatus, _ := status.FromError(err)
+	issues := seq.Diff(spec.ThenResponse, actual, "response")
 
 	if spec.ThenError != actualStatus.Code() {
+		actualErr := fmt.Sprintf("%s: %s", actualStatus.Code(), err.Error())
 
-		var actualErr any
-		if actualStatus.Code() == codes.Unknown {
-			actualErr = fmt.Sprintf("Uknown:%s", err.Error())
-		} else {
-			actualErr = actualStatus.Code()
-		}
-
-		deltas1 = append(deltas1, &seq.Delta{
+		issues = append(issues, &seq.Delta{
 			Expected: spec.ThenError,
 			Actual:   actualErr,
 			Path:     "status",
 		})
 	}
 
-	return deltas1, nil
+	return issues, nil
 }
