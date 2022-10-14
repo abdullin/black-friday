@@ -2,6 +2,7 @@ package seq
 
 import (
 	"fmt"
+	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"reflect"
@@ -19,7 +20,7 @@ func format(val any) string {
 	}
 	switch v := val.(type) {
 	case proto.Message:
-		return string(v.ProtoReflect().Descriptor().Name())
+		return string(v.ProtoReflect().Descriptor().Name()) + ":" + prototext.Format(v)
 	case error:
 		return fmt.Sprintf("Error '%v'", v.Error())
 	default:
