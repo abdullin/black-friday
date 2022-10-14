@@ -12,6 +12,7 @@ func init() {
 		Given: []proto.Message{
 			&ProductAdded{Id: 1, Sku: "Cola"},
 			&ProductAdded{Id: 2, Sku: "Fanta"},
+			&WarehouseCreated{Id: 1, Name: "WH1"},
 			&LocationAdded{Id: 1, Name: "Shelf"},
 			&QuantityUpdated{Location: 1, Product: 2, Quantity: 2, After: 2},
 		},
@@ -22,8 +23,10 @@ func init() {
 	register(&Spec{
 		Name: "query locations",
 		Given: []proto.Message{
-			&LocationAdded{Id: 1, Name: "Shelf1"},
-			&LocationAdded{Id: 2, Name: "Shelf2"},
+
+			&WarehouseCreated{Id: 1, Name: "WH1"},
+			&LocationAdded{Id: 1, Name: "Shelf1", Warehouse: 1},
+			&LocationAdded{Id: 2, Name: "Shelf2", Warehouse: 1},
 		},
 		When: &ListLocationsReq{},
 		ThenResponse: &ListLocationsResp{Locs: []*ListLocationsResp_Loc{
@@ -35,7 +38,9 @@ func init() {
 	register(&Spec{
 		Name: "query locations after removal",
 		Given: []proto.Message{
-			&LocationAdded{Id: 1, Name: "Shelf"},
+
+			&WarehouseCreated{Id: 1, Name: "WH1"},
+			&LocationAdded{Id: 1, Name: "Shelf", Warehouse: 1},
 			&ProductAdded{Id: 1, Sku: "NVidia"},
 			&QuantityUpdated{Product: 1, Location: 1, Quantity: 3, After: 3},
 			&QuantityUpdated{Product: 1, Location: 1, Quantity: -3, After: 0},

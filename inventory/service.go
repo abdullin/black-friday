@@ -36,8 +36,7 @@ func NewService(db *sql.DB) *Service {
 }
 
 func (s *Service) Apply(tx *sql.Tx, e proto.Message) error {
-	apply(tx, e)
-	return nil
+	return apply(tx, e)
 }
 
 func (s *Service) ApplyEvents(events []proto.Message) error {
@@ -48,7 +47,10 @@ func (s *Service) ApplyEvents(events []proto.Message) error {
 	defer tx.Rollback()
 
 	for _, e := range events {
-		apply(tx, e)
+		err = apply(tx, e)
+		if err != nil {
+			return err
+		}
 	}
 	return tx.Commit()
 }

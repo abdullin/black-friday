@@ -4,19 +4,35 @@ package protos;
 option go_package = "go-lite/protos";
 
 
-
-
-message AddLocationsReq {
+message CreateWarehouseReq {
   repeated string names = 1;
 }
 
+message WarehouseCreated {
+  string name = 1;
+  uint32 id = 2;
+}
+
+message CreateWarehouseResp {
+  repeated uint32 ids = 1;
+  repeated string names = 2;
+}
+
+
+message AddLocationsReq {
+  uint32 warehouse = 1;
+  repeated string names = 2;
+}
+
 message AddLocationsResp {
-  repeated uint64 ids = 1;
+  uint32 warehouse = 1;
+  repeated uint64 ids = 2;
 }
 
 message LocationAdded {
-  uint64 id = 1;
-  string name = 2;
+  uint32 warehouse = 1;
+  uint64 id = 2;
+  string name = 3;
 }
 
 

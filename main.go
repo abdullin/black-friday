@@ -14,7 +14,7 @@ import (
 
 const (
 	CLEAR = "\033[0m"
-	RED   = "\033[91;4m"
+	RED   = "\033[91m"
 )
 
 func red(s string) string {
@@ -27,11 +27,15 @@ func main() {
 
 	for _, s := range tests.Specs {
 
-		deltas := run_spec(s)
-		if len(deltas) == 0 {
+		deltas, err := run_spec(s)
+		if len(deltas) == 0 && err == nil {
 			fmt.Printf("✔ %s️\n", s.Name)
 		} else {
 			fmt.Printf(red("x %s\n"), s.Name)
+
+			if err != nil {
+				fmt.Printf(red("  %s\n"), err.Error())
+			}
 
 			for _, d := range deltas {
 				fmt.Printf("  %s\n", d.String())
@@ -42,7 +46,12 @@ func main() {
 
 }
 
-func run_spec(spec *tests.Spec) []*seq.Delta {
+type SpecResult struct {
+	Deltas []*seq.Delta
+	Panic  error
+}
+
+func run_spec(spec *tests.Spec) ([]*seq.Delta, error) {
 	check := func(err error) {
 		if err != nil {
 			panic(err)
@@ -57,9 +66,16 @@ func run_spec(spec *tests.Spec) []*seq.Delta {
 
 	s := inventory.NewService(db)
 
-	check(s.ApplyEvents(spec.Given))
+	err = s.ApplyEvents(spec.Given)
+
+	if err != nil {
+		return nil, err
+	}
 
 	actual, err := s.Dispatch(context.Background(), spec.When)
+	if err != nil {
+		return nil, err
+	}
 
 	deltas1 := seq.Diff(spec.ThenResponse, actual, "response")
 
@@ -73,5 +89,5 @@ func run_spec(spec *tests.Spec) []*seq.Delta {
 		})
 	}
 
-	return deltas1
+	return deltas1, nil
 }

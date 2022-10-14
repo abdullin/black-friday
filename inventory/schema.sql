@@ -1,9 +1,16 @@
 
 create table dummy (id integer primary key autoincrement);
 
-CREATE TABLE Locations (
+CREATE TABLE Warehouses(
     Id INTEGER PRIMARY KEY,
     Name TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE Locations (
+    Id INTEGER PRIMARY KEY,
+    Warehouse INTEGER NOT NULL,
+    Name TEXT NOT NULL UNIQUE,
+    FOREIGN KEY(Warehouse) REFERENCES Warehouses(Id)
 );
 
 
@@ -22,7 +29,8 @@ CREATE TABLE Inventory (
 
 INSERT INTO sqlite_sequence (name, seq) VALUES
     ('Locations', 0),
-    ('Products', 0);
+    ('Products', 0),
+    ('Warehouses', 0);
 
 
 

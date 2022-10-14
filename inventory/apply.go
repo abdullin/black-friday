@@ -2,6 +2,7 @@ package inventory
 
 import (
 	"database/sql"
+	"fmt"
 	"google.golang.org/protobuf/proto"
 	"log"
 	"sdk-go/protos"
@@ -13,31 +14,43 @@ func must(r sql.Result, err error) {
 	}
 }
 
-func apply(tx *sql.Tx, e proto.Message) {
+func apply(tx *sql.Tx, e proto.Message) error {
+	lift := func(_ sql.Result, err error) error {
+		if err != nil {
+			name := e.ProtoReflect().Descriptor().Name()
+			return fmt.Errorf("problem applying '%s': %w", name, err)
+		}
+		return nil
+	}
 
 	switch t := e.(type) {
+	case *protos.WarehouseCreated:
+		return lift(tx.Exec(`
+INSERT INTO Warehouses(Id, Name) VALUES(?,?);
+UPDATE sqlite_sequence SET seq=? WHERE name=?`,
+			t.Id, t.Name, t.Id, "Warehouses"))
 	case *protos.LocationAdded:
-
-		must(tx.Exec("INSERT INTO Locations(Id, Name) VALUES (?,?)", t.Id, t.Name))
-		must(tx.Exec("UPDATE sqlite_sequence SET seq=? WHERE name=?", t.Id, "Locations"))
-
+		return lift(tx.Exec(`
+INSERT INTO Locations(Id, Name, Warehouses) VALUES (?,?,?);
+UPDATE sqlite_sequence SET seq=? WHERE name=?
+`, t.Id, t.Name, t.Id, "Locations"))
 	case *protos.ProductAdded:
-
-		must(tx.Exec("INSERT INTO Products(Id, Sku) VALUES (?,?)", t.Id, t.Sku))
-		must(tx.Exec("UPDATE sqlite_sequence SET seq=? WHERE name=?", t.Id, "Products"))
+		return lift(tx.Exec(`
+INSERT INTO Products(Id, Sku) VALUES (?,?);
+UPDATE sqlite_sequence SET seq=? WHERE name=?
+`, t.Id, t.Sku, t.Id, "Products"))
 	case *protos.QuantityUpdated:
 
 		before := t.After - t.Quantity
 		if t.After == 0 {
-			must(tx.Exec("DELETE FROM Inventory WHERE Product=? AND Location=?", t.Product, t.Location))
+			return lift(tx.Exec("DELETE FROM Inventory WHERE Product=? AND Location=?", t.Product, t.Location))
 		} else if before == 0 {
-			must(tx.Exec("INSERT INTO Inventory(Product, Location, Quantity) VALUES(?,?,?)", t.Product, t.Location, t.After))
+			return lift(tx.Exec("INSERT INTO Inventory(Product, Location, Quantity) VALUES(?,?,?)", t.Product, t.Location, t.After))
 		} else {
-			must(tx.Exec("UPDATE Inventory SET Quantity=? WHERE Product=? AND Location=?", t.After, t.Product, t.Location))
+			return lift(tx.Exec("UPDATE Inventory SET Quantity=? WHERE Product=? AND Location=?", t.After, t.Product, t.Location))
 		}
 
 	default:
-		panic("UNKNOWN EVENT")
-
+		return fmt.Errorf("Unhandled event: %s", e.ProtoReflect().Descriptor().Name())
 	}
 }
