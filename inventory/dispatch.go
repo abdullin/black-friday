@@ -15,8 +15,8 @@ func (s Service) Dispatch(ctx context.Context, m proto.Message) (proto.Message, 
 		return s.AddLocations(ctx, t)
 	case *protos.AddProductsReq:
 		return s.AddProducts(ctx, t)
-	case *protos.UpdateQtyReq:
-		return s.UpdateQty(ctx, t)
+	case *protos.UpdateInventoryReq:
+		return s.UpdateInventory(ctx, t)
 	case *protos.ListLocationsReq:
 		return s.ListLocations(ctx, t)
 	case *protos.GetInventoryReq:

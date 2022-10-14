@@ -25,7 +25,7 @@ type InventoryServiceClient interface {
 	AddLocations(ctx context.Context, in *AddLocationsReq, opts ...grpc.CallOption) (*AddLocationsResp, error)
 	AddProducts(ctx context.Context, in *AddProductsReq, opts ...grpc.CallOption) (*AddProductsResp, error)
 	ListLocations(ctx context.Context, in *ListLocationsReq, opts ...grpc.CallOption) (*ListLocationsResp, error)
-	UpdateQty(ctx context.Context, in *UpdateQtyReq, opts ...grpc.CallOption) (*UpdateQtyResp, error)
+	UpdateInventory(ctx context.Context, in *UpdateInventoryReq, opts ...grpc.CallOption) (*UpdateInventoryResp, error)
 	GetInventory(ctx context.Context, in *GetInventoryReq, opts ...grpc.CallOption) (*GetInventoryResp, error)
 	Reset(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
 }
@@ -65,9 +65,9 @@ func (c *inventoryServiceClient) ListLocations(ctx context.Context, in *ListLoca
 	return out, nil
 }
 
-func (c *inventoryServiceClient) UpdateQty(ctx context.Context, in *UpdateQtyReq, opts ...grpc.CallOption) (*UpdateQtyResp, error) {
-	out := new(UpdateQtyResp)
-	err := c.cc.Invoke(ctx, "/protos.InventoryService/UpdateQty", in, out, opts...)
+func (c *inventoryServiceClient) UpdateInventory(ctx context.Context, in *UpdateInventoryReq, opts ...grpc.CallOption) (*UpdateInventoryResp, error) {
+	out := new(UpdateInventoryResp)
+	err := c.cc.Invoke(ctx, "/protos.InventoryService/UpdateInventory", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +99,7 @@ type InventoryServiceServer interface {
 	AddLocations(context.Context, *AddLocationsReq) (*AddLocationsResp, error)
 	AddProducts(context.Context, *AddProductsReq) (*AddProductsResp, error)
 	ListLocations(context.Context, *ListLocationsReq) (*ListLocationsResp, error)
-	UpdateQty(context.Context, *UpdateQtyReq) (*UpdateQtyResp, error)
+	UpdateInventory(context.Context, *UpdateInventoryReq) (*UpdateInventoryResp, error)
 	GetInventory(context.Context, *GetInventoryReq) (*GetInventoryResp, error)
 	Reset(context.Context, *Empty) (*Empty, error)
 	mustEmbedUnimplementedInventoryServiceServer()
@@ -118,8 +118,8 @@ func (UnimplementedInventoryServiceServer) AddProducts(context.Context, *AddProd
 func (UnimplementedInventoryServiceServer) ListLocations(context.Context, *ListLocationsReq) (*ListLocationsResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListLocations not implemented")
 }
-func (UnimplementedInventoryServiceServer) UpdateQty(context.Context, *UpdateQtyReq) (*UpdateQtyResp, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateQty not implemented")
+func (UnimplementedInventoryServiceServer) UpdateInventory(context.Context, *UpdateInventoryReq) (*UpdateInventoryResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateInventory not implemented")
 }
 func (UnimplementedInventoryServiceServer) GetInventory(context.Context, *GetInventoryReq) (*GetInventoryResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetInventory not implemented")
@@ -194,20 +194,20 @@ func _InventoryService_ListLocations_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
-func _InventoryService_UpdateQty_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateQtyReq)
+func _InventoryService_UpdateInventory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateInventoryReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(InventoryServiceServer).UpdateQty(ctx, in)
+		return srv.(InventoryServiceServer).UpdateInventory(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.InventoryService/UpdateQty",
+		FullMethod: "/protos.InventoryService/UpdateInventory",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(InventoryServiceServer).UpdateQty(ctx, req.(*UpdateQtyReq))
+		return srv.(InventoryServiceServer).UpdateInventory(ctx, req.(*UpdateInventoryReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -268,8 +268,8 @@ var InventoryService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _InventoryService_ListLocations_Handler,
 		},
 		{
-			MethodName: "UpdateQty",
-			Handler:    _InventoryService_UpdateQty_Handler,
+			MethodName: "UpdateInventory",
+			Handler:    _InventoryService_UpdateInventory_Handler,
 		},
 		{
 			MethodName: "GetInventory",

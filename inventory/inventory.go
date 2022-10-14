@@ -5,10 +5,10 @@ import (
 	"database/sql"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"sdk-go/protos"
+	. "sdk-go/protos"
 )
 
-func (s *Service) UpdateQty(ctx context.Context, req *protos.UpdateQtyReq) (r *protos.UpdateQtyResp, err error) {
+func (s *Service) UpdateInventory(ctx context.Context, req *UpdateInventoryReq) (r *UpdateInventoryResp, err error) {
 
 	tx, err := s.db.Begin()
 	if err != nil {
@@ -18,28 +18,28 @@ func (s *Service) UpdateQty(ctx context.Context, req *protos.UpdateQtyReq) (r *p
 	defer tx.Rollback()
 
 	row := tx.QueryRowContext(ctx,
-		"SELECT Quantity FROM Inventory WHERE Location=? AND Product=?",
+		"SELECT OnHand FROM Inventory WHERE Location=? AND Product=?",
 		req.Location,
 		req.Product)
 
-	var quantity int64
+	var onHand int64
 
-	err = row.Scan(&quantity)
+	err = row.Scan(&onHand)
 	if err != nil && err != sql.ErrNoRows {
 		return re(r, err)
 	}
 
-	total := quantity + req.Quantity
+	onHand += req.OnHandChange
 
-	if total < 0 {
+	if onHand < 0 {
 		return nil, status.Errorf(codes.FailedPrecondition, "Can't be negative!")
 	}
 
-	e := &protos.QuantityUpdated{
-		Location: req.Location,
-		Product:  req.Product,
-		Quantity: req.Quantity,
-		After:    total,
+	e := &InventoryUpdated{
+		Location:     req.Location,
+		Product:      req.Product,
+		OnHandChange: req.OnHandChange,
+		OnHand:       onHand,
 	}
 
 	err = s.Apply(tx, e)
@@ -49,12 +49,12 @@ func (s *Service) UpdateQty(ctx context.Context, req *protos.UpdateQtyReq) (r *p
 
 	tx.Commit()
 
-	return &protos.UpdateQtyResp{
-		Total: e.After,
+	return &UpdateInventoryResp{
+		OnHand: e.OnHand,
 	}, nil
 }
 
-func (s *Service) GetInventory(c context.Context, req *protos.GetInventoryReq) (r *protos.GetInventoryResp, err error) {
+func (s *Service) GetInventory(c context.Context, req *GetInventoryReq) (r *GetInventoryResp, err error) {
 
 	tx, err := s.db.Begin()
 	if err != nil {
@@ -63,28 +63,28 @@ func (s *Service) GetInventory(c context.Context, req *protos.GetInventoryReq) (
 
 	defer tx.Rollback()
 
-	rows, err := tx.QueryContext(c, "SELECT Product, Quantity FROM Inventory WHERE Location=?", req.Location)
+	rows, err := tx.QueryContext(c, "SELECT Product, OnHand FROM Inventory WHERE Location=?", req.Location)
 	if err != nil {
 		return re(r, err)
 	}
 
-	var items []*protos.GetInventoryResp_Item
+	var items []*GetInventoryResp_Item
 	for rows.Next() {
 		var product uint64
-		var quantity int64
+		var onHand int64
 
-		err := rows.Scan(&product, &quantity)
+		err := rows.Scan(&product, &onHand)
 		if err != nil {
 			return re(r, err)
 		}
 
-		items = append(items, &protos.GetInventoryResp_Item{
-			Product:  product,
-			Quantity: quantity,
+		items = append(items, &GetInventoryResp_Item{
+			Product: product,
+			OnHand:  onHand,
 		})
 	}
 
-	rep := &protos.GetInventoryResp{Items: items}
+	rep := &GetInventoryResp{Items: items}
 
 	tx.Commit()
 

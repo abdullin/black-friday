@@ -19,6 +19,8 @@ message CreateWarehouseResp {
 }
 
 
+
+
 message AddLocationsReq {
   uint32 warehouse = 1;
   repeated string names = 2;
@@ -50,22 +52,22 @@ message ProductAdded {
   string sku = 2;
 }
 
-message UpdateQtyReq {
+message UpdateInventoryReq {
   uint64 location = 1;
   uint64 product = 2;
-  int64 quantity = 3;
+  int64 OnHandChange = 3;
 }
 
 
-message UpdateQtyResp {
-  int64 total = 1;
+message UpdateInventoryResp {
+  int64 OnHand = 1;
 }
 
-message QuantityUpdated{
+message InventoryUpdated{
   uint64 location = 1;
   uint64 product = 2;
-  int64 quantity = 3;
-  int64 after = 4;
+  int64 OnHandChange = 3;
+  int64 OnHand = 4;
 }
 
 message ListLocationsRequest {
@@ -83,7 +85,7 @@ message GetInventoryReq {
 message GetInventoryResp {
   message Item {
     uint64 product =1;
-    int64 quantity = 2;
+    int64 OnHand = 2;
   }
 
   repeated Item items = 1;
@@ -119,7 +121,7 @@ service InventoryService {
 
   rpc ListLocations(ListLocationsReq) returns (ListLocationsResp);
 
-  rpc UpdateQty(UpdateQtyReq) returns (UpdateQtyResp);
+  rpc UpdateInventory(UpdateInventoryReq) returns (UpdateInventoryResp);
   rpc GetInventory(GetInventoryReq) returns (GetInventoryResp);
 
   rpc Reset(Empty) returns (Empty);

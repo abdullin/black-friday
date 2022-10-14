@@ -39,15 +39,15 @@ UPDATE sqlite_sequence SET seq=? WHERE name=?
 INSERT INTO Products(Id, Sku) VALUES (?,?);
 UPDATE sqlite_sequence SET seq=? WHERE name=?
 `, t.Id, t.Sku, t.Id, "Products"))
-	case *protos.QuantityUpdated:
+	case *protos.InventoryUpdated:
 
-		before := t.After - t.Quantity
-		if t.After == 0 {
+		before := t.OnHand - t.OnHandChange
+		if t.OnHand == 0 {
 			return lift(tx.Exec("DELETE FROM Inventory WHERE Product=? AND Location=?", t.Product, t.Location))
 		} else if before == 0 {
-			return lift(tx.Exec("INSERT INTO Inventory(Product, Location, Quantity) VALUES(?,?,?)", t.Product, t.Location, t.After))
+			return lift(tx.Exec("INSERT INTO Inventory(Product, Location, OnHand) VALUES(?,?,?)", t.Product, t.Location, t.OnHand))
 		} else {
-			return lift(tx.Exec("UPDATE Inventory SET Quantity=? WHERE Product=? AND Location=?", t.After, t.Product, t.Location))
+			return lift(tx.Exec("UPDATE Inventory SET OnHand=? WHERE Product=? AND Location=?", t.OnHand, t.Product, t.Location))
 		}
 
 	default:
