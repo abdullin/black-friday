@@ -34,7 +34,7 @@ func main() {
 			fmt.Printf(red("x %s\n"), s.Name)
 
 			if err != nil {
-				fmt.Printf(red("  %s\n"), err.Error())
+				fmt.Printf(red("  FATAL: %s\n"), err.Error())
 			}
 
 			for _, d := range deltas {
@@ -73,9 +73,6 @@ func run_spec(spec *tests.Spec) ([]*seq.Delta, error) {
 	}
 
 	actual, err := s.Dispatch(context.Background(), spec.When)
-	if err != nil {
-		return nil, err
-	}
 
 	deltas1 := seq.Diff(spec.ThenResponse, actual, "response")
 

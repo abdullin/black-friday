@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/proto"
 	. "sdk-go/protos"
 )
@@ -38,7 +39,6 @@ func init() {
 	register(&Spec{
 		Name: "query locations after removal",
 		Given: []proto.Message{
-
 			&WarehouseCreated{Id: 1, Name: "WH1"},
 			&LocationAdded{Id: 1, Name: "Shelf", Warehouse: 1},
 			&ProductAdded{Id: 1, Sku: "NVidia"},
@@ -47,6 +47,17 @@ func init() {
 		},
 		When:         &GetInventoryReq{Location: 1},
 		ThenResponse: &GetInventoryResp{Items: []*GetInventoryResp_Item{}},
+	})
+
+	register(&Spec{
+		Name: "don't allow negative on-hand",
+		Given: []proto.Message{
+			&WarehouseCreated{Id: 1, Name: "WH1"},
+			&LocationAdded{Id: 1, Name: "Shelf", Warehouse: 1},
+			&ProductAdded{Id: 1, Sku: "NVidia"},
+		},
+		When:      &UpdateInventoryReq{Product: 1, Location: 1, OnHandChange: -1},
+		ThenError: codes.FailedPrecondition,
 	})
 
 }
