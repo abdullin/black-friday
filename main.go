@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"os"
 	"sdk-go/inventory"
@@ -27,6 +28,7 @@ func main() {
 	fmt.Printf("Run %d specs\n", len(tests.Specs))
 
 	file := "/tmp/tests.sqlite"
+	file = ":memory:"
 	_ = os.Remove(file)
 
 	db, err := sql.Open("sqlite3", file)
@@ -82,9 +84,17 @@ func run_spec(svc *inventory.Service, spec *tests.Spec) ([]*seq.Delta, error) {
 	actualStatus, _ := status.FromError(err)
 
 	if spec.ThenError != actualStatus.Code() {
+
+		var actualErr any
+		if actualStatus.Code() == codes.Unknown {
+			actualErr = fmt.Sprintf("Uknown:%s", err.Error())
+		} else {
+			actualErr = actualStatus.Code()
+		}
+
 		deltas1 = append(deltas1, &seq.Delta{
 			Expected: spec.ThenError,
-			Actual:   actualStatus.Code(),
+			Actual:   actualErr,
 			Path:     "status",
 		})
 	}
