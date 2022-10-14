@@ -8,8 +8,9 @@ import (
 )
 
 type Tx struct {
-	tx  *sql.Tx
-	ctx context.Context
+	tx    *sql.Tx
+	ctx   context.Context
+	lease bool
 }
 
 func (c *Tx) Exec(query string, args ...any) error {
@@ -34,6 +35,7 @@ func (c *Tx) QueryInt64(query string, args ...any) (int64, error) {
 	row := c.tx.QueryRowContext(c.ctx, query, args...)
 	var i int64
 	err := row.Scan(&i)
+
 	return i, err
 }
 
@@ -47,6 +49,9 @@ func (s *Tx) Apply(e proto.Message) {
 }
 
 func (c *Tx) Rollback() {
+	if c.lease {
+		return
+	}
 	err := c.tx.Rollback()
 	if err != nil {
 		panic(err)
@@ -54,6 +59,9 @@ func (c *Tx) Rollback() {
 }
 
 func (c *Tx) Commit() {
+	if c.lease {
+		return
+	}
 	// we don't expect to fail
 	err := c.tx.Commit()
 	if err != nil {

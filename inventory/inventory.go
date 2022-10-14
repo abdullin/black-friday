@@ -64,6 +64,10 @@ func (s *Service) GetInventory(ctx context.Context, req *GetInventoryReq) (r *Ge
 		})
 	}
 
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+
 	rep := &GetInventoryResp{Items: items}
 
 	tx.Commit()

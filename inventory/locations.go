@@ -15,10 +15,10 @@ func (s *Service) ListLocations(ctx context.Context, req *protos.ListLocationsRe
 	tx := s.GetTx(ctx)
 
 	rows, err := tx.tx.QueryContext(ctx, "SELECT Id, Name FROM Locations")
-
 	if err != nil {
 		return re(r, err)
 	}
+	defer rows.Close()
 
 	var results []*protos.ListLocationsResp_Loc
 

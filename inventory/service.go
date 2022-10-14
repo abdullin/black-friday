@@ -11,11 +11,6 @@ type Loc struct {
 	Name string
 }
 
-type product struct {
-	name     string
-	quantity map[uint64]int64
-}
-
 type Service struct {
 	db *sql.DB
 
@@ -23,6 +18,17 @@ type Service struct {
 }
 
 func (s *Service) GetTx(ctx context.Context) *Tx {
+
+	inner, ok := ctx.Value("tx").(*Tx)
+
+	if ok {
+		return &Tx{
+			tx:    inner.tx,
+			ctx:   ctx,
+			lease: true,
+		}
+	}
+
 	tx, err := s.db.BeginTx(ctx, nil)
 
 	if err != nil {

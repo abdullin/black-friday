@@ -1,3 +1,4 @@
+PRAGMA journal_mode=WAL;
 
 create table dummy (id integer primary key autoincrement);
 
