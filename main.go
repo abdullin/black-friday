@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"google.golang.org/grpc/status"
+	"os"
 	"sdk-go/inventory"
 	"sdk-go/seq"
 	"sdk-go/tests"
@@ -25,9 +26,20 @@ func main() {
 
 	fmt.Printf("Run %d specs\n", len(tests.Specs))
 
+	file := "/tmp/tests.sqlite"
+	_ = os.Remove(file)
+
+	db, err := sql.Open("sqlite3", file)
+	guard(err)
+	defer db.Close()
+
+	guard(inventory.CreateSchema(db))
+
+	svc := inventory.NewService(db)
+
 	for _, s := range tests.Specs {
 
-		deltas, err := run_spec(s)
+		deltas, err := run_spec(svc, s)
 		if len(deltas) == 0 && err == nil {
 			fmt.Printf("✔ %s️\n", s.Name)
 		} else {
@@ -46,33 +58,24 @@ func main() {
 
 }
 
-type SpecResult struct {
-	Deltas []*seq.Delta
-	Panic  error
+func guard(err error) {
+	if err != nil {
+		panic(err)
+	}
 }
 
-func run_spec(spec *tests.Spec) ([]*seq.Delta, error) {
-	check := func(err error) {
-		if err != nil {
-			panic(err)
-		}
+func run_spec(svc *inventory.Service, spec *tests.Spec) ([]*seq.Delta, error) {
+
+	ctx := context.Background()
+	tx := svc.GetTx(ctx)
+
+	defer tx.Rollback()
+
+	for _, e := range spec.Given {
+		tx.Apply(e)
 	}
 
-	db, err := sql.Open("sqlite3", ":memory:")
-	check(err)
-	defer db.Close()
-
-	check(inventory.CreateSchema(db))
-
-	s := inventory.NewService(db)
-
-	err = s.ApplyEvents(spec.Given)
-
-	if err != nil {
-		return nil, err
-	}
-
-	actual, err := s.Dispatch(context.Background(), spec.When)
+	actual, err := svc.Dispatch(context.WithValue(ctx, "tx", tx), spec.When)
 
 	deltas1 := seq.Diff(spec.ThenResponse, actual, "response")
 

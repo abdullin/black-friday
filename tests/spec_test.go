@@ -5,29 +5,26 @@ import (
 	"database/sql"
 	"google.golang.org/grpc/status"
 	"sdk-go/inventory"
-	. "sdk-go/protos"
 	"sdk-go/seq"
 	"testing"
 )
 
-func run_spec(t *testing.T, spec *Spec) {
-	check := func(err error) {
-		if err != nil {
-			panic(err)
-		}
+func guard(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
+func run_spec(t *testing.T, spec *Spec, s *inventory.Service) {
+
+	tx := s.GetTx(context.Background())
+	for _, e := range spec.Given {
+		tx.Apply(e)
 	}
 
-	db, err := sql.Open("sqlite3", ":memory:")
-	check(err)
-	defer db.Close()
+	nested := context.WithValue(context.Background(), "tx", tx)
 
-	check(inventory.CreateSchema(db))
-
-	s := inventory.NewService(db)
-
-	check(s.ApplyEvents(spec.Given))
-
-	actual, err := s.Dispatch(context.Background(), spec.When)
+	actual, err := s.Dispatch(nested, spec.When)
 
 	deltas1 := seq.Diff(spec.ThenResponse, actual, "response")
 
@@ -48,9 +45,16 @@ func run_spec(t *testing.T, spec *Spec) {
 
 func Test_Spec(t *testing.T) {
 
+	db := must(sql.Open("sqlite3", ":memory:"))
+	defer db.Close()
+
+	guard(inventory.CreateSchema(db))
+
+	svc := inventory.NewService(db)
+
 	for _, s := range Specs {
 		t.Run(s.Name, func(t *testing.T) {
-			run_spec(t, s)
+			run_spec(t, s, svc)
 		})
 	}
 

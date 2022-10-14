@@ -23,7 +23,7 @@ CREATE TABLE Inventory (
     Location INTEGER NOT NULL,
     Product INTEGER NOT NULL,
     OnHand INTEGER NOT NULL,
-    FOREIGN KEY(Location) REFERENCES Location(Id),
+    FOREIGN KEY(Location) REFERENCES Locations(Id),
     FOREIGN KEY(Product) REFERENCES Products(Id)
 );
 

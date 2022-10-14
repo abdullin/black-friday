@@ -12,12 +12,9 @@ func re[M proto.Message](m M, err error) (M, error) {
 
 func (s *Service) ListLocations(ctx context.Context, req *protos.ListLocationsReq) (r *protos.ListLocationsResp, e error) {
 
-	tx, err := s.db.Begin()
-	if err != nil {
-		return re(r, err)
-	}
+	tx := s.GetTx(ctx)
 
-	rows, err := tx.QueryContext(ctx, "SELECT Id, Name FROM Locations")
+	rows, err := tx.tx.QueryContext(ctx, "SELECT Id, Name FROM Locations")
 
 	if err != nil {
 		return re(r, err)
@@ -42,14 +39,10 @@ func (s *Service) ListLocations(ctx context.Context, req *protos.ListLocationsRe
 
 func (s *Service) AddLocations(ctx context.Context, req *protos.AddLocationsReq) (r *protos.AddLocationsResp, e error) {
 
-	tx, err := s.db.Begin()
-	if err != nil {
-		return re(r, err)
-	}
+	tx := s.GetTx(ctx)
 
-	row := tx.QueryRowContext(ctx, "select seq from sqlite_sequence where name='Locations'")
-	var id uint64
-	err = row.Scan(&id)
+	id, err := tx.QueryUint64("select seq from sqlite_sequence where name='Locations'")
+
 	if err != nil {
 		return re(r, err)
 	}
@@ -64,14 +57,9 @@ func (s *Service) AddLocations(ctx context.Context, req *protos.AddLocationsReq)
 		}
 		results[i] = id
 
-		err = s.Apply(tx, e)
-		if err != nil {
-			return re(r, err)
-		}
-
+		tx.Apply(e)
 	}
 
 	tx.Commit()
-
 	return &protos.AddLocationsResp{Ids: results}, nil
 }

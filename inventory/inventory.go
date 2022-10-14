@@ -10,22 +10,13 @@ import (
 
 func (s *Service) UpdateInventory(ctx context.Context, req *UpdateInventoryReq) (r *UpdateInventoryResp, err error) {
 
-	tx, err := s.db.Begin()
-	if err != nil {
-		return re(r, err)
-	}
+	tx := s.GetTx(ctx)
 
-	defer tx.Rollback()
-
-	row := tx.QueryRowContext(ctx,
-		"SELECT OnHand FROM Inventory WHERE Location=? AND Product=?",
+	onHand, err := tx.QueryInt64("SELECT OnHand FROM Inventory WHERE Location=? AND Product=?",
 		req.Location,
 		req.Product)
 
-	var onHand int64
-
-	err = row.Scan(&onHand)
-	if err != nil && err != sql.ErrNoRows {
+	if err != sql.ErrNoRows {
 		return re(r, err)
 	}
 
@@ -42,28 +33,17 @@ func (s *Service) UpdateInventory(ctx context.Context, req *UpdateInventoryReq) 
 		OnHand:       onHand,
 	}
 
-	err = s.Apply(tx, e)
-	if err != nil {
-		return re(r, err)
-	}
-
+	tx.Apply(e)
 	tx.Commit()
 
-	return &UpdateInventoryResp{
-		OnHand: e.OnHand,
-	}, nil
+	return &UpdateInventoryResp{OnHand: e.OnHand}, nil
 }
 
-func (s *Service) GetInventory(c context.Context, req *GetInventoryReq) (r *GetInventoryResp, err error) {
+func (s *Service) GetInventory(ctx context.Context, req *GetInventoryReq) (r *GetInventoryResp, err error) {
 
-	tx, err := s.db.Begin()
-	if err != nil {
-		return re(r, err)
-	}
+	tx := s.GetTx(ctx)
 
-	defer tx.Rollback()
-
-	rows, err := tx.QueryContext(c, "SELECT Product, OnHand FROM Inventory WHERE Location=?", req.Location)
+	rows, err := tx.tx.QueryContext(ctx, "SELECT Product, OnHand FROM Inventory WHERE Location=?", req.Location)
 	if err != nil {
 		return re(r, err)
 	}

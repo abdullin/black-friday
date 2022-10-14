@@ -1,21 +1,13 @@
 package inventory
 
 import (
-	"database/sql"
 	"fmt"
 	"google.golang.org/protobuf/proto"
-	"log"
 	"sdk-go/protos"
 )
 
-func must(r sql.Result, err error) {
-	if err != nil {
-		log.Panicln(err)
-	}
-}
-
-func apply(tx *sql.Tx, e proto.Message) error {
-	lift := func(_ sql.Result, err error) error {
+func apply(tx *Tx, e proto.Message) error {
+	lift := func(err error) error {
 		if err != nil {
 			name := e.ProtoReflect().Descriptor().Name()
 			return fmt.Errorf("problem applying '%s': %w", name, err)

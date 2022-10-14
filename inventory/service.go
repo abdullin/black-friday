@@ -3,7 +3,6 @@ package inventory
 import (
 	"context"
 	"database/sql"
-	"google.golang.org/protobuf/proto"
 	. "sdk-go/protos"
 )
 
@@ -23,6 +22,20 @@ type Service struct {
 	UnimplementedInventoryServiceServer
 }
 
+func (s *Service) GetTx(ctx context.Context) *Tx {
+	tx, err := s.db.BeginTx(ctx, nil)
+
+	if err != nil {
+		panic("Failed to create tx")
+	}
+	if tx == nil {
+		panic("no tx :(")
+	}
+
+	return &Tx{tx: tx, ctx: ctx}
+
+}
+
 func (s *Service) Reset(ctx context.Context, empty *Empty) (*Empty, error) {
 	//TODO implement me
 
@@ -30,27 +43,10 @@ func (s *Service) Reset(ctx context.Context, empty *Empty) (*Empty, error) {
 }
 
 func NewService(db *sql.DB) *Service {
+	if db == nil {
+		panic("db is nil")
+	}
 	return &Service{
 		db: db,
 	}
-}
-
-func (s *Service) Apply(tx *sql.Tx, e proto.Message) error {
-	return apply(tx, e)
-}
-
-func (s *Service) ApplyEvents(events []proto.Message) error {
-	tx, err := s.db.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	for _, e := range events {
-		err = apply(tx, e)
-		if err != nil {
-			return err
-		}
-	}
-	return tx.Commit()
 }
