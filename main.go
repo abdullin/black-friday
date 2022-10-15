@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"os"
 	"sdk-go/inventory"
@@ -14,12 +15,17 @@ import (
 )
 
 const (
-	CLEAR = "\033[0m"
-	RED   = "\033[91m"
+	CLEAR  = "\033[0m"
+	RED    = "\033[91m"
+	YELLOW = "\033[93m"
 )
 
 func red(s string) string {
 	return fmt.Sprintf("%s%s%s", RED, s, CLEAR)
+}
+func yellow(s string) string {
+
+	return fmt.Sprintf("%s%s%s", YELLOW, s, CLEAR)
 }
 
 func main() {
@@ -57,6 +63,7 @@ func main() {
 			for _, d := range deltas {
 				fmt.Printf("  Δ %s\n", d.String())
 			}
+			println()
 		}
 
 	}
@@ -64,19 +71,22 @@ func main() {
 }
 
 func printSpec(s *tests.Spec) {
-	println(s.Name)
+	//println(s.Name)
 	if len(s.Given) > 0 {
-		println("GIVEN:")
+		println(yellow("GIVEN:"))
 		for i, e := range s.Given {
 			println(fmt.Sprintf("%d. %s", i+1, seq.Format(e)))
 		}
 	}
-	println(fmt.Sprintf("WHEN: %s", seq.Format(s.When)))
+	println(fmt.Sprintf("%s %s", yellow("WHEN:"), seq.Format(s.When)))
 	if s.ThenResponse != nil {
-		println(fmt.Sprintf("THEN RESPONSE: %s", seq.Format(s.ThenResponse)))
+		println(fmt.Sprintf("%s %s", yellow("THEN RESPONSE:"), seq.Format(s.ThenResponse)))
+	}
+	if s.ThenError != codes.OK {
+		println(fmt.Sprintf("%s %s", yellow("THEN ERROR:"), s.ThenError))
 	}
 	if len(s.ThenEvents) > 0 {
-		println("THEN EVENTS:")
+		println(yellow("THEN EVENTS:"))
 		for i, e := range s.ThenEvents {
 			println(fmt.Sprintf("%d. %s", i+1, seq.Format(e)))
 		}
@@ -120,7 +130,11 @@ func run_spec(ctx context.Context, svc *inventory.Service, spec *tests.Spec) ([]
 	}
 
 	if spec.ThenError != actualStatus.Code() {
-		actualErr := fmt.Sprintf("%s: %s", actualStatus.Code(), err.Error())
+		actualErr := "OK"
+		if actualStatus.Code() != codes.OK {
+
+			actualErr = fmt.Sprintf("%s: %s", actualStatus.Code(), err)
+		}
 
 		issues = append(issues, &seq.Delta{
 			Expected: spec.ThenError,

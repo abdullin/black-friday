@@ -20,7 +20,9 @@ func Format(val any) string {
 	}
 	switch v := val.(type) {
 	case proto.Message:
-		return string(v.ProtoReflect().Descriptor().Name()) + ":" + prototext.Format(v)
+
+		repr := prototext.MarshalOptions{Multiline: false}.Format(v)
+		return string(v.ProtoReflect().Descriptor().Name()) + ":" + repr
 	case []proto.Message:
 		names := []string{}
 		for _, m := range v {
