@@ -4,12 +4,22 @@ import (
 	"context"
 	"fmt"
 	"google.golang.org/protobuf/proto"
+	"reflect"
 	"sdk-go/protos"
 )
 
-// used for command dispatch in tests
+func (s *Service) Dispatch(ctx context.Context, m proto.Message) (proto.Message, error) {
+	m, err := s.dispatchInner(ctx, m)
 
-func (s Service) Dispatch(ctx context.Context, m proto.Message) (proto.Message, error) {
+	// because m is never nil here, even if the returned value was nil
+	if m != nil && reflect.ValueOf(m).IsNil() {
+		return nil, err
+	}
+	return m, err
+
+}
+
+func (s *Service) dispatchInner(ctx context.Context, m proto.Message) (proto.Message, error) {
 	switch t := m.(type) {
 	case *protos.AddLocationsReq:
 		return s.AddLocations(ctx, t)

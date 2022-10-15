@@ -9,7 +9,6 @@ import (
 )
 
 func (s *Service) UpdateInventory(ctx context.Context, req *UpdateInventoryReq) (r *UpdateInventoryResp, err error) {
-
 	tx := s.GetTx(ctx)
 
 	onHand, err := tx.QueryInt64("SELECT OnHand FROM Inventory WHERE Location=? AND Product=?",
@@ -23,7 +22,7 @@ func (s *Service) UpdateInventory(ctx context.Context, req *UpdateInventoryReq) 
 	onHand += req.OnHandChange
 
 	if onHand < 0 {
-		return nil, status.Errorf(codes.FailedPrecondition, "Can't be negative!")
+		return nil, status.Errorf(codes.FailedPrecondition, "OnHand can't go negative!")
 	}
 
 	e := &InventoryUpdated{
