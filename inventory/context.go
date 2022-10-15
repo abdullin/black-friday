@@ -8,9 +8,10 @@ import (
 )
 
 type Tx struct {
-	tx    *sql.Tx
-	ctx   context.Context
-	lease bool
+	tx     *sql.Tx
+	ctx    context.Context
+	parent *Tx
+	events []proto.Message
 }
 
 func (c *Tx) Exec(query string, args ...any) error {
@@ -41,15 +42,24 @@ func (c *Tx) QueryInt64(query string, args ...any) (int64, error) {
 
 func (s *Tx) Apply(e proto.Message) {
 	err := apply(s, e)
+
+	if s.parent != nil {
+		s.parent.events = append(s.parent.events, e)
+	} else {
+		s.events = append(s.events, e)
+	}
+
+	s.events = append(s.events, e)
 	if err != nil {
 		// we don't expect to fail. Tests are for that
 		panic(fmt.Errorf("Error on event apply: %w", err))
 
 	}
+
 }
 
 func (c *Tx) Rollback() {
-	if c.lease {
+	if c.parent != nil {
 		return
 	}
 	err := c.tx.Rollback()
@@ -59,7 +69,7 @@ func (c *Tx) Rollback() {
 }
 
 func (c *Tx) Commit() {
-	if c.lease {
+	if c.parent != nil {
 		return
 	}
 	// we don't expect to fail
@@ -67,4 +77,11 @@ func (c *Tx) Commit() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func (c *Tx) TestGetEvents() []proto.Message {
+	return c.events
+}
+func (c *Tx) TestClearEvents() {
+	c.events = nil
 }

@@ -23,9 +23,9 @@ func (s *Service) GetTx(ctx context.Context) *Tx {
 
 	if ok {
 		return &Tx{
-			tx:    inner.tx,
-			ctx:   ctx,
-			lease: true,
+			tx:     inner.tx,
+			ctx:    ctx,
+			parent: inner,
 		}
 	}
 

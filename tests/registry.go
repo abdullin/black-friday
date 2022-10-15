@@ -14,6 +14,10 @@ type Spec struct {
 	ThenEvents   []proto.Message
 }
 
+func Print(s *Spec) {
+
+}
+
 var Specs []*Spec
 
 func register(s *Spec) {

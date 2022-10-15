@@ -14,13 +14,20 @@ type Delta struct {
 	Path             string
 }
 
-func format(val any) string {
+func Format(val any) string {
 	if val == nil {
 		return "<nil>"
 	}
 	switch v := val.(type) {
 	case proto.Message:
 		return string(v.ProtoReflect().Descriptor().Name()) + ":" + prototext.Format(v)
+	case []proto.Message:
+		names := []string{}
+		for _, m := range v {
+			names = append(names, string(m.ProtoReflect().Descriptor().Name()))
+		}
+		return fmt.Sprintf("[%s]", strings.Join(names, ", "))
+
 	case error:
 		return fmt.Sprintf("Error '%v'", v.Error())
 	default:
@@ -31,8 +38,8 @@ func format(val any) string {
 func (d *Delta) String() string {
 	return fmt.Sprintf("Expected %v to be %v but got %v",
 		d.Path,
-		format(d.Expected),
-		format(d.Actual))
+		Format(d.Expected),
+		Format(d.Actual))
 }
 
 func Diff(expected, actual proto.Message, prefix string) (r []*Delta) {
@@ -88,32 +95,31 @@ func compare(expected, actual protoreflect.Message, path ...string) (r []*Delta)
 
 		switch {
 		case field.IsList():
-			el := ev.List()
-			al := av.List()
-
-			if el.Len() != al.Len() {
-				r = append(r, &Delta{
-					Expected: int(el.Len()),
-					Actual:   int(al.Len()),
-					Path:     pth + ".length",
-				})
-			} else {
-				for i := 0; i < el.Len(); i++ {
-					ev, av := el.Get(i), al.Get(i)
-					if deltas := handleSingular(field, ev, av, fmt.Sprintf("%s[%d]", pth, i)); len(deltas) > 0 {
-						r = append(r, deltas...)
-					}
-				}
-			}
+			r = append(r, handleList(field, ev, av, pth)...)
 		case field.IsMap():
-			panic("mapos not handled")
+			panic("maps not handled")
 		default:
-			if deltas := handleSingular(field, ev, av, pth); len(deltas) > 0 {
-				r = append(r, deltas...)
-			}
+			deltas := handleSingular(field, ev, av, pth)
+			r = append(r, deltas...)
 		}
 	}
 
+	return r
+}
+
+func handleList(field protoreflect.FieldDescriptor, ev protoreflect.Value, av protoreflect.Value, pth string) (r []*Delta) {
+	el := ev.List()
+	al := av.List()
+
+	if el.Len() != al.Len() {
+		return []*Delta{{Expected: el.Len(), Actual: al.Len(), Path: pth + ".length"}}
+	} else {
+		for i := 0; i < el.Len(); i++ {
+			ev, av := el.Get(i), al.Get(i)
+			deltas := handleSingular(field, ev, av, fmt.Sprintf("%s[%d]", pth, i))
+			r = append(r, deltas...)
+		}
+	}
 	return r
 }
 

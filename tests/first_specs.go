@@ -24,7 +24,6 @@ func init() {
 	register(&Spec{
 		Name: "query locations",
 		Given: []proto.Message{
-
 			&WarehouseCreated{Id: 1, Name: "WH1"},
 			&LocationAdded{Id: 1, Name: "Shelf1", Warehouse: 1},
 			&LocationAdded{Id: 2, Name: "Shelf2", Warehouse: 1},
@@ -58,6 +57,42 @@ func init() {
 		},
 		When:      &UpdateInventoryReq{Product: 1, Location: 1, OnHandChange: -1},
 		ThenError: codes.FailedPrecondition,
+	})
+
+	register(&Spec{
+		Name: "add locations",
+		Given: []proto.Message{
+			&WarehouseCreated{Id: 1, Name: "WH1"},
+		},
+		When: &AddLocationsReq{
+			Warehouse: 1,
+			Names:     []string{"L1", "L2"},
+		},
+		ThenResponse: &AddLocationsResp{
+			Warehouse: 1,
+			Ids:       []uint64{1, 2},
+		},
+		ThenEvents: []proto.Message{
+			&LocationAdded{Warehouse: 1, Id: 1, Name: "L1"},
+			&LocationAdded{Warehouse: 1, Id: 2, Name: "L2"},
+		},
+	})
+
+	register(&Spec{
+		Name:      "add locations without warehouse",
+		Given:     []proto.Message{},
+		When:      &AddLocationsReq{Warehouse: 1, Names: []string{"L1", "L2"}},
+		ThenError: codes.FailedPrecondition,
+	})
+
+	register(&Spec{
+		Name: "query locations from another warehouse",
+		Given: []proto.Message{
+			&WarehouseCreated{Id: 1, Name: "WH1"},
+			&WarehouseCreated{Id: 2, Name: "WH2"},
+			&LocationAdded{Id: 1, Name: "Shelf", Warehouse: 1},
+		},
+		When: &ListLocationsReq{},
 	})
 
 }

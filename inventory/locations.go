@@ -52,8 +52,9 @@ func (s *Service) AddLocations(ctx context.Context, req *protos.AddLocationsReq)
 		id += 1
 
 		e := &protos.LocationAdded{
-			Name: name,
-			Id:   id,
+			Name:      name,
+			Id:        id,
+			Warehouse: req.Warehouse,
 		}
 		results[i] = id
 
@@ -61,5 +62,5 @@ func (s *Service) AddLocations(ctx context.Context, req *protos.AddLocationsReq)
 	}
 
 	tx.Commit()
-	return &protos.AddLocationsResp{Ids: results}, nil
+	return &protos.AddLocationsResp{Ids: results, Warehouse: req.Warehouse}, nil
 }
