@@ -18,6 +18,10 @@ const (
 	CLEAR  = "\033[0m"
 	RED    = "\033[91m"
 	YELLOW = "\033[93m"
+
+	GREEN = "\033[32m"
+
+	ANOTHER = "\033[34m"
 )
 
 func red(s string) string {
@@ -61,7 +65,7 @@ func main() {
 			}
 
 			for _, d := range deltas {
-				fmt.Printf("  Δ %s\n", d.String())
+				fmt.Printf("  %sΔ %s%s\n", ANOTHER, d.String(), CLEAR)
 			}
 			println()
 		}

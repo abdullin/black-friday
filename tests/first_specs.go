@@ -92,7 +92,8 @@ func init() {
 			&WarehouseCreated{Id: 2, Name: "WH2"},
 			&LocationAdded{Id: 1, Name: "Shelf", Warehouse: 1},
 		},
-		When: &ListLocationsReq{},
+		When:         &ListLocationsReq{},
+		ThenResponse: &ListLocationsResp{},
 	})
 
 }
