@@ -2,11 +2,30 @@ package inventory
 
 import (
 	"context"
+	"errors"
+	"github.com/mattn/go-sqlite3"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"sdk-go/protos"
 )
 
 func re[M proto.Message](m M, err error) (M, error) {
+
+	if err == nil {
+		return m, nil
+	}
+
+	var sqliteErr sqlite3.Error
+	if errors.As(err, &sqliteErr) {
+		switch sqliteErr.Code {
+		case sqlite3.ErrConstraint:
+			return m, status.Error(codes.FailedPrecondition, "Constraint violation")
+		default:
+			return m, status.Errorf(codes.Internal, err.Error())
+		}
+	}
+
 	return m, err
 }
 
@@ -14,7 +33,10 @@ func (s *Service) ListLocations(ctx context.Context, req *protos.ListLocationsRe
 
 	tx := s.GetTx(ctx)
 
-	rows, err := tx.tx.QueryContext(ctx, "SELECT Id, Name FROM Locations")
+	rows, err := tx.tx.QueryContext(ctx, `
+SELECT Id, Name, Warehouse FROM Locations
+WHERE Warehouse=?
+`, req.Warehouse)
 	if err != nil {
 		return re(r, err)
 	}
@@ -24,20 +46,26 @@ func (s *Service) ListLocations(ctx context.Context, req *protos.ListLocationsRe
 
 	for rows.Next() {
 		var id uint64
+		var warehouse uint32
 		var name string
-		err := rows.Scan(&id, &name)
+		err := rows.Scan(&id, &name, &warehouse)
 		if err != nil {
 			return re(r, err)
 		}
 		results = append(results, &protos.ListLocationsResp_Loc{
-			Id:   id,
-			Name: name,
+			Warehouse: warehouse,
+			Location:  id,
+			Name:      name,
 		})
 	}
 	return &protos.ListLocationsResp{Locs: results}, nil
 }
 
 func (s *Service) AddLocations(ctx context.Context, req *protos.AddLocationsReq) (r *protos.AddLocationsResp, e error) {
+
+	if req.Warehouse == 0 {
+		return nil, status.Error(codes.InvalidArgument, "Warehouse id can't be zero")
+	}
 
 	tx := s.GetTx(ctx)
 
@@ -58,7 +86,10 @@ func (s *Service) AddLocations(ctx context.Context, req *protos.AddLocationsReq)
 		}
 		results[i] = id
 
-		tx.Apply(e)
+		err = tx.Apply(e)
+		if err != nil {
+			return re(r, err)
+		}
 	}
 
 	tx.Commit()

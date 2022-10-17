@@ -92,14 +92,15 @@ message GetInventoryResp {
 }
 
 message ListLocationsReq {
-;
+  uint32 warehouse = 1;
 
 }
 
 message ListLocationsResp {
   message Loc {
-    uint64 id = 1;
-    string name = 2;
+    uint32 warehouse = 1;
+    uint64 location = 2;
+    string name = 3;
   }
 
   repeated Loc locs = 1;

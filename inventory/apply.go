@@ -3,16 +3,18 @@ package inventory
 import (
 	"fmt"
 	"google.golang.org/protobuf/proto"
+	"reflect"
 	"sdk-go/protos"
 )
 
 func apply(tx *Tx, e proto.Message) error {
 	lift := func(err error) error {
-		if err != nil {
-			name := e.ProtoReflect().Descriptor().Name()
-			return fmt.Errorf("problem applying '%s': %w", name, err)
+		if err == nil {
+			return nil
 		}
-		return nil
+
+		name := e.ProtoReflect().Descriptor().Name()
+		return fmt.Errorf("problem %s applying '%s': %w", name, reflect.TypeOf(err).String(), err)
 	}
 
 	switch t := e.(type) {

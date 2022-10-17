@@ -32,7 +32,10 @@ func (s *Service) UpdateInventory(ctx context.Context, req *UpdateInventoryReq) 
 		OnHand:       onHand,
 	}
 
-	tx.Apply(e)
+	err = tx.Apply(e)
+	if err != nil {
+		return re(r, err)
+	}
 	tx.Commit()
 
 	return &UpdateInventoryResp{OnHand: e.OnHand}, nil

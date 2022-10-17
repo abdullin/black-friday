@@ -40,21 +40,18 @@ func (c *Tx) QueryInt64(query string, args ...any) (int64, error) {
 	return i, err
 }
 
-func (s *Tx) Apply(e proto.Message) {
+func (s *Tx) Apply(e proto.Message) error {
 	err := apply(s, e)
+	if err != nil {
+		return err
+	}
 
 	if s.parent != nil {
 		s.parent.events = append(s.parent.events, e)
 	} else {
 		s.events = append(s.events, e)
 	}
-
-	s.events = append(s.events, e)
-	if err != nil {
-		// we don't expect to fail. Tests are for that
-		panic(fmt.Errorf("Error on event apply: %w", err))
-
-	}
+	return nil
 
 }
 

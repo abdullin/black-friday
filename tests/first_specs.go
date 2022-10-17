@@ -14,7 +14,7 @@ func init() {
 			&ProductAdded{Id: 1, Sku: "Cola"},
 			&ProductAdded{Id: 2, Sku: "Fanta"},
 			&WarehouseCreated{Id: 1, Name: "WH1"},
-			&LocationAdded{Id: 1, Name: "Shelf"},
+			&LocationAdded{Id: 1, Name: "Shelf", Warehouse: 1},
 			&InventoryUpdated{Location: 1, Product: 2, OnHandChange: 2, OnHand: 2},
 		},
 		When:         &GetInventoryReq{Location: 1},
@@ -28,10 +28,10 @@ func init() {
 			&LocationAdded{Id: 1, Name: "Shelf1", Warehouse: 1},
 			&LocationAdded{Id: 2, Name: "Shelf2", Warehouse: 1},
 		},
-		When: &ListLocationsReq{},
+		When: &ListLocationsReq{Warehouse: 1},
 		ThenResponse: &ListLocationsResp{Locs: []*ListLocationsResp_Loc{
-			{Id: 1, Name: "Shelf1"},
-			{Id: 2, Name: "Shelf2"},
+			{Location: 1, Name: "Shelf1", Warehouse: 1},
+			{Location: 2, Name: "Shelf2", Warehouse: 1},
 		}},
 	})
 
@@ -81,8 +81,15 @@ func init() {
 	register(&Spec{
 		Name:      "add locations without warehouse",
 		Given:     []proto.Message{},
-		When:      &AddLocationsReq{Warehouse: 1, Names: []string{"L1", "L2"}},
+		When:      &AddLocationsReq{Warehouse: 42, Names: []string{"L1", "L2"}},
 		ThenError: codes.FailedPrecondition,
+	})
+
+	register(&Spec{
+		Name:      "add locations with zero warehouse id",
+		Given:     []proto.Message{},
+		When:      &AddLocationsReq{Warehouse: 0, Names: []string{"L1", "L2"}},
+		ThenError: codes.InvalidArgument,
 	})
 
 	register(&Spec{
@@ -92,7 +99,7 @@ func init() {
 			&WarehouseCreated{Id: 2, Name: "WH2"},
 			&LocationAdded{Id: 1, Name: "Shelf", Warehouse: 1},
 		},
-		When:         &ListLocationsReq{},
+		When:         &ListLocationsReq{Warehouse: 2},
 		ThenResponse: &ListLocationsResp{},
 	})
 

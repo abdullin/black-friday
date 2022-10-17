@@ -126,8 +126,11 @@ func run_spec(ctx context.Context, svc *inventory.Service, spec *tests.Spec) ([]
 
 	defer tx.Rollback()
 
-	for _, e := range spec.Given {
-		tx.Apply(e)
+	for i, e := range spec.Given {
+		err := tx.Apply(e)
+		if err != nil {
+			panic(fmt.Sprintf("Problem with spec '%s' precondition %d: %s", spec.Name, i+1, err))
+		}
 	}
 	tx.TestClearEvents()
 
