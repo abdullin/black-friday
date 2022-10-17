@@ -108,13 +108,10 @@ func init() {
 		ThenResponse: &ListLocationsResp{},
 	})
 
-	/*
-		register(&Spec{
-			Name:      "insert duplicate warehouse name",
-			When:      &CreateWarehouseReq{Names: []string{"W", "W"}},
-			ThenError: codes.AlreadyExists,
-		})
-
-	*/
+	register(&Spec{
+		Name:      "insert duplicate warehouse name",
+		When:      &CreateWarehouseReq{Names: []string{"W", "W"}},
+		ThenError: codes.AlreadyExists,
+	})
 
 }

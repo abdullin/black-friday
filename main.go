@@ -64,6 +64,7 @@ func speed_test() {
 	started := time.Now()
 
 	var count int64
+	var eventCount int64
 	seconds := 1
 
 	for i := 0; i < cores; i++ {
@@ -71,20 +72,27 @@ func speed_test() {
 			svc := services[pos]
 			duration := time.Second * time.Duration(seconds)
 			var local_count int64
+			var localEventCount int64
 			for time.Since(started) < duration {
 				for _, s := range tests.Specs {
 					local_count += 1
-					run_spec(ctx, svc, s)
+					result, err := run_spec(ctx, svc, s)
+					if err != nil {
+						panic(err)
+					}
+					localEventCount += int64(result.EventCount)
 				}
 			}
 
 			atomic.AddInt64(&count, local_count)
+			atomic.AddInt64(&eventCount, localEventCount)
 			wg.Done()
 		}(i)
 	}
 	wg.Wait()
 
 	fmt.Printf("running specs at %.1f kHz\n", float64(count)/1000.0/float64(seconds))
+	fmt.Printf("applying events at %.1f kHz\n", float64(eventCount)/1000.0/float64(seconds))
 
 }
 
@@ -112,7 +120,8 @@ func main() {
 
 	for _, s := range tests.Specs {
 
-		deltas, err := run_spec(ctx, svc, s)
+		result, err := run_spec(ctx, svc, s)
+		deltas := result.Deltas
 		if len(deltas) == 0 && err == nil {
 			fmt.Printf("✔ %s️\n", s.Name)
 		} else {
@@ -163,7 +172,12 @@ func guard(err error) {
 	}
 }
 
-func run_spec(ctx context.Context, svc *inventory.Service, spec *tests.Spec) ([]*seq.Delta, error) {
+type SpecResult struct {
+	EventCount int
+	Deltas     []*seq.Delta
+}
+
+func run_spec(ctx context.Context, svc *inventory.Service, spec *tests.Spec) (*SpecResult, error) {
 
 	tx := svc.GetTx(ctx)
 
@@ -175,6 +189,9 @@ func run_spec(ctx context.Context, svc *inventory.Service, spec *tests.Spec) ([]
 			panic(fmt.Sprintf("Problem with spec '%s' precondition %d: %s", spec.Name, i+1, err))
 		}
 	}
+
+	eventCount := len(spec.Given)
+
 	tx.TestClearEvents()
 
 	nested := context.WithValue(ctx, "tx", tx)
@@ -182,6 +199,8 @@ func run_spec(ctx context.Context, svc *inventory.Service, spec *tests.Spec) ([]
 	actualStatus, _ := status.FromError(err)
 	actualEvents := tx.TestGetEvents()
 	issues := seq.Diff(spec.ThenResponse, actualResp, "response")
+
+	eventCount += len(actualEvents)
 
 	if len(actualEvents) != len(spec.ThenEvents) {
 		issues = append(issues, &seq.Delta{
@@ -210,5 +229,8 @@ func run_spec(ctx context.Context, svc *inventory.Service, spec *tests.Spec) ([]
 		})
 	}
 
-	return issues, nil
+	return &SpecResult{
+		EventCount: eventCount,
+		Deltas:     issues,
+	}, nil
 }
