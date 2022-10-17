@@ -10,6 +10,7 @@ import (
 	"sdk-go/inventory"
 	"sdk-go/seq"
 	"sdk-go/tests"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -34,7 +35,7 @@ func yellow(s string) string {
 
 func main() {
 
-	fmt.Printf("Run %d specs\n", len(tests.Specs))
+	fmt.Printf("Discovered %d specs\n", len(tests.Specs))
 
 	file := "/tmp/tests.sqlite"
 	file = ":memory:"
@@ -49,6 +50,22 @@ func main() {
 	svc := inventory.NewService(db)
 
 	ctx := context.Background()
+
+	// speed test
+
+	started := time.Now()
+
+	count := 0.0
+
+	fmt.Print("Speed test... ")
+	for time.Since(started) < time.Second {
+		for _, s := range tests.Specs {
+			count += 1
+			run_spec(ctx, svc, s)
+		}
+	}
+
+	fmt.Printf("running specs at %.1f kHz\n", count/1000.0)
 
 	for _, s := range tests.Specs {
 
