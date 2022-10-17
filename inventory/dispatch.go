@@ -32,6 +32,6 @@ func (s *Service) dispatchInner(ctx context.Context, m proto.Message) (proto.Mes
 	case *protos.GetInventoryReq:
 		return s.GetInventory(ctx, t)
 	default:
-		return nil, fmt.Errorf("missing dispatch for %v", t)
+		return nil, fmt.Errorf("missing dispatch for %v", reflect.TypeOf(m))
 	}
 }

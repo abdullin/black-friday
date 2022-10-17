@@ -102,5 +102,19 @@ func init() {
 		When:         &ListLocationsReq{Warehouse: 2},
 		ThenResponse: &ListLocationsResp{},
 	})
+	register(&Spec{
+		Name:         "query locations from non-existent warehouse",
+		When:         &ListLocationsReq{Warehouse: 1},
+		ThenResponse: &ListLocationsResp{},
+	})
+
+	/*
+		register(&Spec{
+			Name:      "insert duplicate warehouse name",
+			When:      &CreateWarehouseReq{Names: []string{"W", "W"}},
+			ThenError: codes.AlreadyExists,
+		})
+
+	*/
 
 }
