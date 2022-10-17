@@ -7,9 +7,12 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"os"
+	"runtime"
 	"sdk-go/inventory"
 	"sdk-go/seq"
 	"sdk-go/tests"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -33,7 +36,61 @@ func yellow(s string) string {
 	return fmt.Sprintf("%s%s%s", YELLOW, s, CLEAR)
 }
 
+func speed_test() {
+
+	file := ":memory:"
+
+	ctx := context.Background()
+
+	cores := runtime.NumCPU()
+	fmt.Printf("Speed test with %d cores... ", cores)
+
+	var services []*inventory.Service
+	var wg sync.WaitGroup
+	for i := 0; i < cores; i++ {
+		db, err := sql.Open("sqlite3", file)
+		guard(err)
+		defer db.Close()
+
+		guard(inventory.CreateSchema(db))
+
+		svc := inventory.NewService(db)
+		services = append(services, svc)
+		wg.Add(1)
+	}
+
+	// speed test
+
+	started := time.Now()
+
+	var count int64
+	seconds := 1
+
+	for i := 0; i < cores; i++ {
+		go func(pos int) {
+			svc := services[pos]
+			duration := time.Second * time.Duration(seconds)
+			var local_count int64
+			for time.Since(started) < duration {
+				for _, s := range tests.Specs {
+					local_count += 1
+					run_spec(ctx, svc, s)
+				}
+			}
+
+			atomic.AddInt64(&count, local_count)
+			wg.Done()
+		}(i)
+	}
+	wg.Wait()
+
+	fmt.Printf("running specs at %.1f kHz\n", float64(count)/1000.0/float64(seconds))
+
+}
+
 func main() {
+
+	speed_test()
 
 	fmt.Printf("Discovered %d specs\n", len(tests.Specs))
 
@@ -52,20 +109,6 @@ func main() {
 	ctx := context.Background()
 
 	// speed test
-
-	started := time.Now()
-
-	count := 0.0
-
-	fmt.Print("Speed test... ")
-	for time.Since(started) < time.Second {
-		for _, s := range tests.Specs {
-			count += 1
-			run_spec(ctx, svc, s)
-		}
-	}
-
-	fmt.Printf("running specs at %.1f kHz\n", count/1000.0)
 
 	for _, s := range tests.Specs {
 

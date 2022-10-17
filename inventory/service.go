@@ -3,6 +3,7 @@ package inventory
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	. "sdk-go/protos"
 )
 
@@ -32,7 +33,7 @@ func (s *Service) GetTx(ctx context.Context) *Tx {
 	tx, err := s.db.BeginTx(ctx, nil)
 
 	if err != nil {
-		panic("Failed to create tx")
+		panic(fmt.Errorf("failed to create tx: %w", err))
 	}
 	if tx == nil {
 		panic("no tx :(")
