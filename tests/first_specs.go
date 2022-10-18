@@ -113,5 +113,23 @@ func init() {
 		When:      &CreateWarehouseReq{Names: []string{"W", "W"}},
 		ThenError: codes.AlreadyExists,
 	})
+	register(&Spec{
+		Name: "add location batch with duplicate names",
+		Given: []proto.Message{
+			&WarehouseCreated{Id: 1, Name: "W"},
+		},
+		When:      &AddLocationsReq{Warehouse: 1, Names: []string{"L", "L"}},
+		ThenError: codes.AlreadyExists,
+	})
+
+	register(&Spec{
+		Name: "add location with duplicate name",
+		Given: []proto.Message{
+			&WarehouseCreated{Id: 1, Name: "W"},
+			&LocationAdded{Id: 1, Warehouse: 1, Name: "L"},
+		},
+		When:      &AddLocationsReq{Warehouse: 1, Names: []string{"L"}},
+		ThenError: codes.AlreadyExists,
+	})
 
 }
