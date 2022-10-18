@@ -22,6 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type InventoryServiceClient interface {
+	CreateWarehouse(ctx context.Context, in *CreateWarehouseReq, opts ...grpc.CallOption) (*CreateWarehouseResp, error)
 	AddLocations(ctx context.Context, in *AddLocationsReq, opts ...grpc.CallOption) (*AddLocationsResp, error)
 	AddProducts(ctx context.Context, in *AddProductsReq, opts ...grpc.CallOption) (*AddProductsResp, error)
 	ListLocations(ctx context.Context, in *ListLocationsReq, opts ...grpc.CallOption) (*ListLocationsResp, error)
@@ -36,6 +37,15 @@ type inventoryServiceClient struct {
 
 func NewInventoryServiceClient(cc grpc.ClientConnInterface) InventoryServiceClient {
 	return &inventoryServiceClient{cc}
+}
+
+func (c *inventoryServiceClient) CreateWarehouse(ctx context.Context, in *CreateWarehouseReq, opts ...grpc.CallOption) (*CreateWarehouseResp, error) {
+	out := new(CreateWarehouseResp)
+	err := c.cc.Invoke(ctx, "/protos.InventoryService/CreateWarehouse", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *inventoryServiceClient) AddLocations(ctx context.Context, in *AddLocationsReq, opts ...grpc.CallOption) (*AddLocationsResp, error) {
@@ -96,6 +106,7 @@ func (c *inventoryServiceClient) Reset(ctx context.Context, in *Empty, opts ...g
 // All implementations must embed UnimplementedInventoryServiceServer
 // for forward compatibility
 type InventoryServiceServer interface {
+	CreateWarehouse(context.Context, *CreateWarehouseReq) (*CreateWarehouseResp, error)
 	AddLocations(context.Context, *AddLocationsReq) (*AddLocationsResp, error)
 	AddProducts(context.Context, *AddProductsReq) (*AddProductsResp, error)
 	ListLocations(context.Context, *ListLocationsReq) (*ListLocationsResp, error)
@@ -109,6 +120,9 @@ type InventoryServiceServer interface {
 type UnimplementedInventoryServiceServer struct {
 }
 
+func (UnimplementedInventoryServiceServer) CreateWarehouse(context.Context, *CreateWarehouseReq) (*CreateWarehouseResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateWarehouse not implemented")
+}
 func (UnimplementedInventoryServiceServer) AddLocations(context.Context, *AddLocationsReq) (*AddLocationsResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddLocations not implemented")
 }
@@ -138,6 +152,24 @@ type UnsafeInventoryServiceServer interface {
 
 func RegisterInventoryServiceServer(s grpc.ServiceRegistrar, srv InventoryServiceServer) {
 	s.RegisterService(&InventoryService_ServiceDesc, srv)
+}
+
+func _InventoryService_CreateWarehouse_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateWarehouseReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).CreateWarehouse(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.InventoryService/CreateWarehouse",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).CreateWarehouse(ctx, req.(*CreateWarehouseReq))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _InventoryService_AddLocations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -255,6 +287,10 @@ var InventoryService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "protos.InventoryService",
 	HandlerType: (*InventoryServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "CreateWarehouse",
+			Handler:    _InventoryService_CreateWarehouse_Handler,
+		},
 		{
 			MethodName: "AddLocations",
 			Handler:    _InventoryService_AddLocations_Handler,

@@ -116,6 +116,7 @@ message Event {
 }
 
 service InventoryService {
+  rpc CreateWarehouse(CreateWarehouseReq) returns (CreateWarehouseResp);
   rpc AddLocations(AddLocationsReq) returns (AddLocationsResp);
 
   rpc AddProducts(AddProductsReq) returns (AddProductsResp);

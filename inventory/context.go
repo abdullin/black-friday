@@ -32,6 +32,14 @@ func (c *Tx) QueryUint64(query string, args ...any) (uint64, error) {
 	return i, err
 }
 
+func (c *Tx) GetSeq(name string) uint64 {
+	id, err := c.QueryUint64("select seq from sqlite_sequence where name=?", name)
+	if err != nil {
+		panic(fmt.Errorf("failed to get seq for '%s': %w", name, err))
+	}
+	return id
+}
+
 func (c *Tx) QueryInt64(query string, args ...any) (int64, error) {
 	row := c.tx.QueryRowContext(c.ctx, query, args...)
 	var i int64
