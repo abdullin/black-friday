@@ -43,12 +43,6 @@ func (s *Service) GetTx(ctx context.Context) *Tx {
 
 }
 
-func (s *Service) Reset(ctx context.Context, empty *Empty) (*Empty, error) {
-	//TODO implement me
-
-	return nil, nil
-}
-
 func NewService(db *sql.DB) *Service {
 	if db == nil {
 		panic("db is nil")

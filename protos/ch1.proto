@@ -107,14 +107,6 @@ message ListLocationsResp {
 }
 
 
-message Empty { }
-
-
-message Event {
-  string type = 1;
-  bytes data = 2;
-}
-
 service InventoryService {
   rpc CreateWarehouse(CreateWarehouseReq) returns (CreateWarehouseResp);
   rpc AddLocations(AddLocationsReq) returns (AddLocationsResp);
@@ -125,7 +117,5 @@ service InventoryService {
 
   rpc UpdateInventory(UpdateInventoryReq) returns (UpdateInventoryResp);
   rpc GetInventory(GetInventoryReq) returns (GetInventoryResp);
-
-  rpc Reset(Empty) returns (Empty);
 }
 
