@@ -2,8 +2,7 @@ package inventory
 
 import (
 	"context"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"database/sql"
 	"sdk-go/fail"
 	. "sdk-go/protos"
 	"sdk-go/stat"
@@ -13,10 +12,25 @@ func (s *Service) ListLocations(ctx context.Context, req *ListLocationsReq) (r *
 
 	tx := s.GetTx(ctx)
 
+	var loc any = nil
+	if req.Location != 0 {
+		loc = req.Location
+	}
+
 	rows, err := tx.tx.QueryContext(ctx, `
-SELECT Id, Name, Warehouse FROM Locations
-WHERE Warehouse=?
-`, req.Warehouse)
+WITH RECURSIVE cte_Locations(Id, Parent, Name) AS (
+	SELECT l.Id, l.Parent, l.Name
+	FROM Locations l
+	WHERE l.Id = ?
+
+	UNION ALL
+
+	SELECT l.Id, l.Parent, l.Name
+	FROM Locations l
+	JOIN cte_Locations c ON c.Id = l.Parent
+)
+SELECT * FROM cte_Locations
+`, loc)
 	if err != nil {
 		return re(r, err)
 	}
@@ -26,83 +40,83 @@ WHERE Warehouse=?
 
 	for rows.Next() {
 		var id uint64
-		var warehouse uint32
+		var parent sql.NullInt64
 		var name string
-		err := rows.Scan(&id, &name, &warehouse)
+		err := rows.Scan(&id, &parent, &name)
 		if err != nil {
 			return re(r, err)
 		}
 		results = append(results, &ListLocationsResp_Loc{
-			Warehouse: warehouse,
-			Location:  id,
-			Name:      name,
+			Name:    name,
+			Id:      id,
+			Parent:  uint64(parent.Int64),
+			Chidren: nil,
 		})
+	}
+	// we should at list get one location
+	if len(results) == 0 {
+		return nil, stat.NotFound
 	}
 	return &ListLocationsResp{Locs: results}, nil
 }
 
-func (s *Service) CreateWarehouse(ctx context.Context, req *CreateWarehouseReq) (r *CreateWarehouseResp, e error) {
-	tx := s.GetTx(ctx)
-
-	id := uint32(tx.GetSeq("Warehouses"))
-
-	results := make([]uint32, len(req.Names))
-	for i, name := range req.Names {
-		id += 1
-
-		e := &WarehouseCreated{
-			Name: name,
-			Id:   id,
-		}
-		results[i] = id
-
-		err, f := tx.Apply(e)
-		switch f {
-		case fail.OK:
-		case fail.ConstraintUnique:
-			return nil, stat.DuplicateName
-		default:
-			return nil, stat.Internal(err, f)
-		}
-	}
-
-	tx.Commit()
-	return &CreateWarehouseResp{Ids: results}, nil
-}
-
 func (s *Service) AddLocations(ctx context.Context, req *AddLocationsReq) (r *AddLocationsResp, e error) {
-
-	if req.Warehouse == 0 {
-		return nil, status.Error(codes.InvalidArgument, "Warehouse id can't be zero")
-	}
 
 	tx := s.GetTx(ctx)
 
 	id := tx.GetSeq("Locations")
 
-	results := make([]uint64, len(req.Names))
-	for i, name := range req.Names {
-		id += 1
+	var addLoc func(parent uint64, ls []*AddLocationsReq_Loc) ([]*AddLocationsResp_Loc, error)
 
-		e := &LocationAdded{
-			Name:      name,
-			Id:        id,
-			Warehouse: req.Warehouse,
-		}
-		results[i] = id
+	addLoc = func(parent uint64, ls []*AddLocationsReq_Loc) ([]*AddLocationsResp_Loc, error) {
 
-		err, f := tx.Apply(e)
-		switch f {
-		case fail.OK:
-		case fail.ConstraintUnique:
-			return nil, stat.DuplicateName
-		case fail.ConstraintForeign:
-			return nil, stat.NotFound
-		default:
-			return nil, stat.Internal(err, f)
+		var r []*AddLocationsResp_Loc
+
+		for _, l := range ls {
+			if l.Name == "" {
+				return nil, stat.ArgNil("Name")
+			}
+			id += 1
+
+			e := &LocationAdded{
+				Name:   l.Name,
+				Id:     id,
+				Parent: parent,
+			}
+			node := &AddLocationsResp_Loc{
+				Name:   l.Name,
+				Id:     id,
+				Parent: parent,
+			}
+			r = append(r, node)
+
+			err, f := tx.Apply(e)
+			switch f {
+			case fail.OK:
+			case fail.ConstraintUnique:
+				return nil, stat.DuplicateName
+			case fail.ConstraintForeign:
+				return nil, stat.NotFound
+			default:
+				return nil, stat.Internal(err, f)
+			}
+
+			children, err := addLoc(id, l.Locs)
+			if err != nil {
+				return nil, err
+			}
+			node.Locs = children
 		}
+		return r, nil
+	}
+
+	results, err := addLoc(req.Parent, req.Locs)
+	if err != nil {
+		return nil, err
 	}
 
 	tx.Commit()
-	return &AddLocationsResp{Ids: results, Warehouse: req.Warehouse}, nil
+	return &AddLocationsResp{
+		Locs: results,
+	}, nil
 }

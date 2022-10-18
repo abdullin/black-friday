@@ -15,3 +15,7 @@ var (
 func Internal(err error, code fail.Code) error {
 	return status.Error(codes.Internal, fmt.Sprintf("fail-%d: %s", code, err))
 }
+
+func ArgNil(field string) error {
+	return status.Error(codes.InvalidArgument, fmt.Sprintf("'%s' is nil", field))
+}

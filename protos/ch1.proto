@@ -4,37 +4,51 @@ package protos;
 option go_package = "go-lite/protos";
 
 
-message CreateWarehouseReq {
-  repeated string names = 1;
+/*
+enum LocType {
+  None = 0;
+  Warehouse = 1;
+  Container = 2;
 }
 
-message WarehouseCreated {
-  string name = 1;
-  uint32 id = 2;
-}
-
-message CreateWarehouseResp {
-  repeated uint32 ids = 1;
-  repeated string names = 2;
-}
-
-
-
+ */
 
 message AddLocationsReq {
-  uint32 warehouse = 1;
-  repeated string names = 2;
+
+  message Loc {
+    string name = 1;
+    //LocType type = 2;
+    // added later
+    // added later
+    repeated Loc locs = 4;
+  }
+
+
+  repeated Loc locs = 1;
+
+  uint64 parent = 2;
 }
 
 message AddLocationsResp {
-  uint32 warehouse = 1;
-  repeated uint64 ids = 2;
+  message Loc {
+    string name = 1;
+    //LocType type = 2;
+    uint64 id = 3;
+    uint64 parent = 4;
+
+    repeated Loc locs = 5;
+  }
+  repeated Loc locs = 1;
 }
 
 message LocationAdded {
-  uint32 warehouse = 1;
-  uint64 id = 2;
-  string name = 3;
+  uint64 id = 1;
+  string name = 2;
+  //LocType type = 3;
+
+  // added later
+  uint64 parent = 4;
+
 }
 
 
@@ -70,45 +84,42 @@ message InventoryUpdated{
   int64 OnHand = 4;
 }
 
-message ListLocationsRequest {
+message ListLocationsReq {
   uint64 location = 1;
 }
 
-message ListLocationsResponse {
+message ListLocationsResp {
+  message Loc {
+    string name = 1;
+    //LocType type = 2;
+    uint64 id = 3;
+    uint64 parent = 4;
+
+    repeated Loc chidren = 5;
+  }
+  repeated Loc locs = 1;
 
 }
 
-message GetInventoryReq {
+
+
+message GetLocInventoryReq {
   uint64 location = 1;
 }
 
-message GetInventoryResp {
+// this counts nested locations
+message GetLocInventoryResp {
+
   message Item {
-    uint64 product =1;
+    uint64 Product = 1;
     int64 OnHand = 2;
   }
 
   repeated Item items = 1;
 }
 
-message ListLocationsReq {
-  uint32 warehouse = 1;
-
-}
-
-message ListLocationsResp {
-  message Loc {
-    uint32 warehouse = 1;
-    uint64 location = 2;
-    string name = 3;
-  }
-
-  repeated Loc locs = 1;
-}
-
 
 service InventoryService {
-  rpc CreateWarehouse(CreateWarehouseReq) returns (CreateWarehouseResp);
   rpc AddLocations(AddLocationsReq) returns (AddLocationsResp);
 
   rpc AddProducts(AddProductsReq) returns (AddProductsResp);
@@ -116,6 +127,6 @@ service InventoryService {
   rpc ListLocations(ListLocationsReq) returns (ListLocationsResp);
 
   rpc UpdateInventory(UpdateInventoryReq) returns (UpdateInventoryResp);
-  rpc GetInventory(GetInventoryReq) returns (GetInventoryResp);
+  rpc GetLocInventory(GetLocInventoryReq) returns (GetLocInventoryResp);
 }
 

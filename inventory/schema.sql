@@ -4,16 +4,14 @@ PRAGMA foreign_keys = ON;
 
 create table dummy (id integer primary key autoincrement);
 
-CREATE TABLE Warehouses(
-    Id INTEGER PRIMARY KEY,
-    Name TEXT NOT NULL UNIQUE
-);
 
 CREATE TABLE Locations (
+
     Id INTEGER PRIMARY KEY,
-    Warehouse INTEGER NOT NULL,
+    -- can be null for root
+    Parent INTEGER,
     Name TEXT NOT NULL UNIQUE,
-    FOREIGN KEY(Warehouse) REFERENCES Warehouses(Id)
+    FOREIGN KEY(Parent) REFERENCES Locations(Id)
 );
 
 
@@ -32,8 +30,7 @@ CREATE TABLE Inventory (
 
 INSERT INTO sqlite_sequence (name, seq) VALUES
     ('Locations', 0),
-    ('Products', 0),
-    ('Warehouses', 0);
+    ('Products', 0);
 
 
 

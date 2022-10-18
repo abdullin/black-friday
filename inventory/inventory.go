@@ -46,7 +46,7 @@ func (s *Service) UpdateInventory(ctx context.Context, req *UpdateInventoryReq) 
 	return &UpdateInventoryResp{OnHand: e.OnHand}, nil
 }
 
-func (s *Service) GetInventory(ctx context.Context, req *GetInventoryReq) (r *GetInventoryResp, err error) {
+func (s *Service) GetLocInventory(ctx context.Context, req *GetLocInventoryReq) (r *GetLocInventoryResp, err error) {
 
 	tx := s.GetTx(ctx)
 
@@ -55,7 +55,7 @@ func (s *Service) GetInventory(ctx context.Context, req *GetInventoryReq) (r *Ge
 		return re(r, err)
 	}
 
-	var items []*GetInventoryResp_Item
+	var items []*GetLocInventoryResp_Item
 	for rows.Next() {
 		var product uint64
 		var onHand int64
@@ -65,7 +65,7 @@ func (s *Service) GetInventory(ctx context.Context, req *GetInventoryReq) (r *Ge
 			return re(r, err)
 		}
 
-		items = append(items, &GetInventoryResp_Item{
+		items = append(items, &GetLocInventoryResp_Item{
 			Product: product,
 			OnHand:  onHand,
 		})
@@ -75,7 +75,7 @@ func (s *Service) GetInventory(ctx context.Context, req *GetInventoryReq) (r *Ge
 		return nil, err
 	}
 
-	rep := &GetInventoryResp{Items: items}
+	rep := &GetLocInventoryResp{Items: items}
 
 	tx.Commit()
 

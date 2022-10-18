@@ -8,16 +8,15 @@ import (
 
 func apply(tx *Tx, e proto.Message) error {
 	switch t := e.(type) {
-	case *protos.WarehouseCreated:
-		return tx.Exec(`
-INSERT INTO Warehouses(Id, Name) VALUES(?,?);
-UPDATE sqlite_sequence SET seq=? WHERE name=?`,
-			t.Id, t.Name, t.Id, "Warehouses")
 	case *protos.LocationAdded:
+		values := []any{t.Id, t.Name, t.Parent, t.Id, "Locations"}
+		if t.Parent == 0 {
+			values[2] = nil
+		}
 		return tx.Exec(`
-INSERT INTO Locations(Id, Name, Warehouse) VALUES (?,?,?);
+INSERT INTO Locations(Id, Name, Parent) VALUES (?,?,?);
 UPDATE sqlite_sequence SET seq=? WHERE name=?
-`, t.Id, t.Name, t.Warehouse, t.Id, "Locations")
+`, values...)
 	case *protos.ProductAdded:
 		return tx.Exec(`
 INSERT INTO Products(Id, Sku) VALUES (?,?);

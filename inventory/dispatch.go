@@ -29,10 +29,8 @@ func (s *Service) dispatchInner(ctx context.Context, m proto.Message) (proto.Mes
 		return s.UpdateInventory(ctx, t)
 	case *protos.ListLocationsReq:
 		return s.ListLocations(ctx, t)
-	case *protos.GetInventoryReq:
-		return s.GetInventory(ctx, t)
-	case *protos.CreateWarehouseReq:
-		return s.CreateWarehouse(ctx, t)
+	case *protos.GetLocInventoryReq:
+		return s.GetLocInventory(ctx, t)
 	default:
 		return nil, fmt.Errorf("missing dispatch for %v", reflect.TypeOf(m))
 	}
