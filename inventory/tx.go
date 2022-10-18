@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"google.golang.org/protobuf/proto"
+	"sdk-go/fail"
 )
 
 type Tx struct {
@@ -48,10 +49,10 @@ func (c *Tx) QueryInt64(query string, args ...any) (int64, error) {
 	return i, err
 }
 
-func (s *Tx) Apply(e proto.Message) error {
+func (s *Tx) Apply(e proto.Message) (error, fail.Code) {
 	err := apply(s, e)
 	if err != nil {
-		return err
+		return fail.Extract(err)
 	}
 
 	if s.parent != nil {
@@ -59,7 +60,7 @@ func (s *Tx) Apply(e proto.Message) error {
 	} else {
 		s.events = append(s.events, e)
 	}
-	return nil
+	return nil, fail.OK
 
 }
 

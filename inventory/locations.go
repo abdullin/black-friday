@@ -4,8 +4,9 @@ import (
 	"context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
+	"sdk-go/fail"
 	. "sdk-go/protos"
+	"sdk-go/stat"
 )
 
 func (s *Service) ListLocations(ctx context.Context, req *ListLocationsReq) (r *ListLocationsResp, e error) {
@@ -55,9 +56,13 @@ func (s *Service) CreateWarehouse(ctx context.Context, req *CreateWarehouseReq) 
 		}
 		results[i] = id
 
-		err := tx.Apply(e)
-		if err != nil {
-			return re(r, err)
+		err, f := tx.Apply(e)
+		switch f {
+		case fail.OK:
+		case fail.ConstraintUnique:
+			return nil, stat.DuplicateName
+		default:
+			return nil, stat.Internal(err, f)
 		}
 	}
 
@@ -86,9 +91,15 @@ func (s *Service) AddLocations(ctx context.Context, req *AddLocationsReq) (r *Ad
 		}
 		results[i] = id
 
-		err := tx.Apply(e)
-		if err != nil {
-			return re(r, err)
+		err, f := tx.Apply(e)
+		switch f {
+		case fail.OK:
+		case fail.ConstraintUnique:
+			return nil, stat.DuplicateName
+		case fail.ConstraintForeign:
+			return nil, stat.NotFound
+		default:
+			return nil, stat.Internal(err, f)
 		}
 	}
 

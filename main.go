@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 	"os"
+	"reflect"
 	"runtime"
 	"sdk-go/inventory"
 	"sdk-go/seq"
@@ -184,9 +186,14 @@ func run_spec(ctx context.Context, svc *inventory.Service, spec *tests.Spec) (*S
 	defer tx.Rollback()
 
 	for i, e := range spec.Given {
-		err := tx.Apply(e)
+		err, fail := tx.Apply(e)
 		if err != nil {
-			panic(fmt.Sprintf("Problem with spec '%s' precondition %d: %s", spec.Name, i+1, err))
+			panic(fmt.Sprintf("#%v problem with spec '%s' event %d.%s: %s",
+				fail,
+				spec.Name,
+				i+1,
+				reflect.TypeOf(e).String(),
+				err))
 		}
 	}
 
@@ -197,7 +204,10 @@ func run_spec(ctx context.Context, svc *inventory.Service, spec *tests.Spec) (*S
 	nested := context.WithValue(ctx, "tx", tx)
 	actualResp, err := svc.Dispatch(nested, spec.When)
 	actualStatus, _ := status.FromError(err)
-	actualEvents := tx.TestGetEvents()
+	var actualEvents []proto.Message
+	if err == nil {
+		actualEvents = tx.TestGetEvents()
+	}
 	issues := seq.Diff(spec.ThenResponse, actualResp, "response")
 
 	eventCount += len(actualEvents)

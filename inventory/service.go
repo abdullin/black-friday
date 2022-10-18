@@ -20,9 +20,9 @@ type Service struct {
 
 func (s *Service) GetTx(ctx context.Context) *Tx {
 
-	inner, ok := ctx.Value("tx").(*Tx)
+	inner, hasParent := ctx.Value("tx").(*Tx)
 
-	if ok {
+	if hasParent {
 		return &Tx{
 			tx:     inner.tx,
 			ctx:    ctx,
@@ -33,10 +33,8 @@ func (s *Service) GetTx(ctx context.Context) *Tx {
 	tx, err := s.db.BeginTx(ctx, nil)
 
 	if err != nil {
+		// this is never expected to happen
 		panic(fmt.Errorf("failed to create tx: %w", err))
-	}
-	if tx == nil {
-		panic("no tx :(")
 	}
 
 	return &Tx{tx: tx, ctx: ctx}

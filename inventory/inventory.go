@@ -5,7 +5,9 @@ import (
 	"database/sql"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"sdk-go/fail"
 	. "sdk-go/protos"
+	"sdk-go/stat"
 )
 
 func (s *Service) UpdateInventory(ctx context.Context, req *UpdateInventoryReq) (r *UpdateInventoryResp, err error) {
@@ -32,10 +34,13 @@ func (s *Service) UpdateInventory(ctx context.Context, req *UpdateInventoryReq) 
 		OnHand:       onHand,
 	}
 
-	err = tx.Apply(e)
-	if err != nil {
-		return re(r, err)
+	err, f := tx.Apply(e)
+	switch f {
+	case fail.OK:
+	default:
+		return nil, stat.Internal(err, f)
 	}
+
 	tx.Commit()
 
 	return &UpdateInventoryResp{OnHand: e.OnHand}, nil

@@ -82,7 +82,7 @@ func init() {
 		Name:      "add locations without warehouse",
 		Given:     []proto.Message{},
 		When:      &AddLocationsReq{Warehouse: 42, Names: []string{"L1", "L2"}},
-		ThenError: codes.FailedPrecondition,
+		ThenError: codes.NotFound,
 	})
 
 	register(&Spec{
