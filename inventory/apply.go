@@ -6,17 +6,27 @@ import (
 	"sdk-go/protos"
 )
 
+func zeroToNill(n uint64) any {
+	// because NULL is good in SQLite for rows that have FK
+	// and not have a record to point to
+	if n == 0 {
+		return nil
+	}
+	return n
+}
+
 func apply(tx *Tx, e proto.Message) error {
 	switch t := e.(type) {
 	case *protos.LocationAdded:
-		values := []any{t.Id, t.Name, t.Parent, t.Id, "Locations"}
-		if t.Parent == 0 {
-			values[2] = nil
-		}
+		values := []any{t.Id, t.Name, zeroToNill(t.Parent), t.Id, "Locations"}
 		return tx.Exec(`
 INSERT INTO Locations(Id, Name, Parent) VALUES (?,?,?);
 UPDATE sqlite_sequence SET seq=? WHERE name=?
 `, values...)
+	case *protos.LocationMoved:
+		return tx.Exec(`
+UPDATE Locations SET Parent=? WHERE Id=?
+`, zeroToNill(t.NewParent), t.Id)
 	case *protos.ProductAdded:
 		return tx.Exec(`
 INSERT INTO Products(Id, Sku) VALUES (?,?);
