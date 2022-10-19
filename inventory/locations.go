@@ -12,11 +12,6 @@ func (s *Service) ListLocations(ctx context.Context, req *ListLocationsReq) (r *
 
 	tx := s.GetTx(ctx)
 
-	var loc any = nil
-	if req.Location != 0 {
-		loc = req.Location
-	}
-
 	rows, err := tx.tx.QueryContext(ctx, `
 WITH RECURSIVE cte_Locations(Id, Parent, Name) AS (
 	SELECT l.Id, l.Parent, l.Name
@@ -30,7 +25,7 @@ WITH RECURSIVE cte_Locations(Id, Parent, Name) AS (
 	JOIN cte_Locations c ON c.Id = l.Parent
 )
 SELECT * FROM cte_Locations
-`, loc)
+`, zeroToNill(req.Location))
 	if err != nil {
 		return re(r, err)
 	}

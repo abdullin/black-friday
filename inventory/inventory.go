@@ -50,7 +50,24 @@ func (s *Service) GetLocInventory(ctx context.Context, req *GetLocInventoryReq) 
 
 	tx := s.GetTx(ctx)
 
-	rows, err := tx.tx.QueryContext(ctx, "SELECT Product, OnHand FROM Inventory WHERE Location=?", req.Location)
+	rows, err := tx.tx.QueryContext(ctx, `
+WITH RECURSIVE cte_Locations(Id, Parent, Name) AS (
+	SELECT l.Id, l.Parent, l.Name
+	FROM Locations l
+	WHERE l.Id = ?
+
+	UNION ALL
+
+	SELECT l.Id, l.Parent, l.Name
+	FROM Locations l
+	JOIN cte_Locations c ON c.Id = l.Parent
+)
+SELECT I.Product, SUM(I.OnHand) FROM cte_Locations AS C
+JOIN Inventory AS I ON I.Location=C.Id
+GROUP BY I.Product
+
+
+`, req.Location)
 	if err != nil {
 		return re(r, err)
 	}
