@@ -38,6 +38,8 @@ SELECT * FROM cte_Locations
 
 	var results []*ListLocationsResp_Loc
 
+	lookup := make(map[uint64]*ListLocationsResp_Loc)
+
 	for rows.Next() {
 		var id uint64
 		var parent sql.NullInt64
@@ -46,12 +48,19 @@ SELECT * FROM cte_Locations
 		if err != nil {
 			return re(r, err)
 		}
-		results = append(results, &ListLocationsResp_Loc{
+
+		loc := &ListLocationsResp_Loc{
 			Name:    name,
 			Id:      id,
 			Parent:  uint64(parent.Int64),
 			Chidren: nil,
-		})
+		}
+		lookup[id] = loc
+		if parent, found := lookup[loc.Parent]; found {
+			parent.Chidren = append(parent.Chidren, loc)
+		} else {
+			results = append(results, loc)
+		}
 	}
 	// we should at list get one location
 	if len(results) == 0 {
