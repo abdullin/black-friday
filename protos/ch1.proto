@@ -48,6 +48,12 @@ message LocationAdded {
 
   // added later
   uint64 parent = 4;
+}
+
+message LocationMoved {
+  uint64 id = 1;
+  uint64 oldParent = 2;
+  uint64 newParent = 3;
 
 }
 

@@ -96,26 +96,26 @@ func init() {
 	register(&Spec{
 		Name: "add nested locations to an existing one",
 		Given: []proto.Message{
-			&LocationAdded{Id: 1, Name: "WH"},
+			&LocationAdded{Id: 1, Name: "Warehouse"},
 		},
 		When: &AddLocationsReq{
 			Parent: 1,
 			Locs: []*AddLocationsReq_Loc{
-				{Name: "S1", Locs: []*AddLocationsReq_Loc{
-					{Name: "S2"},
+				{Name: "Shelf", Locs: []*AddLocationsReq_Loc{
+					{Name: "Box"},
 				}},
 			},
 		},
 		ThenResponse: &AddLocationsResp{
 			Locs: []*AddLocationsResp_Loc{
-				{Id: 2, Name: "S1", Parent: 1, Locs: []*AddLocationsResp_Loc{
-					{Id: 3, Name: "S2", Parent: 2},
+				{Id: 2, Name: "Shelf", Parent: 1, Locs: []*AddLocationsResp_Loc{
+					{Id: 3, Name: "Box", Parent: 2},
 				}},
 			},
 		},
 		ThenEvents: []proto.Message{
-			&LocationAdded{Id: 2, Name: "S1", Parent: 1},
-			&LocationAdded{Id: 3, Name: "S2", Parent: 2},
+			&LocationAdded{Id: 2, Name: "Shelf", Parent: 1},
+			&LocationAdded{Id: 3, Name: "Box", Parent: 2},
 		},
 	})
 
@@ -175,6 +175,27 @@ func init() {
 			{Name: "W"},
 		}},
 		ThenError: codes.AlreadyExists,
+	})
+
+	register(&Spec{
+		Name: "container with cargo moved to a warehouse",
+		Given: []proto.Message{
+			// we have a warehouse with unloading zone
+			&LocationAdded{Id: 1, Name: "Warehouse"},
+			&LocationAdded{Id: 2, Name: "Unloading", Parent: 1},
+			// we have a standalone container with some GPUs
+			&LocationAdded{Id: 3, Name: "Container"},
+			&ProductAdded{Id: 1, Sku: "NVidia 4080"},
+			&InventoryUpdated{Location: 2, Product: 1, OnHandChange: 10, OnHand: 10},
+			// container was moved to the unloading zone in warehouse
+			&LocationMoved{Id: 3, NewParent: 2},
+		},
+		// we query warehouse
+		When: &GetLocInventoryReq{Location: 1},
+		// warehouse should show 10 cards as being onHand
+		ThenResponse: &GetLocInventoryResp{Items: []*GetLocInventoryResp_Item{
+			{Product: 1, OnHand: 10},
+		}},
 	})
 
 }
