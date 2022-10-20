@@ -47,7 +47,6 @@ func (s *Service) UpdateInventory(ctx context.Context, req *UpdateInventoryReq) 
 }
 
 func (s *Service) GetLocInventory(ctx context.Context, req *GetLocInventoryReq) (r *GetLocInventoryResp, err error) {
-
 	tx := s.GetTx(ctx)
 
 	rows, err := tx.tx.QueryContext(ctx, `
@@ -64,10 +63,7 @@ WITH RECURSIVE cte_Locations(Id, Parent, Name) AS (
 )
 SELECT I.Product, SUM(I.OnHand) FROM cte_Locations AS C
 JOIN Inventory AS I ON I.Location=C.Id
-GROUP BY I.Product
-
-
-`, req.Location)
+GROUP BY I.Product`, req.Location)
 	if err != nil {
 		return re(r, err)
 	}
