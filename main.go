@@ -208,36 +208,10 @@ func run_spec(ctx context.Context, svc *inventory.Service, spec *tests.Spec) (*S
 	if err == nil {
 		actualEvents = tx.TestGetEvents()
 	}
-	issues := seq.Diff(spec.ThenResponse, actualResp, "response")
 
 	eventCount += len(actualEvents)
 
-	if len(actualEvents) != len(spec.ThenEvents) {
-		issues = append(issues, &seq.Delta{
-			Expected: spec.ThenEvents,
-			Actual:   actualEvents,
-			Path:     "events",
-		})
-	} else {
-		for i, e := range spec.ThenEvents {
-			p := fmt.Sprintf("events[%d]", i)
-			issues = append(issues, seq.Diff(e, actualEvents[i], p)...)
-		}
-	}
-
-	if spec.ThenError != actualStatus.Code() {
-		actualErr := "OK"
-		if actualStatus.Code() != codes.OK {
-
-			actualErr = fmt.Sprintf("%s: %s", actualStatus.Code(), err)
-		}
-
-		issues = append(issues, &seq.Delta{
-			Expected: spec.ThenError,
-			Actual:   actualErr,
-			Path:     "status",
-		})
-	}
+	issues := spec.Compare(actualResp, actualStatus, actualEvents)
 
 	return &SpecResult{
 		EventCount: eventCount,

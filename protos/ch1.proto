@@ -1,5 +1,6 @@
 syntax = "proto3";
-//import "google/protobuf/any.proto";
+import "google/protobuf/any.proto";
+
 package protos;
 option go_package = "go-lite/protos";
 
@@ -136,3 +137,57 @@ service InventoryService {
   rpc GetLocInventory(GetLocInventoryReq) returns (GetLocInventoryResp);
 }
 
+
+message StartReq{
+
+}
+message StartResp{
+  string session = 1;
+  SpecTask task = 2;
+}
+
+
+message SpecTask {
+  uint32 seq = 1;
+  repeated google.protobuf.Any Given = 2;
+  google.protobuf.Any When = 3;
+}
+
+message SpecResult {
+  uint32 seq = 1;
+  repeated google.protobuf.Any Events = 2;
+  google.protobuf.Any Response = 3;
+  int32 StatusCode = 4;
+  string Message = 5;
+}
+
+message ExecReq {
+  string session = 1;
+  SpecResult result = 3;
+}
+
+message Failure {
+  string name = 1;
+  repeated string issue = 2;
+}
+message Report {
+  int64 success = 1;
+  int64 failed = 2;
+
+  repeated Failure Fails = 3;
+}
+
+message ExecResp {
+  SpecTask Task = 1;
+  Report Results = 3;
+
+
+
+}
+
+
+
+service SpecService {
+  rpc Start(StartReq) returns (StartResp);
+  rpc Exec(ExecReq) returns (ExecResp);
+}

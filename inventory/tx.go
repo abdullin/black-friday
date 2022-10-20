@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"google.golang.org/protobuf/proto"
+	"reflect"
 	"sdk-go/fail"
 )
 
@@ -52,7 +53,8 @@ func (c *Tx) QueryInt64(query string, args ...any) (int64, error) {
 func (s *Tx) Apply(e proto.Message) (error, fail.Code) {
 	err := apply(s, e)
 	if err != nil {
-		return fail.Extract(err)
+		extracted, failCode := fail.Extract(err)
+		return fmt.Errorf("apply %s: %w", reflect.TypeOf(e).String(), extracted), failCode
 	}
 
 	if s.parent != nil {
