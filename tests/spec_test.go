@@ -31,7 +31,7 @@ func run_spec(t *testing.T, spec *Spec, s *inventory.Service) {
 	actualStatus, _ := status.FromError(err)
 
 	if spec.ThenError != actualStatus.Code() {
-		deltas1 = append(deltas1, &seq.Delta{
+		deltas1 = append(deltas1, &seq.Issue{
 			Expected: spec.ThenError,
 			Actual:   actualStatus.Code(),
 			Path:     "status",

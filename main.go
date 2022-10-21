@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/abdullin/go-seq"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
@@ -11,7 +12,7 @@ import (
 	"reflect"
 	"runtime"
 	"sdk-go/inventory"
-	"sdk-go/seq"
+
 	"sdk-go/tests"
 	"sync"
 	"sync/atomic"
@@ -176,7 +177,7 @@ func guard(err error) {
 
 type SpecResult struct {
 	EventCount int
-	Deltas     []*seq.Delta
+	Deltas     seq.Issues
 }
 
 func run_spec(ctx context.Context, svc *inventory.Service, spec *tests.Spec) (*SpecResult, error) {

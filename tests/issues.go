@@ -2,13 +2,13 @@ package tests
 
 import (
 	"fmt"
+	"github.com/abdullin/go-seq"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
-	"sdk-go/seq"
 )
 
-func (spec *Spec) Compare(resp proto.Message, status *status.Status, events []proto.Message) []*seq.Delta {
+func (spec *Spec) Compare(resp proto.Message, status *status.Status, events []proto.Message) seq.Issues {
 
 	issues := seq.Diff(spec.ThenResponse, resp, "response")
 	if spec.ThenError != status.Code() {
@@ -18,24 +18,24 @@ func (spec *Spec) Compare(resp proto.Message, status *status.Status, events []pr
 			actualErr = fmt.Sprintf("%s: %s", status.Code(), status.Message())
 		}
 
-		issues = append(issues, &seq.Delta{
+		issues = append(issues, seq.Issue{
 			Expected: spec.ThenError,
 			Actual:   actualErr,
-			Path:     "status",
+			Path:     []string{"status"},
 		})
 
 	}
 
 	if len(events) != len(spec.ThenEvents) {
-		issues = append(issues, &seq.Delta{
+		issues = append(issues, seq.Issue{
 			Expected: spec.ThenEvents,
 			Actual:   events,
-			Path:     "events",
+			Path:     []string{"events"},
 		})
 	} else {
 		for i, e := range spec.ThenEvents {
-			p := fmt.Sprintf("events[%d]", i)
-			issues = append(issues, seq.Diff(e, events[i], p)...)
+			p := []string{"events", fmt.Sprintf("[%d]", i)}
+			issues = append(issues, seq.Diff(e, events[i], p...)...)
 		}
 	}
 	return issues
