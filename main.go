@@ -136,6 +136,8 @@ func main() {
 				fmt.Printf(red("  FATAL: %s\n"), err.Error())
 			}
 
+			fmt.Println(yellow("ISSUES:"))
+
 			for _, d := range deltas {
 				fmt.Printf("  %sΔ %s%s\n", ANOTHER, d.String(), CLEAR)
 			}
@@ -151,20 +153,20 @@ func printSpec(s *tests.Spec) {
 	if len(s.Given) > 0 {
 		println(yellow("GIVEN:"))
 		for i, e := range s.Given {
-			println(fmt.Sprintf("%d. %s", i+1, seq.Format(e)))
+			println(fmt.Sprintf("  %d. %s", i+1, seq.Format(e)))
 		}
 	}
-	println(fmt.Sprintf("%s %s", yellow("WHEN:"), seq.Format(s.When)))
+	println(fmt.Sprintf("%s\n  %s", yellow("WHEN:"), seq.Format(s.When)))
 	if s.ThenResponse != nil {
-		println(fmt.Sprintf("%s %s", yellow("THEN RESPONSE:"), seq.Format(s.ThenResponse)))
+		println(fmt.Sprintf("%s\n  %s", yellow("THEN RESPONSE:"), seq.Format(s.ThenResponse)))
 	}
 	if s.ThenError != codes.OK {
-		println(fmt.Sprintf("%s %s", yellow("THEN ERROR:"), s.ThenError))
+		println(fmt.Sprintf("%s\n  %s", yellow("THEN ERROR:"), s.ThenError))
 	}
 	if len(s.ThenEvents) > 0 {
 		println(yellow("THEN EVENTS:"))
 		for i, e := range s.ThenEvents {
-			println(fmt.Sprintf("%d. %s", i+1, seq.Format(e)))
+			println(fmt.Sprintf("  %d. %s", i+1, seq.Format(e)))
 		}
 	}
 }

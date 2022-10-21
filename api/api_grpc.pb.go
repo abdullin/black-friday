@@ -25,6 +25,7 @@ type InventoryServiceClient interface {
 	AddLocations(ctx context.Context, in *AddLocationsReq, opts ...grpc.CallOption) (*AddLocationsResp, error)
 	AddProducts(ctx context.Context, in *AddProductsReq, opts ...grpc.CallOption) (*AddProductsResp, error)
 	ListLocations(ctx context.Context, in *ListLocationsReq, opts ...grpc.CallOption) (*ListLocationsResp, error)
+	MoveLocation(ctx context.Context, in *MoveLocationReq, opts ...grpc.CallOption) (*MoveLocationResp, error)
 	UpdateInventory(ctx context.Context, in *UpdateInventoryReq, opts ...grpc.CallOption) (*UpdateInventoryResp, error)
 	GetLocInventory(ctx context.Context, in *GetLocInventoryReq, opts ...grpc.CallOption) (*GetLocInventoryResp, error)
 }
@@ -64,6 +65,15 @@ func (c *inventoryServiceClient) ListLocations(ctx context.Context, in *ListLoca
 	return out, nil
 }
 
+func (c *inventoryServiceClient) MoveLocation(ctx context.Context, in *MoveLocationReq, opts ...grpc.CallOption) (*MoveLocationResp, error) {
+	out := new(MoveLocationResp)
+	err := c.cc.Invoke(ctx, "/protos.InventoryService/MoveLocation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *inventoryServiceClient) UpdateInventory(ctx context.Context, in *UpdateInventoryReq, opts ...grpc.CallOption) (*UpdateInventoryResp, error) {
 	out := new(UpdateInventoryResp)
 	err := c.cc.Invoke(ctx, "/protos.InventoryService/UpdateInventory", in, out, opts...)
@@ -89,6 +99,7 @@ type InventoryServiceServer interface {
 	AddLocations(context.Context, *AddLocationsReq) (*AddLocationsResp, error)
 	AddProducts(context.Context, *AddProductsReq) (*AddProductsResp, error)
 	ListLocations(context.Context, *ListLocationsReq) (*ListLocationsResp, error)
+	MoveLocation(context.Context, *MoveLocationReq) (*MoveLocationResp, error)
 	UpdateInventory(context.Context, *UpdateInventoryReq) (*UpdateInventoryResp, error)
 	GetLocInventory(context.Context, *GetLocInventoryReq) (*GetLocInventoryResp, error)
 	mustEmbedUnimplementedInventoryServiceServer()
@@ -106,6 +117,9 @@ func (UnimplementedInventoryServiceServer) AddProducts(context.Context, *AddProd
 }
 func (UnimplementedInventoryServiceServer) ListLocations(context.Context, *ListLocationsReq) (*ListLocationsResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListLocations not implemented")
+}
+func (UnimplementedInventoryServiceServer) MoveLocation(context.Context, *MoveLocationReq) (*MoveLocationResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method MoveLocation not implemented")
 }
 func (UnimplementedInventoryServiceServer) UpdateInventory(context.Context, *UpdateInventoryReq) (*UpdateInventoryResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateInventory not implemented")
@@ -180,6 +194,24 @@ func _InventoryService_ListLocations_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _InventoryService_MoveLocation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MoveLocationReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).MoveLocation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.InventoryService/MoveLocation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).MoveLocation(ctx, req.(*MoveLocationReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _InventoryService_UpdateInventory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateInventoryReq)
 	if err := dec(in); err != nil {
@@ -234,6 +266,10 @@ var InventoryService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListLocations",
 			Handler:    _InventoryService_ListLocations_Handler,
+		},
+		{
+			MethodName: "MoveLocation",
+			Handler:    _InventoryService_MoveLocation_Handler,
 		},
 		{
 			MethodName: "UpdateInventory",

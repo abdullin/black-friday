@@ -7,7 +7,11 @@ import (
 	"database/sql"
 )
 
-func (s *Service) ListLocations(ctx context.Context, req *ListLocationsReq) (r *ListLocationsResp, e error) {
+func (s *Service) MoveLocation(ctx context.Context, req *MoveLocationReq) (*MoveLocationResp, error) {
+	return nil, ErrNotUnimplemented
+}
+
+func (s *Service) ListLocations(ctx context.Context, req *ListLocationsReq) (*ListLocationsResp, error) {
 
 	tx := s.GetTx(ctx)
 

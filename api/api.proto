@@ -44,7 +44,15 @@ message LocationMoved {
   uint64 id = 1;
   uint64 oldParent = 2;
   uint64 newParent = 3;
+}
 
+message MoveLocationReq {
+  uint64 id = 1;
+  uint64 newParent = 2;
+}
+
+message MoveLocationResp {
+  // empty
 }
 
 
@@ -121,7 +129,7 @@ service InventoryService {
   rpc AddProducts(AddProductsReq) returns (AddProductsResp);
 
   rpc ListLocations(ListLocationsReq) returns (ListLocationsResp);
-
+  rpc MoveLocation(MoveLocationReq) returns (MoveLocationResp);
   rpc UpdateInventory(UpdateInventoryReq) returns (UpdateInventoryResp);
   rpc GetLocInventory(GetLocInventoryReq) returns (GetLocInventoryResp);
 }

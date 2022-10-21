@@ -177,25 +177,69 @@ func init() {
 		ThenError: codes.AlreadyExists,
 	})
 
+	container_with_gpus_inbound := []proto.Message{
+
+		&ProductAdded{Id: 1, Sku: "NVidia 4080"},
+		// we have a warehouse with unloading zone and a shelf
+		&LocationAdded{Id: 1, Name: "Warehouse"},
+		&LocationAdded{Id: 2, Name: "Unloading", Parent: 1},
+		&LocationAdded{Id: 3, Name: "Shelf", Parent: 1},
+		// 5 GPUS on a Shelf
+		&InventoryUpdated{Location: 3, Product: 1, OnHandChange: 5, OnHand: 5},
+		// we have a standalone container with some GPUs
+		&LocationAdded{Id: 4, Name: "Container"},
+		&InventoryUpdated{Location: 4, Product: 1, OnHandChange: 10, OnHand: 10},
+		// container was moved to the unloading zone in warehouse
+		&LocationMoved{Id: 4, NewParent: 2},
+	}
 	register(&Spec{
-		Name: "container with cargo moved to a warehouse",
-		Given: []proto.Message{
-			// we have a warehouse with unloading zone
-			&LocationAdded{Id: 1, Name: "Warehouse"},
-			&LocationAdded{Id: 2, Name: "Unloading", Parent: 1},
-			// we have a standalone container with some GPUs
-			&LocationAdded{Id: 3, Name: "Container"},
-			&ProductAdded{Id: 1, Sku: "NVidia 4080"},
-			&InventoryUpdated{Location: 2, Product: 1, OnHandChange: 10, OnHand: 10},
-			// container was moved to the unloading zone in warehouse
-			&LocationMoved{Id: 3, NewParent: 2},
-		},
+		Name:  "moving container to warehouse increases total quantity",
+		Given: container_with_gpus_inbound,
 		// we query warehouse
 		When: &GetLocInventoryReq{Location: 1},
-		// warehouse should show 10 cards as being onHand
+		// warehouse should show 15 cards as being onHand
+		ThenResponse: &GetLocInventoryResp{Items: []*GetLocInventoryResp_Item{
+			{Product: 1, OnHand: 15},
+		}},
+	})
+
+	register(&Spec{
+		Name:  "moving container to warehouse increases unloading quantity",
+		Given: container_with_gpus_inbound,
+		// we query unloading
+		When: &GetLocInventoryReq{Location: 2},
 		ThenResponse: &GetLocInventoryResp{Items: []*GetLocInventoryResp_Item{
 			{Product: 1, OnHand: 10},
 		}},
+	})
+
+	register(&Spec{
+		Name: "move locations",
+		Given: []proto.Message{
+			&LocationAdded{Id: 1, Name: "Warehouse"},
+			&LocationAdded{Id: 2, Name: "Container"},
+		},
+		When: &MoveLocationReq{
+			Id:        2,
+			NewParent: 1,
+		},
+		ThenResponse: &MoveLocationResp{},
+		ThenEvents: []proto.Message{
+			&LocationMoved{Id: 2, OldParent: 0, NewParent: 1},
+		},
+	})
+
+	register(&Spec{
+		Name: "recursive locations are not allowed",
+		Given: []proto.Message{
+			&LocationAdded{Id: 1, Name: "Warehouse"},
+			&LocationAdded{Id: 2, Name: "Container", Parent: 1},
+		},
+		When: &MoveLocationReq{
+			Id:        1,
+			NewParent: 2,
+		},
+		ThenError: codes.FailedPrecondition,
 	})
 
 }

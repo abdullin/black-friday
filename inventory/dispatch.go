@@ -31,6 +31,8 @@ func (s *Service) dispatchInner(ctx context.Context, m proto.Message) (proto.Mes
 		return s.ListLocations(ctx, t)
 	case *api.GetLocInventoryReq:
 		return s.GetLocInventory(ctx, t)
+	case *api.MoveLocationReq:
+		return s.MoveLocation(ctx, t)
 	default:
 		return nil, fmt.Errorf("missing dispatch for %v", reflect.TypeOf(m))
 	}
