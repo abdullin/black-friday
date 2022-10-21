@@ -3,7 +3,6 @@ package inventory
 import (
 	. "black-friday/api"
 	"black-friday/fail"
-	"black-friday/stat"
 	"context"
 	"database/sql"
 )
@@ -59,7 +58,7 @@ SELECT * FROM cte_Locations
 	}
 	// we should at list get one location
 	if len(results) == 0 {
-		return nil, stat.NotFound
+		return nil, ErrNotFound
 	}
 	return &ListLocationsResp{Locs: results}, nil
 }
@@ -78,7 +77,7 @@ func (s *Service) AddLocations(ctx context.Context, req *AddLocationsReq) (r *Ad
 
 		for _, l := range ls {
 			if l.Name == "" {
-				return nil, stat.ArgNil("Name")
+				return nil, ErrArgNil("Name")
 			}
 			id += 1
 
@@ -98,11 +97,11 @@ func (s *Service) AddLocations(ctx context.Context, req *AddLocationsReq) (r *Ad
 			switch f {
 			case fail.OK:
 			case fail.ConstraintUnique:
-				return nil, stat.DuplicateName
+				return nil, ErrDuplicateName
 			case fail.ConstraintForeign:
-				return nil, stat.NotFound
+				return nil, ErrNotFound
 			default:
-				return nil, stat.Internal(err, f)
+				return nil, ErrInternal(err, f)
 			}
 
 			children, err := addLoc(id, l.Locs)

@@ -1,4 +1,4 @@
-package stat
+package api
 
 import (
 	"black-friday/fail"
@@ -8,14 +8,14 @@ import (
 )
 
 var (
-	DuplicateName = status.Error(codes.AlreadyExists, "Duplicate name")
-	NotFound      = status.Error(codes.NotFound, "Entity not found")
+	ErrDuplicateName = status.Error(codes.AlreadyExists, "Duplicate name")
+	ErrNotFound      = status.Error(codes.NotFound, "Entity not found")
 )
 
-func Internal(err error, code fail.Code) error {
+func ErrInternal(err error, code fail.Code) error {
 	return status.Error(codes.Internal, fmt.Sprintf("fail-%d: %s", code, err))
 }
 
-func ArgNil(field string) error {
+func ErrArgNil(field string) error {
 	return status.Error(codes.InvalidArgument, fmt.Sprintf("'%s' is nil", field))
 }

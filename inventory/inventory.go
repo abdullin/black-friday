@@ -3,7 +3,6 @@ package inventory
 import (
 	. "black-friday/api"
 	"black-friday/fail"
-	"black-friday/stat"
 	"context"
 	"database/sql"
 	"google.golang.org/grpc/codes"
@@ -38,7 +37,7 @@ func (s *Service) UpdateInventory(ctx context.Context, req *UpdateInventoryReq) 
 	switch f {
 	case fail.OK:
 	default:
-		return nil, stat.Internal(err, f)
+		return nil, ErrInternal(err, f)
 	}
 
 	tx.Commit()
