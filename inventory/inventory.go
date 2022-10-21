@@ -1,13 +1,13 @@
 package inventory
 
 import (
+	. "black-friday/api"
+	"black-friday/fail"
+	"black-friday/stat"
 	"context"
 	"database/sql"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"sdk-go/fail"
-	. "sdk-go/protos"
-	"sdk-go/stat"
 )
 
 func (s *Service) UpdateInventory(ctx context.Context, req *UpdateInventoryReq) (r *UpdateInventoryResp, err error) {

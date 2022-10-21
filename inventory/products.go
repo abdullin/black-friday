@@ -1,11 +1,11 @@
 package inventory
 
 import (
+	"black-friday/api"
 	"context"
-	"sdk-go/protos"
 )
 
-func (s *Service) AddProducts(ctx context.Context, req *protos.AddProductsReq) (r *protos.AddProductsResp, err error) {
+func (s *Service) AddProducts(ctx context.Context, req *api.AddProductsReq) (r *api.AddProductsResp, err error) {
 
 	tx := s.GetTx(ctx)
 
@@ -15,7 +15,7 @@ func (s *Service) AddProducts(ctx context.Context, req *protos.AddProductsReq) (
 	for i, sku := range req.Skus {
 
 		id += 1
-		e := &protos.ProductAdded{
+		e := &api.ProductAdded{
 			Id:  id,
 			Sku: sku,
 		}
@@ -26,5 +26,5 @@ func (s *Service) AddProducts(ctx context.Context, req *protos.AddProductsReq) (
 	}
 
 	tx.Commit()
-	return &protos.AddProductsResp{Ids: results}, nil
+	return &api.AddProductsResp{Ids: results}, nil
 }

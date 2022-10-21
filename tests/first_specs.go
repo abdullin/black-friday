@@ -1,9 +1,9 @@
 package tests
 
 import (
+	. "black-friday/api"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/proto"
-	. "sdk-go/protos"
 )
 
 func init() {

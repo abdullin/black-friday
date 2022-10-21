@@ -1,12 +1,12 @@
 package inventory
 
 import (
+	"black-friday/fail"
 	"context"
 	"database/sql"
 	"fmt"
 	"google.golang.org/protobuf/proto"
 	"reflect"
-	"sdk-go/fail"
 )
 
 type Tx struct {

@@ -1,10 +1,10 @@
 package inventory
 
 import (
+	. "black-friday/api"
 	"context"
 	"database/sql"
 	"fmt"
-	. "sdk-go/protos"
 )
 
 type Loc struct {

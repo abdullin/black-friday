@@ -1,6 +1,7 @@
 package main
 
 import (
+	"black-friday/inventory"
 	"context"
 	"database/sql"
 	"fmt"
@@ -11,9 +12,8 @@ import (
 	"os"
 	"reflect"
 	"runtime"
-	"sdk-go/inventory"
 
-	"sdk-go/tests"
+	"black-friday/tests"
 	"sync"
 	"sync/atomic"
 	"time"

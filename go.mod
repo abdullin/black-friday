@@ -1,4 +1,4 @@
-module sdk-go
+module black-friday
 
 go 1.19
 

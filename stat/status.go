@@ -1,10 +1,10 @@
 package stat
 
 import (
+	"black-friday/fail"
 	"fmt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"sdk-go/fail"
 )
 
 var (

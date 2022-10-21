@@ -1,11 +1,11 @@
 package inventory
 
 import (
+	. "black-friday/api"
+	"black-friday/fail"
+	"black-friday/stat"
 	"context"
 	"database/sql"
-	"sdk-go/fail"
-	. "sdk-go/protos"
-	"sdk-go/stat"
 )
 
 func (s *Service) ListLocations(ctx context.Context, req *ListLocationsReq) (r *ListLocationsResp, e error) {

@@ -1,11 +1,11 @@
 package inventory
 
 import (
+	"black-friday/api"
 	"context"
 	"fmt"
 	"google.golang.org/protobuf/proto"
 	"reflect"
-	"sdk-go/protos"
 )
 
 func (s *Service) Dispatch(ctx context.Context, m proto.Message) (proto.Message, error) {
@@ -21,15 +21,15 @@ func (s *Service) Dispatch(ctx context.Context, m proto.Message) (proto.Message,
 
 func (s *Service) dispatchInner(ctx context.Context, m proto.Message) (proto.Message, error) {
 	switch t := m.(type) {
-	case *protos.AddLocationsReq:
+	case *api.AddLocationsReq:
 		return s.AddLocations(ctx, t)
-	case *protos.AddProductsReq:
+	case *api.AddProductsReq:
 		return s.AddProducts(ctx, t)
-	case *protos.UpdateInventoryReq:
+	case *api.UpdateInventoryReq:
 		return s.UpdateInventory(ctx, t)
-	case *protos.ListLocationsReq:
+	case *api.ListLocationsReq:
 		return s.ListLocations(ctx, t)
-	case *protos.GetLocInventoryReq:
+	case *api.GetLocInventoryReq:
 		return s.GetLocInventory(ctx, t)
 	default:
 		return nil, fmt.Errorf("missing dispatch for %v", reflect.TypeOf(m))
