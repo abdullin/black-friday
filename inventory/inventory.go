@@ -17,7 +17,7 @@ func (s *Service) UpdateInventory(ctx context.Context, req *UpdateInventoryReq) 
 		req.Product)
 
 	if err != sql.ErrNoRows {
-		return re(r, err)
+		return nil, err
 	}
 
 	onHand += req.OnHandChange
@@ -64,7 +64,7 @@ SELECT I.Product, SUM(I.OnHand) FROM cte_Locations AS C
 JOIN Inventory AS I ON I.Location=C.Id
 GROUP BY I.Product`, req.Location)
 	if err != nil {
-		return re(r, err)
+		return nil, err
 	}
 
 	var items []*GetLocInventoryResp_Item
@@ -74,7 +74,7 @@ GROUP BY I.Product`, req.Location)
 
 		err := rows.Scan(&product, &onHand)
 		if err != nil {
-			return re(r, err)
+			return nil, err
 		}
 
 		items = append(items, &GetLocInventoryResp_Item{

@@ -26,7 +26,7 @@ WITH RECURSIVE cte_Locations(Id, Parent, Name) AS (
 SELECT * FROM cte_Locations
 `, zeroToNill(req.Location))
 	if err != nil {
-		return re(r, err)
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -40,7 +40,7 @@ SELECT * FROM cte_Locations
 		var name string
 		err := rows.Scan(&id, &parent, &name)
 		if err != nil {
-			return re(r, err)
+			return nil, err
 		}
 
 		loc := &ListLocationsResp_Loc{
