@@ -1,4 +1,4 @@
-.PHONY: clean schema
+.PHONY: clean schema specs
 
 
 schema:
