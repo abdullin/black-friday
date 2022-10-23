@@ -2,13 +2,14 @@ package tests
 
 import (
 	. "black-friday/api"
+	"black-friday/specs"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/proto"
 )
 
 func init() {
 
-	register(&Spec{
+	register(&specs.S{
 		Name: "query inventory",
 		Given: []proto.Message{
 			&ProductAdded{Id: 1, Sku: "Cola"},
@@ -20,7 +21,7 @@ func init() {
 		ThenResponse: &GetLocInventoryResp{Items: []*GetLocInventoryResp_Item{{Product: 2, OnHand: 2}}},
 	})
 
-	register(&Spec{
+	register(&specs.S{
 		Name: "query one specific location",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "Shelf1"},
@@ -31,7 +32,7 @@ func init() {
 		}},
 	})
 
-	register(&Spec{
+	register(&specs.S{
 		Name: "query all locations in a tree",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "WH"},
@@ -47,7 +48,7 @@ func init() {
 		}},
 	})
 
-	register(&Spec{
+	register(&specs.S{
 		Name: "query locations after removal",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "Shelf"},
@@ -59,7 +60,7 @@ func init() {
 		ThenResponse: &GetLocInventoryResp{Items: []*GetLocInventoryResp_Item{}},
 	})
 
-	register(&Spec{
+	register(&specs.S{
 		Name: "don't allow negative on-hand",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "Shelf"},
@@ -69,7 +70,7 @@ func init() {
 		ThenError: codes.FailedPrecondition,
 	})
 
-	register(&Spec{
+	register(&specs.S{
 		Name: "add locations to an existing one",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "WH"},
@@ -93,7 +94,7 @@ func init() {
 		},
 	})
 
-	register(&Spec{
+	register(&specs.S{
 		Name: "add nested locations to an existing one",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "Warehouse"},
@@ -119,7 +120,7 @@ func init() {
 		},
 	})
 
-	register(&Spec{
+	register(&specs.S{
 		Name:  "add location with wrong parent",
 		Given: []proto.Message{},
 		When: &AddLocationsReq{
@@ -131,14 +132,14 @@ func init() {
 		ThenError: codes.NotFound,
 	})
 
-	register(&Spec{
+	register(&specs.S{
 		Name:      "add location with nill name",
 		Given:     []proto.Message{},
 		When:      &AddLocationsReq{Locs: []*AddLocationsReq_Loc{{}}},
 		ThenError: codes.InvalidArgument,
 	})
 
-	register(&Spec{
+	register(&specs.S{
 		Name: "query locations from another root",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "WH1"},
@@ -151,13 +152,13 @@ func init() {
 			Id:   2,
 		}}},
 	})
-	register(&Spec{
+	register(&specs.S{
 		Name:      "query locations from non-existent location",
 		When:      &ListLocationsReq{Location: 1},
 		ThenError: codes.NotFound,
 	})
 
-	register(&Spec{
+	register(&specs.S{
 		Name: "insert duplicate location name in a batch",
 		When: &AddLocationsReq{Locs: []*AddLocationsReq_Loc{
 			{Name: "W"},
@@ -166,7 +167,7 @@ func init() {
 		ThenError: codes.AlreadyExists,
 	})
 
-	register(&Spec{
+	register(&specs.S{
 		Name: "add location with duplicate name",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "W"},
@@ -192,7 +193,7 @@ func init() {
 		// container was moved to the unloading zone in warehouse
 		&LocationMoved{Id: 4, NewParent: 2},
 	}
-	register(&Spec{
+	register(&specs.S{
 		Name:  "moving container to warehouse increases total quantity",
 		Given: container_with_gpus_inbound,
 		// we query warehouse
@@ -203,7 +204,7 @@ func init() {
 		}},
 	})
 
-	register(&Spec{
+	register(&specs.S{
 		Name:  "moving container to warehouse increases unloading quantity",
 		Given: container_with_gpus_inbound,
 		// we query unloading
@@ -213,7 +214,7 @@ func init() {
 		}},
 	})
 
-	register(&Spec{
+	register(&specs.S{
 		Name: "move locations",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "Warehouse"},
@@ -229,7 +230,7 @@ func init() {
 		},
 	})
 
-	register(&Spec{
+	register(&specs.S{
 		Name: "recursive locations are not allowed",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "Warehouse"},

@@ -2,11 +2,11 @@ package main
 
 import (
 	"black-friday/inventory"
+	"black-friday/specs"
 	"context"
 	"database/sql"
 	"fmt"
 	"github.com/abdullin/go-seq"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"os"
@@ -135,7 +135,7 @@ func main() {
 		} else {
 			fmt.Printf(red("x %s\n"), s.Name)
 
-			printSpec(s)
+			s.Print()
 
 			if err != nil {
 				fmt.Printf(red("  FATAL: %s\n"), err.Error())
@@ -153,29 +153,6 @@ func main() {
 
 }
 
-func printSpec(s *tests.Spec) {
-	//println(s.Name)
-	if len(s.Given) > 0 {
-		println(yellow("GIVEN:"))
-		for i, e := range s.Given {
-			println(fmt.Sprintf("  %d. %s", i+1, seq.Format(e)))
-		}
-	}
-	println(fmt.Sprintf("%s\n  %s", yellow("WHEN:"), seq.Format(s.When)))
-	if s.ThenResponse != nil {
-		println(fmt.Sprintf("%s\n  %s", yellow("THEN RESPONSE:"), seq.Format(s.ThenResponse)))
-	}
-	if s.ThenError != codes.OK {
-		println(fmt.Sprintf("%s\n  %s", yellow("THEN ERROR:"), s.ThenError))
-	}
-	if len(s.ThenEvents) > 0 {
-		println(yellow("THEN EVENTS:"))
-		for i, e := range s.ThenEvents {
-			println(fmt.Sprintf("  %d. %s", i+1, seq.Format(e)))
-		}
-	}
-}
-
 func guard(err error) {
 	if err != nil {
 		panic(err)
@@ -187,7 +164,11 @@ type SpecResult struct {
 	Deltas     seq.Issues
 }
 
-func run_spec(ctx context.Context, svc *inventory.Service, spec *tests.Spec) (*SpecResult, error) {
+type Dispatcher interface {
+	Dispatch(ctx context.Context, m proto.Message) (proto.Message, error)
+}
+
+func run_spec(ctx context.Context, svc *inventory.Service, spec *specs.S) (*SpecResult, error) {
 
 	tx := svc.GetTx(ctx)
 

@@ -1,4 +1,4 @@
-package tests
+package specs
 
 import (
 	"fmt"
@@ -8,7 +8,16 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func (spec *Spec) Compare(resp proto.Message, status *status.Status, events []proto.Message) seq.Issues {
+type S struct {
+	Name         string
+	Given        []proto.Message
+	When         proto.Message
+	ThenResponse proto.Message
+	ThenError    codes.Code
+	ThenEvents   []proto.Message
+}
+
+func (spec *S) Compare(resp proto.Message, status *status.Status, events []proto.Message) seq.Issues {
 
 	issues := seq.Diff(spec.ThenResponse, resp, "response")
 	if spec.ThenError != status.Code() {
