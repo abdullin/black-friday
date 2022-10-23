@@ -46,6 +46,11 @@ func speed_test() {
 	ctx := context.Background()
 
 	cores := runtime.NumCPU()
+	if env := os.Getenv("REPL_ID"); env != "" {
+		// REPLIT is limited by default
+		cores = 1
+	}
+
 	fmt.Printf("Speed test with %d cores... ", cores)
 
 	var services []*inventory.Service
