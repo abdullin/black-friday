@@ -7,14 +7,8 @@ import (
 	"fmt"
 )
 
-type Loc struct {
-	Id   uint64
-	Name string
-}
-
 type Service struct {
 	db *sql.DB
-
 	UnimplementedInventoryServiceServer
 }
 
