@@ -3,7 +3,7 @@ package fail
 type Code int
 
 const (
-	OK            = Code(0)
+	None          = Code(0)
 	SqlLogicError = 1
 
 	Constraint        = 19 // sqlite

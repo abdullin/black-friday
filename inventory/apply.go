@@ -27,7 +27,7 @@ func (s *Service) Apply(tx *fx.Tx, e proto.Message) (error, fail.Code) {
 		return fmt.Errorf("apply %s: %w", reflect.TypeOf(e).String(), extracted), failCode
 	}
 	tx.Append(e)
-	return nil, fail.OK
+	return nil, fail.None
 
 }
 

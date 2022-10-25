@@ -11,7 +11,7 @@ import (
 func Extract(err error) (error, Code) {
 
 	if err == nil {
-		return nil, OK
+		return nil, None
 	}
 
 	var sqlErr sqlite3.Error

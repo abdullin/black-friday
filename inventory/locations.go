@@ -99,7 +99,7 @@ func (s *Service) AddLocations(ctx context.Context, req *AddLocationsReq) (r *Ad
 
 			err, f := s.Apply(tx, e)
 			switch f {
-			case fail.OK:
+			case fail.None:
 			case fail.ConstraintUnique:
 				return nil, ErrDuplicateName
 			case fail.ConstraintForeign:

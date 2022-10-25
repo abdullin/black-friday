@@ -35,7 +35,7 @@ func (s *Service) UpdateInventory(ctx context.Context, req *UpdateInventoryReq) 
 
 	err, f := s.Apply(tx, e)
 	switch f {
-	case fail.OK:
+	case fail.None:
 	default:
 		return nil, ErrInternal(err, f)
 	}
