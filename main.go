@@ -190,8 +190,7 @@ func run_spec(ctx context.Context, svc *inventory.Service, spec *specs.S) (*Spec
 
 	tx.TestClearEvents()
 
-	nested := context.WithValue(ctx, "tx", tx)
-	actualResp, err := svc.Dispatch(nested, spec.When)
+	actualResp, err := svc.TestDispatch(tx, ctx, spec.When)
 	actualStatus, _ := status.FromError(err)
 	var actualEvents []proto.Message
 	if err == nil {

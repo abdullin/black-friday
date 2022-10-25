@@ -17,6 +17,12 @@ type Tx struct {
 
 const NestedTxKey = "tx"
 
+// Stash puts transaction into the context, so that it could be passed
+// to dispatch method
+func (tx *Tx) Stash(ctx context.Context) context.Context {
+	return context.WithValue(ctx, NestedTxKey, tx)
+}
+
 func Begin(ctx context.Context, db *sql.DB) *Tx {
 	inner, hasParent := ctx.Value(NestedTxKey).(*Tx)
 

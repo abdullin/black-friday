@@ -2,14 +2,20 @@ package inventory
 
 import (
 	"black-friday/api"
+	"black-friday/fx"
 	"context"
 	"fmt"
 	"google.golang.org/protobuf/proto"
 	"reflect"
 )
 
-func (s *Service) Dispatch(ctx context.Context, m proto.Message) (proto.Message, error) {
-	m, err := s.dispatchInner(ctx, m)
+// TestDispatch executes dispatch within a bigger transaction. Good for tests,
+// potentially usable for batching
+func (s *Service) TestDispatch(tx *fx.Tx, ctx context.Context, m proto.Message) (proto.Message, error) {
+
+	nested := tx.Stash(ctx)
+
+	m, err := s.dispatchInner(nested, m)
 
 	// because m is never nil here, even if the returned value was nil
 	if m != nil && reflect.ValueOf(m).IsNil() {
