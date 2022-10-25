@@ -9,16 +9,7 @@ import (
 	"reflect"
 )
 
-func zeroToNill(n uint64) any {
-	// because NULL is good in SQLite for rows that have FK
-	// and not have a record to point to
-	if n == 0 {
-		return nil
-	}
-	return n
-}
-
-func (s *Service) Apply(tx *fx.Tx, e proto.Message) (error, fail.Code) {
+func (s *App) Apply(tx *fx.Tx, e proto.Message) (error, fail.Code) {
 
 	err := applyInner(tx, e)
 

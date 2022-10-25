@@ -11,7 +11,7 @@ import (
 
 // TestDispatch executes dispatch within a bigger transaction. Good for tests,
 // potentially usable for batching
-func (s *Service) TestDispatch(tx *fx.Tx, ctx context.Context, m proto.Message) (proto.Message, error) {
+func (s *App) TestDispatch(tx *fx.Tx, ctx context.Context, m proto.Message) (proto.Message, error) {
 
 	nested := tx.Stash(ctx)
 
@@ -25,7 +25,7 @@ func (s *Service) TestDispatch(tx *fx.Tx, ctx context.Context, m proto.Message) 
 
 }
 
-func (s *Service) dispatchInner(ctx context.Context, m proto.Message) (proto.Message, error) {
+func (s *App) dispatchInner(ctx context.Context, m proto.Message) (proto.Message, error) {
 	switch t := m.(type) {
 	case *api.AddLocationsReq:
 		return s.AddLocations(ctx, t)

@@ -53,7 +53,7 @@ func speed_test() {
 
 	fmt.Printf("Speed test with %d cores... ", cores)
 
-	var services []*inventory.Service
+	var services []*inventory.App
 	var wg sync.WaitGroup
 	for i := 0; i < cores; i++ {
 		db, err := sql.Open("sqlite3", file)
@@ -62,7 +62,7 @@ func speed_test() {
 
 		guard(inventory.CreateSchema(db))
 
-		svc := inventory.NewService(db)
+		svc := inventory.NewApp(db)
 		services = append(services, svc)
 		wg.Add(1)
 	}
@@ -120,7 +120,7 @@ func main() {
 
 	guard(inventory.CreateSchema(db))
 
-	svc := inventory.NewService(db)
+	svc := inventory.NewApp(db)
 
 	ctx := context.Background()
 
@@ -168,7 +168,7 @@ type Dispatcher interface {
 	Dispatch(ctx context.Context, m proto.Message) (proto.Message, error)
 }
 
-func run_spec(ctx context.Context, svc *inventory.Service, spec *specs.S) (*SpecResult, error) {
+func run_spec(ctx context.Context, svc *inventory.App, spec *specs.S) (*SpecResult, error) {
 
 	tx := svc.GetTx(ctx)
 

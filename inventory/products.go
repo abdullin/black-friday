@@ -5,7 +5,7 @@ import (
 	"context"
 )
 
-func (s *Service) AddProducts(ctx context.Context, req *api.AddProductsReq) (r *api.AddProductsResp, err error) {
+func (s *App) AddProducts(ctx context.Context, req *api.AddProductsReq) (r *api.AddProductsResp, err error) {
 
 	tx := s.GetTx(ctx)
 

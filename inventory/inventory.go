@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Service) UpdateInventory(ctx context.Context, req *UpdateInventoryReq) (r *UpdateInventoryResp, err error) {
+func (s *App) UpdateInventory(ctx context.Context, req *UpdateInventoryReq) (r *UpdateInventoryResp, err error) {
 	tx := s.GetTx(ctx)
 
 	onHand, err := tx.QueryInt64("SELECT OnHand FROM Inventory WHERE Location=? AND Product=?",
@@ -45,7 +45,7 @@ func (s *Service) UpdateInventory(ctx context.Context, req *UpdateInventoryReq) 
 	return &UpdateInventoryResp{OnHand: e.OnHand}, nil
 }
 
-func (s *Service) GetLocInventory(ctx context.Context, req *GetLocInventoryReq) (r *GetLocInventoryResp, err error) {
+func (s *App) GetLocInventory(ctx context.Context, req *GetLocInventoryReq) (r *GetLocInventoryResp, err error) {
 	tx := s.GetTx(ctx)
 
 	rows, err := tx.Tx.QueryContext(ctx, `
@@ -67,6 +67,8 @@ GROUP BY I.Product`, req.Location)
 		return nil, err
 	}
 
+	defer rows.Close()
+
 	var items []*GetLocInventoryResp_Item
 	for rows.Next() {
 		var product uint64
@@ -81,10 +83,6 @@ GROUP BY I.Product`, req.Location)
 			Product: product,
 			OnHand:  onHand,
 		})
-	}
-
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 
 	rep := &GetLocInventoryResp{Items: items}

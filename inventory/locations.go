@@ -7,11 +7,11 @@ import (
 	"database/sql"
 )
 
-func (s *Service) MoveLocation(ctx context.Context, req *MoveLocationReq) (*MoveLocationResp, error) {
+func (s *App) MoveLocation(ctx context.Context, req *MoveLocationReq) (*MoveLocationResp, error) {
 	return nil, ErrNotUnimplemented
 }
 
-func (s *Service) ListLocations(ctx context.Context, req *ListLocationsReq) (*ListLocationsResp, error) {
+func (s *App) ListLocations(ctx context.Context, req *ListLocationsReq) (*ListLocationsResp, error) {
 
 	tx := s.GetTx(ctx)
 
@@ -67,7 +67,7 @@ SELECT * FROM cte_Locations
 	return &ListLocationsResp{Locs: results}, nil
 }
 
-func (s *Service) AddLocations(ctx context.Context, req *AddLocationsReq) (r *AddLocationsResp, e error) {
+func (s *App) AddLocations(ctx context.Context, req *AddLocationsReq) (r *AddLocationsResp, e error) {
 
 	tx := s.GetTx(ctx)
 

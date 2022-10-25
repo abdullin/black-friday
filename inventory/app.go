@@ -7,20 +7,20 @@ import (
 	"database/sql"
 )
 
-type Service struct {
+type App struct {
 	db *sql.DB
 	UnimplementedInventoryServiceServer
 }
 
-func (s *Service) GetTx(ctx context.Context) *fx.Tx {
+func (s *App) GetTx(ctx context.Context) *fx.Tx {
 	return fx.Begin(ctx, s.db)
 }
 
-func NewService(db *sql.DB) *Service {
+func NewApp(db *sql.DB) *App {
 	if db == nil {
 		panic("db is nil")
 	}
-	return &Service{
+	return &App{
 		db: db,
 	}
 }
