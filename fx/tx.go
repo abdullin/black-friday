@@ -1,24 +1,45 @@
-package inventory
+package fx
 
 import (
-	"black-friday/fail"
 	"context"
 	"database/sql"
 	"fmt"
 	"google.golang.org/protobuf/proto"
-	"reflect"
 )
 
 type Tx struct {
-	tx     *sql.Tx
+	// temporarily public
+	Tx     *sql.Tx
 	ctx    context.Context
 	parent *Tx
 	events []proto.Message
 }
 
+const NestedTxKey = "tx"
+
+func Begin(ctx context.Context, db *sql.DB) *Tx {
+	inner, hasParent := ctx.Value(NestedTxKey).(*Tx)
+
+	if hasParent {
+		return &Tx{
+			Tx:     inner.Tx,
+			ctx:    ctx,
+			parent: inner,
+		}
+	}
+
+	tx, err := db.BeginTx(ctx, nil)
+
+	if err != nil {
+		// this is never expected to happen
+		panic(fmt.Errorf("failed to create tx: %w", err))
+	}
+	return &Tx{Tx: tx, ctx: ctx}
+}
+
 func (c *Tx) Exec(query string, args ...any) error {
 
-	_, err := c.tx.ExecContext(c.ctx, query, args...)
+	_, err := c.Tx.ExecContext(c.ctx, query, args...)
 
 	if err != nil {
 		return fmt.Errorf("problem with query '%s': %w", query, err)
@@ -28,7 +49,7 @@ func (c *Tx) Exec(query string, args ...any) error {
 }
 
 func (c *Tx) QueryUint64(query string, args ...any) (uint64, error) {
-	row := c.tx.QueryRowContext(c.ctx, query, args...)
+	row := c.Tx.QueryRowContext(c.ctx, query, args...)
 	var i uint64
 	err := row.Scan(&i)
 	return i, err
@@ -43,26 +64,20 @@ func (c *Tx) GetSeq(name string) uint64 {
 }
 
 func (c *Tx) QueryInt64(query string, args ...any) (int64, error) {
-	row := c.tx.QueryRowContext(c.ctx, query, args...)
+	row := c.Tx.QueryRowContext(c.ctx, query, args...)
 	var i int64
 	err := row.Scan(&i)
 
 	return i, err
 }
 
-func (s *Tx) Apply(e proto.Message) (error, fail.Code) {
-	err := apply(s, e)
-	if err != nil {
-		extracted, failCode := fail.Extract(err)
-		return fmt.Errorf("apply %s: %w", reflect.TypeOf(e).String(), extracted), failCode
-	}
+func (s *Tx) Append(e proto.Message) {
 
 	if s.parent != nil {
 		s.parent.events = append(s.parent.events, e)
 	} else {
 		s.events = append(s.events, e)
 	}
-	return nil, fail.OK
 
 }
 
@@ -70,7 +85,7 @@ func (c *Tx) Rollback() {
 	if c.parent != nil {
 		return
 	}
-	err := c.tx.Rollback()
+	err := c.Tx.Rollback()
 	if err != nil {
 		panic(err)
 	}
@@ -81,7 +96,7 @@ func (c *Tx) Commit() {
 		return
 	}
 	// we don't expect to fail
-	err := c.tx.Commit()
+	err := c.Tx.Commit()
 	if err != nil {
 		panic(err)
 	}

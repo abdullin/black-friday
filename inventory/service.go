@@ -2,9 +2,9 @@ package inventory
 
 import (
 	. "black-friday/api"
+	"black-friday/fx"
 	"context"
 	"database/sql"
-	"fmt"
 )
 
 type Service struct {
@@ -12,27 +12,8 @@ type Service struct {
 	UnimplementedInventoryServiceServer
 }
 
-func (s *Service) GetTx(ctx context.Context) *Tx {
-
-	inner, hasParent := ctx.Value("tx").(*Tx)
-
-	if hasParent {
-		return &Tx{
-			tx:     inner.tx,
-			ctx:    ctx,
-			parent: inner,
-		}
-	}
-
-	tx, err := s.db.BeginTx(ctx, nil)
-
-	if err != nil {
-		// this is never expected to happen
-		panic(fmt.Errorf("failed to create tx: %w", err))
-	}
-
-	return &Tx{tx: tx, ctx: ctx}
-
+func (s *Service) GetTx(ctx context.Context) *fx.Tx {
+	return fx.Begin(ctx, s.db)
 }
 
 func NewService(db *sql.DB) *Service {

@@ -175,7 +175,7 @@ func run_spec(ctx context.Context, svc *inventory.Service, spec *specs.S) (*Spec
 	defer tx.Rollback()
 
 	for i, e := range spec.Given {
-		err, fail := tx.Apply(e)
+		err, fail := svc.Apply(tx, e)
 		if err != nil {
 			panic(fmt.Sprintf("#%v problem with spec '%s' event %d.%s: %s",
 				fail,

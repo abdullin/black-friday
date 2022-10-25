@@ -33,7 +33,7 @@ func (s *Service) UpdateInventory(ctx context.Context, req *UpdateInventoryReq) 
 		OnHand:       onHand,
 	}
 
-	err, f := tx.Apply(e)
+	err, f := s.Apply(tx, e)
 	switch f {
 	case fail.OK:
 	default:
@@ -48,7 +48,7 @@ func (s *Service) UpdateInventory(ctx context.Context, req *UpdateInventoryReq) 
 func (s *Service) GetLocInventory(ctx context.Context, req *GetLocInventoryReq) (r *GetLocInventoryResp, err error) {
 	tx := s.GetTx(ctx)
 
-	rows, err := tx.tx.QueryContext(ctx, `
+	rows, err := tx.Tx.QueryContext(ctx, `
 WITH RECURSIVE cte_Locations(Id, Parent, Name) AS (
 	SELECT l.Id, l.Parent, l.Name
 	FROM Locations l

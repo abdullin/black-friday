@@ -15,7 +15,7 @@ func (s *Service) ListLocations(ctx context.Context, req *ListLocationsReq) (*Li
 
 	tx := s.GetTx(ctx)
 
-	rows, err := tx.tx.QueryContext(ctx, `
+	rows, err := tx.Tx.QueryContext(ctx, `
 WITH RECURSIVE cte_Locations(Id, Parent, Name) AS (
 	SELECT l.Id, l.Parent, l.Name
 	FROM Locations l
@@ -97,7 +97,7 @@ func (s *Service) AddLocations(ctx context.Context, req *AddLocationsReq) (r *Ad
 			}
 			r = append(r, node)
 
-			err, f := tx.Apply(e)
+			err, f := s.Apply(tx, e)
 			switch f {
 			case fail.OK:
 			case fail.ConstraintUnique:

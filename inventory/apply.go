@@ -2,8 +2,11 @@ package inventory
 
 import (
 	"black-friday/api"
+	"black-friday/fail"
+	"black-friday/fx"
 	"fmt"
 	"google.golang.org/protobuf/proto"
+	"reflect"
 )
 
 func zeroToNill(n uint64) any {
@@ -15,7 +18,20 @@ func zeroToNill(n uint64) any {
 	return n
 }
 
-func apply(tx *Tx, e proto.Message) error {
+func (s *Service) Apply(tx *fx.Tx, e proto.Message) (error, fail.Code) {
+
+	err := applyInner(tx, e)
+
+	if err != nil {
+		extracted, failCode := fail.Extract(err)
+		return fmt.Errorf("apply %s: %w", reflect.TypeOf(e).String(), extracted), failCode
+	}
+	tx.Append(e)
+	return nil, fail.OK
+
+}
+
+func applyInner(tx *fx.Tx, e proto.Message) error {
 	switch t := e.(type) {
 	case *api.LocationAdded:
 		values := []any{t.Id, t.Name, zeroToNill(t.Parent), t.Id, "Locations"}

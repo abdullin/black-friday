@@ -20,7 +20,7 @@ func (s *Service) AddProducts(ctx context.Context, req *api.AddProductsReq) (r *
 			Sku: sku,
 		}
 
-		tx.Apply(e)
+		s.Apply(tx, e)
 
 		results[i] = id
 	}
