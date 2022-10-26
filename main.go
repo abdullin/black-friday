@@ -89,7 +89,7 @@ func speed_test() {
 			for time.Since(started) < duration {
 				for _, s := range specs.Specs {
 					local_count += 1
-					result, err := run_spec(ctx, svc, s)
+					result, err := RunSpec(ctx, svc, s)
 					if err != nil {
 						panic(err)
 					}
@@ -133,7 +133,7 @@ func main() {
 
 	for _, s := range specs.Specs {
 
-		result, err := run_spec(ctx, svc, s)
+		result, err := RunSpec(ctx, svc, s)
 		deltas := result.Deltas
 		if len(deltas) == 0 && err == nil {
 			fmt.Printf("✔ %s️\n", s.Name)
@@ -192,7 +192,7 @@ func dispatch(ctx *app.Context, m proto.Message) (r proto.Message, err error) {
 	return r, err
 }
 
-func run_spec(ctx context.Context, a *app.App, spec *specs.S) (*SpecResult, error) {
+func RunSpec(ctx context.Context, a *app.App, spec *specs.S) (*SpecResult, error) {
 
 	c, err := a.Begin(ctx)
 	if err != nil {
