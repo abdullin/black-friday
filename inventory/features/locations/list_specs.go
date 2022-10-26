@@ -2,14 +2,13 @@ package locations
 
 import (
 	. "black-friday/inventory/api"
-	"black-friday/specs"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/proto"
 )
 
 func init() {
 
-	specs.Add(&specs.S{
+	Define(&Spec{
 		Name: "query locations after removal",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "Shelf"},
@@ -21,7 +20,7 @@ func init() {
 		ThenResponse: &GetLocInventoryResp{Items: []*GetLocInventoryResp_Item{}},
 	})
 
-	specs.Add(&specs.S{
+	Define(&Spec{
 		Name: "query one specific location",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "Shelf1"},
@@ -32,7 +31,7 @@ func init() {
 		}},
 	})
 
-	specs.Add(&specs.S{
+	Define(&Spec{
 		Name: "query all locations in a tree",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "WH"},
@@ -48,7 +47,7 @@ func init() {
 		}},
 	})
 
-	specs.Add(&specs.S{
+	Define(&Spec{
 		Name: "query locations from another root",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "WH1"},
@@ -61,7 +60,7 @@ func init() {
 			Id:   2,
 		}}},
 	})
-	specs.Add(&specs.S{
+	Define(&Spec{
 		Name:      "query locations from non-existent location",
 		When:      &ListLocationsReq{Location: 1},
 		ThenError: codes.NotFound,

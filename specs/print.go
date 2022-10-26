@@ -1,6 +1,7 @@
 package specs
 
 import (
+	"black-friday/inventory/api"
 	"fmt"
 	"github.com/abdullin/go-seq"
 	"google.golang.org/grpc/codes"
@@ -21,7 +22,7 @@ const (
 	ANOTHER = "\033[34m"
 )
 
-func (s *S) Print() {
+func Print(s *api.Spec) {
 	//println(s.Name)
 	if len(s.Given) > 0 {
 		println(yellow("GIVEN:"))

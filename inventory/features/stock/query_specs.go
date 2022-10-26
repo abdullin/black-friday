@@ -2,12 +2,11 @@ package stock
 
 import (
 	. "black-friday/inventory/api"
-	"black-friday/specs"
 	"google.golang.org/protobuf/proto"
 )
 
 func init() {
-	specs.Add(&specs.S{
+	Define(&Spec{
 		Name: "query inventory",
 		Given: []proto.Message{
 			&ProductAdded{Id: 1, Sku: "Cola"},
@@ -35,7 +34,7 @@ func init() {
 		// container was moved to the unloading zone in warehouse
 		&LocationMoved{Id: 4, NewParent: 2},
 	}
-	specs.Add(&specs.S{
+	Define(&Spec{
 		Name:  "moving container to warehouse increases total quantity",
 		Given: container_with_gpus_inbound,
 		// we query warehouse
@@ -46,7 +45,7 @@ func init() {
 		}},
 	})
 
-	specs.Add(&specs.S{
+	Define(&Spec{
 		Name:  "moving container to warehouse increases unloading quantity",
 		Given: container_with_gpus_inbound,
 		// we query unloading

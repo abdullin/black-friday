@@ -87,7 +87,7 @@ func speed_test() {
 			var local_count int64
 			var localEventCount int64
 			for time.Since(started) < duration {
-				for _, s := range specs.Specs {
+				for _, s := range api.Specs {
 					local_count += 1
 					result, err := RunSpec(ctx, svc, s)
 					if err != nil {
@@ -113,7 +113,7 @@ func main() {
 
 	speed_test()
 
-	fmt.Printf("Discovered %d specs\n", len(specs.Specs))
+	fmt.Printf("Discovered %d specs\n", len(api.Specs))
 
 	file := "/tmp/tests.sqlite"
 	file = ":memory:"
@@ -131,7 +131,7 @@ func main() {
 
 	// speed test
 
-	for _, s := range specs.Specs {
+	for _, s := range api.Specs {
 
 		result, err := RunSpec(ctx, svc, s)
 		deltas := result.Deltas
@@ -140,7 +140,7 @@ func main() {
 		} else {
 			fmt.Printf(red("x %s\n"), s.Name)
 
-			s.Print()
+			specs.Print(s)
 
 			if err != nil {
 				fmt.Printf(red("  FATAL: %s\n"), err.Error())
@@ -192,7 +192,7 @@ func dispatch(ctx *app.Context, m proto.Message) (r proto.Message, err error) {
 	return r, err
 }
 
-func RunSpec(ctx context.Context, a *app.App, spec *specs.S) (*SpecResult, error) {
+func RunSpec(ctx context.Context, a *app.App, spec *api.Spec) (*SpecResult, error) {
 
 	c, err := a.Begin(ctx)
 	if err != nil {
@@ -227,7 +227,7 @@ func RunSpec(ctx context.Context, a *app.App, spec *specs.S) (*SpecResult, error
 
 	eventCount += len(actualEvents)
 
-	issues := spec.Compare(actualResp, actualStatus, actualEvents)
+	issues := specs.Compare(spec, actualResp, actualStatus, actualEvents)
 
 	return &SpecResult{
 		EventCount: eventCount,

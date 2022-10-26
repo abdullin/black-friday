@@ -2,14 +2,13 @@ package locations
 
 import (
 	. "black-friday/inventory/api"
-	"black-friday/specs"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/proto"
 )
 
 func init() {
 
-	specs.Add(&specs.S{
+	Define(&Spec{
 		Name: "move locations",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "Warehouse"},
@@ -25,7 +24,7 @@ func init() {
 		},
 	})
 
-	specs.Add(&specs.S{
+	Define(&Spec{
 		Name: "recursive locations are not allowed",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "Warehouse"},

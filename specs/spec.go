@@ -1,6 +1,7 @@
 package specs
 
 import (
+	"black-friday/inventory/api"
 	"fmt"
 	"github.com/abdullin/go-seq"
 	"google.golang.org/grpc/codes"
@@ -8,16 +9,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type S struct {
-	Name         string
-	Given        []proto.Message
-	When         proto.Message
-	ThenResponse proto.Message
-	ThenError    codes.Code
-	ThenEvents   []proto.Message
-}
-
-func (spec *S) Compare(resp proto.Message, status *status.Status, events []proto.Message) seq.Issues {
+func Compare(spec *api.Spec, resp proto.Message, status *status.Status, events []proto.Message) seq.Issues {
 
 	issues := seq.Diff(spec.ThenResponse, resp, "response")
 	if spec.ThenError != status.Code() {

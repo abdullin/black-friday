@@ -2,13 +2,12 @@ package stock
 
 import (
 	"black-friday/inventory/api"
-	"black-friday/specs"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/proto"
 )
 
 func init() {
-	specs.Add(&specs.S{
+	api.Define(&api.Spec{
 		Name: "don't allow negative on-hand",
 		Given: []proto.Message{
 			&api.LocationAdded{Id: 1, Name: "Shelf"},
