@@ -1,6 +1,7 @@
 package products
 
 import (
+	"black-friday/fail"
 	"black-friday/inventory/api"
 	"black-friday/inventory/app"
 )
@@ -18,7 +19,14 @@ func Add(ctx *app.Context, req *api.AddProductsReq) (r *api.AddProductsResp, err
 			Sku: sku,
 		}
 
-		ctx.Apply(e)
+		err, f := ctx.Apply(e)
+		switch f {
+		case fail.None:
+		case fail.ConstraintUnique:
+			return nil, api.ErrDuplicateName
+		default:
+			return nil, api.ErrInternal(err, f)
+		}
 
 		results[i] = id
 	}

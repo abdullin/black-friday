@@ -2,32 +2,32 @@ package locations
 
 import (
 	"black-friday/fail"
-	"black-friday/inventory/api"
+	. "black-friday/inventory/api"
 	"black-friday/inventory/app"
 )
 
-func Add(c *app.Context, req *api.AddLocationsReq) (*api.AddLocationsResp, error) {
+func Add(c *app.Context, req *AddLocationsReq) (*AddLocationsResp, error) {
 
 	id := c.GetSeq("Locations")
 
-	var addLoc func(parent uint64, ls []*api.AddLocationsReq_Loc) ([]*api.AddLocationsResp_Loc, error)
+	var addLoc func(parent uint64, ls []*AddLocationsReq_Loc) ([]*AddLocationsResp_Loc, error)
 
-	addLoc = func(parent uint64, ls []*api.AddLocationsReq_Loc) ([]*api.AddLocationsResp_Loc, error) {
+	addLoc = func(parent uint64, ls []*AddLocationsReq_Loc) ([]*AddLocationsResp_Loc, error) {
 
-		var r []*api.AddLocationsResp_Loc
+		var r []*AddLocationsResp_Loc
 
 		for _, l := range ls {
 			if l.Name == "" {
-				return nil, api.ErrArgNil("Name")
+				return nil, ErrArgNil("Name")
 			}
 			id += 1
 
-			e := &api.LocationAdded{
+			e := &LocationAdded{
 				Name:   l.Name,
 				Id:     id,
 				Parent: parent,
 			}
-			node := &api.AddLocationsResp_Loc{
+			node := &AddLocationsResp_Loc{
 				Name:   l.Name,
 				Id:     id,
 				Parent: parent,
@@ -38,11 +38,11 @@ func Add(c *app.Context, req *api.AddLocationsReq) (*api.AddLocationsResp, error
 			switch f {
 			case fail.None:
 			case fail.ConstraintUnique:
-				return nil, api.ErrDuplicateName
+				return nil, ErrDuplicateName
 			case fail.ConstraintForeign:
-				return nil, api.ErrNotFound
+				return nil, ErrNotFound
 			default:
-				return nil, api.ErrInternal(err, f)
+				return nil, ErrInternal(err, f)
 			}
 
 			children, err := addLoc(id, l.Locs)
@@ -59,7 +59,7 @@ func Add(c *app.Context, req *api.AddLocationsReq) (*api.AddLocationsResp, error
 		return nil, err
 	}
 
-	return &api.AddLocationsResp{
+	return &AddLocationsResp{
 		Locs: results,
 	}, nil
 
