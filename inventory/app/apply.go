@@ -1,31 +1,40 @@
-package inventory
+package app
 
 import (
-	"black-friday/api"
 	"black-friday/fail"
-	"black-friday/fx"
+	"black-friday/inventory/api"
+	"black-friday/inventory/db"
 	"fmt"
 	"google.golang.org/protobuf/proto"
 	"reflect"
 )
 
-func (s *App) Apply(tx *fx.Tx, e proto.Message) (error, fail.Code) {
+func (c *Context) Apply(e proto.Message) (error, fail.Code) {
 
-	err := applyInner(tx, e)
+	err := applyInner(c, e)
 
 	if err != nil {
 		extracted, failCode := fail.Extract(err)
 		return fmt.Errorf("apply %s: %w", reflect.TypeOf(e).String(), extracted), failCode
 	}
-	tx.Append(e)
+
+	c.events = append(c.events, e)
 	return nil, fail.None
 
 }
 
-func applyInner(tx *fx.Tx, e proto.Message) error {
+func (c *Context) TestClear() {
+	c.events = nil
+}
+
+func (c *Context) TestGet() []proto.Message {
+	return c.events
+}
+
+func applyInner(tx *Context, e proto.Message) error {
 	switch t := e.(type) {
 	case *api.LocationAdded:
-		values := []any{t.Id, t.Name, zeroToNill(t.Parent), t.Id, "Locations"}
+		values := []any{t.Id, t.Name, db.ZeroToNil(t.Parent), t.Id, "Locations"}
 		return tx.Exec(`
 INSERT INTO Locations(Id, Name, Parent) VALUES (?,?,?);
 UPDATE sqlite_sequence SET seq=? WHERE name=?
@@ -33,7 +42,7 @@ UPDATE sqlite_sequence SET seq=? WHERE name=?
 	case *api.LocationMoved:
 		return tx.Exec(`
 UPDATE Locations SET Parent=? WHERE Id=?
-`, zeroToNill(t.NewParent), t.Id)
+`, db.ZeroToNil(t.NewParent), t.Id)
 	case *api.ProductAdded:
 		return tx.Exec(`
 INSERT INTO Products(Id, Sku) VALUES (?,?);

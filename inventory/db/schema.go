@@ -1,4 +1,4 @@
-package inventory
+package db
 
 import "database/sql"
 

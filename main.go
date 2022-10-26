@@ -1,7 +1,12 @@
 package main
 
 import (
-	"black-friday/inventory"
+	"black-friday/inventory/api"
+	"black-friday/inventory/app"
+	"black-friday/inventory/db"
+	"black-friday/inventory/features/locations"
+	"black-friday/inventory/features/products"
+	"black-friday/inventory/features/stock"
 	"black-friday/specs"
 	"context"
 	"database/sql"
@@ -9,11 +14,11 @@ import (
 	"github.com/abdullin/go-seq"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
+	"log"
 	"os"
 	"reflect"
 	"runtime"
 
-	"black-friday/tests"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -53,16 +58,16 @@ func speed_test() {
 
 	fmt.Printf("Speed test with %d cores... ", cores)
 
-	var services []*inventory.App
+	var services []*app.App
 	var wg sync.WaitGroup
 	for i := 0; i < cores; i++ {
-		db, err := sql.Open("sqlite3", file)
+		dbs, err := sql.Open("sqlite3", file)
 		guard(err)
-		defer db.Close()
+		defer dbs.Close()
 
-		guard(inventory.CreateSchema(db))
+		guard(db.CreateSchema(dbs))
 
-		svc := inventory.NewApp(db)
+		svc := app.New(dbs)
 		services = append(services, svc)
 		wg.Add(1)
 	}
@@ -82,7 +87,7 @@ func speed_test() {
 			var local_count int64
 			var localEventCount int64
 			for time.Since(started) < duration {
-				for _, s := range tests.Specs {
+				for _, s := range specs.Specs {
 					local_count += 1
 					result, err := run_spec(ctx, svc, s)
 					if err != nil {
@@ -108,25 +113,25 @@ func main() {
 
 	speed_test()
 
-	fmt.Printf("Discovered %d specs\n", len(tests.Specs))
+	fmt.Printf("Discovered %d specs\n", len(specs.Specs))
 
 	file := "/tmp/tests.sqlite"
 	file = ":memory:"
 	_ = os.Remove(file)
 
-	db, err := sql.Open("sqlite3", file)
+	dbs, err := sql.Open("sqlite3", file)
 	guard(err)
-	defer db.Close()
+	defer dbs.Close()
 
-	guard(inventory.CreateSchema(db))
+	guard(db.CreateSchema(dbs))
 
-	svc := inventory.NewApp(db)
+	svc := app.New(dbs)
 
 	ctx := context.Background()
 
 	// speed test
 
-	for _, s := range tests.Specs {
+	for _, s := range specs.Specs {
 
 		result, err := run_spec(ctx, svc, s)
 		deltas := result.Deltas
@@ -168,14 +173,41 @@ type Dispatcher interface {
 	Dispatch(ctx context.Context, m proto.Message) (proto.Message, error)
 }
 
-func run_spec(ctx context.Context, svc *inventory.App, spec *specs.S) (*SpecResult, error) {
+func dispatch(ctx *app.Context, m proto.Message) (r proto.Message, err error) {
 
-	tx := svc.GetTx(ctx)
+	switch t := m.(type) {
+	case *api.AddLocationsReq:
+		r, err = locations.Add(ctx, t)
+	case *api.AddProductsReq:
+		r, err = products.Add(ctx, t)
+	case *api.UpdateInventoryReq:
+		r, err = stock.Update(ctx, t)
+	case *api.ListLocationsReq:
+		r, err = locations.List(ctx, t)
+	case *api.GetLocInventoryReq:
+		r, err = stock.Query(ctx, t)
+	default:
+		return nil, fmt.Errorf("missing dispatch for %v", reflect.TypeOf(m))
+	}
 
-	defer tx.Rollback()
+	if r != nil && reflect.ValueOf(r).IsNil() {
+		r = nil
+	}
+	return r, err
+}
+
+func run_spec(ctx context.Context, a *app.App, spec *specs.S) (*SpecResult, error) {
+
+	c, err := a.Begin(ctx)
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	defer c.Rollback()
 
 	for i, e := range spec.Given {
-		err, fail := svc.Apply(tx, e)
+		err, fail := c.Apply(e)
+
 		if err != nil {
 			panic(fmt.Sprintf("#%v problem with spec '%s' event %d.%s: %s",
 				fail,
@@ -188,13 +220,13 @@ func run_spec(ctx context.Context, svc *inventory.App, spec *specs.S) (*SpecResu
 
 	eventCount := len(spec.Given)
 
-	tx.TestClearEvents()
+	c.TestClear()
 
-	actualResp, err := svc.TestDispatch(tx, ctx, spec.When)
+	actualResp, err := dispatch(c, spec.When)
 	actualStatus, _ := status.FromError(err)
 	var actualEvents []proto.Message
 	if err == nil {
-		actualEvents = tx.TestGetEvents()
+		actualEvents = c.TestGet()
 	}
 
 	eventCount += len(actualEvents)

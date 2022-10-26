@@ -43,40 +43,6 @@ func Begin(ctx context.Context, db *sql.DB) *Tx {
 	return &Tx{Tx: tx, ctx: ctx}
 }
 
-func (c *Tx) Exec(query string, args ...any) error {
-
-	_, err := c.Tx.ExecContext(c.ctx, query, args...)
-
-	if err != nil {
-		return fmt.Errorf("problem with query '%s': %w", query, err)
-	}
-	return nil
-
-}
-
-func (c *Tx) QueryUint64(query string, args ...any) (uint64, error) {
-	row := c.Tx.QueryRowContext(c.ctx, query, args...)
-	var i uint64
-	err := row.Scan(&i)
-	return i, err
-}
-
-func (c *Tx) GetSeq(name string) uint64 {
-	id, err := c.QueryUint64("select seq from sqlite_sequence where name=?", name)
-	if err != nil {
-		panic(fmt.Errorf("failed to get seq for '%s': %w", name, err))
-	}
-	return id
-}
-
-func (c *Tx) QueryInt64(query string, args ...any) (int64, error) {
-	row := c.Tx.QueryRowContext(c.ctx, query, args...)
-	var i int64
-	err := row.Scan(&i)
-
-	return i, err
-}
-
 func (s *Tx) Append(e proto.Message) {
 
 	if s.parent != nil {
