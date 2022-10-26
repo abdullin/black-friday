@@ -169,10 +169,6 @@ type SpecResult struct {
 	Deltas     seq.Issues
 }
 
-type Dispatcher interface {
-	Dispatch(ctx context.Context, m proto.Message) (proto.Message, error)
-}
-
 func dispatch(ctx *app.Context, m proto.Message) (r proto.Message, err error) {
 
 	switch t := m.(type) {
