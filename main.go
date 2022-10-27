@@ -48,7 +48,9 @@ func speed_test() {
 
 	file := ":memory:"
 
-	ctx := context.Background()
+	seconds := 1.0
+	// set timeout, just in case
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(seconds+0.5))
 
 	cores := runtime.NumCPU()
 	if env := os.Getenv("REPL_ID"); env != "" {
@@ -78,7 +80,6 @@ func speed_test() {
 
 	var count int64
 	var eventCount int64
-	seconds := 1
 
 	for i := 0; i < cores; i++ {
 		go func(pos int) {
@@ -103,6 +104,7 @@ func speed_test() {
 		}(i)
 	}
 	wg.Wait()
+	cancel()
 
 	fmt.Printf("running specs at %.1f kHz\n", float64(count)/1000.0/float64(seconds))
 	fmt.Printf("applying events at %.1f kHz\n", float64(eventCount)/1000.0/float64(seconds))

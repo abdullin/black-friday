@@ -3,7 +3,6 @@ package locations
 import (
 	"black-friday/inventory/api"
 	"black-friday/inventory/app"
-	"database/sql"
 )
 
 func List(ctx *app.Context, req *api.ListLocationsReq) (*api.ListLocationsResp, error) {
@@ -33,7 +32,7 @@ SELECT * FROM cte_Locations
 
 	for rows.Next() {
 		var id uint64
-		var parent sql.NullInt64
+		var parent uint64
 		var name string
 		err := rows.Scan(&id, &parent, &name)
 		if err != nil {
@@ -43,7 +42,7 @@ SELECT * FROM cte_Locations
 		loc := &api.ListLocationsResp_Loc{
 			Name:    name,
 			Id:      id,
-			Parent:  uint64(parent.Int64),
+			Parent:  parent,
 			Chidren: nil,
 		}
 		lookup[id] = loc

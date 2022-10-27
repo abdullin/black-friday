@@ -59,7 +59,7 @@ func (c *Context) QueryInt64(query string, args ...any) (int64, error) {
 func (a *App) Begin(ctx context.Context) (*Context, error) {
 	tx, err := a.db.BeginTx(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("can't begin tx: %w", err)
 	}
 	return &Context{
 		app: a,
