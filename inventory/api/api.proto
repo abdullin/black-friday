@@ -122,6 +122,34 @@ message GetLocInventoryResp {
   repeated Item items = 1;
 }
 
+message ReserveReq {
+  string reservation = 1;
+
+  message Item {
+    string sku = 1;
+    int64 quantity = 2;
+  }
+
+  repeated Item items = 2;
+}
+
+
+message ReserveResp {
+  uint64 code = 1;
+}
+
+message Reserved {
+  uint64 reservation = 1;
+  string code = 2;
+
+  message Item {
+    uint64 product = 1;
+    int64 quantity = 2;
+  }
+
+  repeated Item items = 3;
+}
+
 
 service InventoryService {
   rpc AddLocations(AddLocationsReq) returns (AddLocationsResp);
@@ -132,4 +160,5 @@ service InventoryService {
   rpc MoveLocation(MoveLocationReq) returns (MoveLocationResp);
   rpc UpdateInventory(UpdateInventoryReq) returns (UpdateInventoryResp);
   rpc GetLocInventory(GetLocInventoryReq) returns (GetLocInventoryResp);
+  rpc Reserve(ReserveReq) returns (ReserveResp);
 }

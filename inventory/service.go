@@ -71,3 +71,7 @@ func (s *server) UpdateInventory(c context.Context, r *api.UpdateInventoryReq) (
 func (s *server) GetLocInventory(c context.Context, r *api.GetLocInventoryReq) (*api.GetLocInventoryResp, error) {
 	return apiDispatch(s.app, c, r, stock.Query)
 }
+
+func (s *server) Reserve(c context.Context, r *api.ReserveReq) (*api.ReserveResp, error) {
+	return apiDispatch(s.app, c, r, stock.Reserve)
+}

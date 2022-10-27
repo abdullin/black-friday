@@ -182,6 +182,8 @@ func dispatch(ctx *app.Context, m proto.Message) (r proto.Message, err error) {
 		r, err = locations.List(ctx, t)
 	case *api.GetLocInventoryReq:
 		r, err = stock.Query(ctx, t)
+	case *api.ReserveReq:
+		r, err = stock.Reserve(ctx, t)
 	default:
 		return nil, fmt.Errorf("missing dispatch for %v", reflect.TypeOf(m))
 	}

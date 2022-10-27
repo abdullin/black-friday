@@ -4,7 +4,7 @@
 schema:
 	protoc --go_out=paths=source_relative:. \
 		--go-grpc_out=paths=source_relative:.  \
-    	api/api.proto
+    	inventory/api/api.proto
 
 
 specs:

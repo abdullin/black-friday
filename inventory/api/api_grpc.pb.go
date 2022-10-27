@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.21.6
-// source: api/api.proto
+// source: inventory/api/api.proto
 
 package api
 
@@ -28,6 +28,7 @@ type InventoryServiceClient interface {
 	MoveLocation(ctx context.Context, in *MoveLocationReq, opts ...grpc.CallOption) (*MoveLocationResp, error)
 	UpdateInventory(ctx context.Context, in *UpdateInventoryReq, opts ...grpc.CallOption) (*UpdateInventoryResp, error)
 	GetLocInventory(ctx context.Context, in *GetLocInventoryReq, opts ...grpc.CallOption) (*GetLocInventoryResp, error)
+	Reserve(ctx context.Context, in *ReserveReq, opts ...grpc.CallOption) (*ReserveResp, error)
 }
 
 type inventoryServiceClient struct {
@@ -92,6 +93,15 @@ func (c *inventoryServiceClient) GetLocInventory(ctx context.Context, in *GetLoc
 	return out, nil
 }
 
+func (c *inventoryServiceClient) Reserve(ctx context.Context, in *ReserveReq, opts ...grpc.CallOption) (*ReserveResp, error) {
+	out := new(ReserveResp)
+	err := c.cc.Invoke(ctx, "/protos.InventoryService/Reserve", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // InventoryServiceServer is the server API for InventoryService service.
 // All implementations must embed UnimplementedInventoryServiceServer
 // for forward compatibility
@@ -102,6 +112,7 @@ type InventoryServiceServer interface {
 	MoveLocation(context.Context, *MoveLocationReq) (*MoveLocationResp, error)
 	UpdateInventory(context.Context, *UpdateInventoryReq) (*UpdateInventoryResp, error)
 	GetLocInventory(context.Context, *GetLocInventoryReq) (*GetLocInventoryResp, error)
+	Reserve(context.Context, *ReserveReq) (*ReserveResp, error)
 	mustEmbedUnimplementedInventoryServiceServer()
 }
 
@@ -126,6 +137,9 @@ func (UnimplementedInventoryServiceServer) UpdateInventory(context.Context, *Upd
 }
 func (UnimplementedInventoryServiceServer) GetLocInventory(context.Context, *GetLocInventoryReq) (*GetLocInventoryResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLocInventory not implemented")
+}
+func (UnimplementedInventoryServiceServer) Reserve(context.Context, *ReserveReq) (*ReserveResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Reserve not implemented")
 }
 func (UnimplementedInventoryServiceServer) mustEmbedUnimplementedInventoryServiceServer() {}
 
@@ -248,6 +262,24 @@ func _InventoryService_GetLocInventory_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _InventoryService_Reserve_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReserveReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).Reserve(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.InventoryService/Reserve",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).Reserve(ctx, req.(*ReserveReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // InventoryService_ServiceDesc is the grpc.ServiceDesc for InventoryService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -279,7 +311,11 @@ var InventoryService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "GetLocInventory",
 			Handler:    _InventoryService_GetLocInventory_Handler,
 		},
+		{
+			MethodName: "Reserve",
+			Handler:    _InventoryService_Reserve_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "api/api.proto",
+	Metadata: "inventory/api/api.proto",
 }
