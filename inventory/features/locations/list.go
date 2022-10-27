@@ -3,7 +3,6 @@ package locations
 import (
 	"black-friday/inventory/api"
 	"black-friday/inventory/app"
-	"black-friday/inventory/db"
 	"database/sql"
 )
 
@@ -22,7 +21,7 @@ WITH RECURSIVE cte_Locations(Id, Parent, Name) AS (
 	JOIN cte_Locations c ON c.Id = l.Parent
 )
 SELECT * FROM cte_Locations
-`, db.ZeroToNil(req.Location))
+`, req.Location)
 	if err != nil {
 		return nil, err
 	}

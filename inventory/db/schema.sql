@@ -8,8 +8,7 @@ create table dummy (id integer primary key autoincrement);
 CREATE TABLE Locations (
 
     Id INTEGER PRIMARY KEY,
-    -- can be null for root
-    Parent INTEGER,
+    Parent INTEGER NOT NULL,
     Name TEXT NOT NULL UNIQUE,
     FOREIGN KEY(Parent) REFERENCES Locations(Id)
 );
@@ -39,7 +38,7 @@ CREATE TABLE Reserves (
     Quantity INTEGER NOT NULL,
     -- CAN be null for ROOT
     -- TODO: Introduce root location of zero?
-    Location INTEGER,
+    Location INTEGER NOT NULL,
     FOREIGN KEY(Reservation) REFERENCES Reservations(Id),
     FOREIGN KEY(Product) REFERENCES Products(Id),
     FOREIGN KEY(Location) REFERENCES Locations(Id)
@@ -51,5 +50,6 @@ INSERT INTO sqlite_sequence (name, seq) VALUES
     ('Products', 0),
     ('Reservations', 0);
 
+INSERT INTO Locations(Id, Parent, Name) VALUES(0,0, "Root");
 
 

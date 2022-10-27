@@ -3,7 +3,6 @@ package app
 import (
 	"black-friday/fail"
 	"black-friday/inventory/api"
-	"black-friday/inventory/db"
 	"fmt"
 	"google.golang.org/protobuf/proto"
 	"reflect"
@@ -34,7 +33,7 @@ func (c *Context) TestGet() []proto.Message {
 func applyInner(tx *Context, e proto.Message) error {
 	switch t := e.(type) {
 	case *api.LocationAdded:
-		values := []any{t.Id, t.Name, db.ZeroToNil(t.Parent), t.Id, "Locations"}
+		values := []any{t.Id, t.Name, t.Parent, t.Id, "Locations"}
 		return tx.Exec(`
 INSERT INTO Locations(Id, Name, Parent) VALUES (?,?,?);
 UPDATE sqlite_sequence SET seq=? WHERE name=?
@@ -42,7 +41,7 @@ UPDATE sqlite_sequence SET seq=? WHERE name=?
 	case *api.LocationMoved:
 		return tx.Exec(`
 UPDATE Locations SET Parent=? WHERE Id=?
-`, db.ZeroToNil(t.NewParent), t.Id)
+`, t.NewParent, t.Id)
 	case *api.ProductAdded:
 		return tx.Exec(`
 INSERT INTO Products(Id, Sku) VALUES (?,?);
