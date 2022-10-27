@@ -17,6 +17,10 @@ func ErrInternal(err error, code fail.Code) error {
 	return status.Error(codes.Internal, fmt.Sprintf("fail-%d: %s", code, err))
 }
 
+func ErrSkuNotFound(sku string) error {
+	return status.Error(codes.NotFound, fmt.Sprintf("sku %s not found", sku))
+}
+
 func ErrArgNil(field string) error {
 	return status.Error(codes.InvalidArgument, fmt.Sprintf("'%s' is nil", field))
 }

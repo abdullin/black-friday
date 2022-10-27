@@ -36,6 +36,18 @@ func (c *Context) QueryUint64(query string, args ...any) (uint64, error) {
 	return i, err
 }
 
+func (c *Context) LookupUint64(query string, args ...any) uint64 {
+	row := c.tx.QueryRowContext(c.ctx, query, args...)
+	var i uint64
+	err := row.Scan(&i)
+	if err == sql.ErrNoRows {
+		return 0
+	} else if err != nil {
+		panic(fmt.Errorf("sql %s: %w", query, err))
+	}
+	return i
+}
+
 func (c *Context) QueryInt64(query string, args ...any) (int64, error) {
 	row := c.tx.QueryRowContext(c.ctx, query, args...)
 	var i int64
