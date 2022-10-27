@@ -131,13 +131,17 @@ func main() {
 
 	// speed test
 
+	oks, fails := 0, 0
+
 	for _, s := range api.Specs {
 
 		result, err := RunSpec(ctx, svc, s)
 		deltas := result.Deltas
 		if len(deltas) == 0 && err == nil {
 			//fmt.Printf("✔ %s️\n", s.Name)
+			oks += 1
 		} else {
+			fails += 1
 			fmt.Printf(red("x %s\n"), s.Name)
 
 			specs.Print(s)
@@ -155,6 +159,8 @@ func main() {
 		}
 
 	}
+
+	fmt.Printf("Total: ✔%d x%d\n", oks, fails)
 
 }
 
@@ -184,6 +190,8 @@ func dispatch(ctx *app.Context, m proto.Message) (r proto.Message, err error) {
 		r, err = stock.Query(ctx, t)
 	case *api.ReserveReq:
 		r, err = stock.Reserve(ctx, t)
+	case *api.MoveLocationReq:
+		r, err = locations.Move(ctx, t)
 	default:
 		return nil, fmt.Errorf("missing dispatch for %v", reflect.TypeOf(m))
 	}

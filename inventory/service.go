@@ -54,7 +54,7 @@ func (s *server) AddLocations(ctx context.Context, req *api.AddLocationsReq) (*a
 	return apiDispatch(s.app, ctx, req, locations.Add)
 }
 func (s *server) MoveLocation(ctx context.Context, req *api.MoveLocationReq) (*api.MoveLocationResp, error) {
-	return nil, api.ErrNotUnimplemented
+	return apiDispatch(s.app, ctx, req, locations.Move)
 }
 func (s *server) ListLocations(ctx context.Context, req *api.ListLocationsReq) (*api.ListLocationsResp, error) {
 	return apiDispatch(s.app, ctx, req, locations.List)
