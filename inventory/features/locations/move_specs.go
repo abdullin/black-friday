@@ -36,4 +36,28 @@ func init() {
 		},
 		ThenError: codes.FailedPrecondition,
 	})
+
+	Define(&Spec{
+		Name: "don't move location to itself",
+		Given: []proto.Message{
+			&LocationAdded{Id: 1, Name: "Warehouse"},
+		},
+		When: &MoveLocationReq{
+			Id:        1,
+			NewParent: 1,
+		},
+		ThenError: codes.FailedPrecondition,
+	})
+
+	Define(&Spec{
+		Name: "can't touch root",
+		Given: []proto.Message{
+			&LocationAdded{Id: 1, Name: "Warehouse"},
+		},
+		When: &MoveLocationReq{
+			Id:        0,
+			NewParent: 1,
+		},
+		ThenError: codes.InvalidArgument,
+	})
 }

@@ -8,6 +8,11 @@ import (
 
 func Move(a *app.Context, r *MoveLocationReq) (*MoveLocationResp, error) {
 
+	// root is not touchable
+	if r.Id == 0 {
+		return nil, ErrArgument
+	}
+
 	// need to check if the new parent is not the child of the current node
 	// OR the current node itself
 	// we shouldn't let the new parent to be a child of the node being moved

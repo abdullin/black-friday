@@ -12,6 +12,7 @@ var (
 	ErrNotFound         = status.Error(codes.NotFound, "Entity not found")
 	ErrNotUnimplemented = status.Error(codes.Unimplemented, "Implement me!")
 	ErrPrecondition     = status.Error(codes.FailedPrecondition, "failed precondition")
+	ErrArgument         = status.Errorf(codes.InvalidArgument, "invalid argument")
 )
 
 func ErrInternal(err error, code fail.Code) error {
