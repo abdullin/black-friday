@@ -66,4 +66,22 @@ func init() {
 		ThenError: codes.NotFound,
 	})
 
+	Define(&Spec{
+		Name: "query all locations",
+		Given: []proto.Message{
+			&LocationAdded{Id: 1, Name: "WH1"},
+			&LocationAdded{Id: 2, Name: "WH2"},
+			&LocationAdded{Id: 3, Name: "Shelf", Parent: 1},
+		},
+		When: &ListLocationsReq{},
+		ThenResponse: &ListLocationsResp{Locs: []*ListLocationsResp_Loc{
+			{Name: "WH1", Id: 2},
+			{
+				Name:    "WH2",
+				Id:      1,
+				Chidren: []*ListLocationsResp_Loc{},
+			},
+		}},
+	})
+
 }
