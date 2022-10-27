@@ -2,6 +2,7 @@ package stock
 
 import (
 	. "black-friday/inventory/api"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -16,10 +17,7 @@ func init() {
 		When: &ReserveReq{
 			Reservation: "sale",
 			Items: []*ReserveReq_Item{
-				{
-					Sku:      "GPU",
-					Quantity: 10,
-				},
+				{Sku: "GPU", Quantity: 10},
 			},
 		},
 		ThenResponse: &ReserveResp{
@@ -37,6 +35,17 @@ func init() {
 				},
 			},
 		},
+	})
+
+	Define(&Spec{
+		Name: "reserve non-existent sku",
+		When: &ReserveReq{
+			Reservation: "test",
+			Items: []*ReserveReq_Item{
+				{Sku: "sale", Quantity: 1},
+			},
+		},
+		ThenError: codes.NotFound,
 	})
 
 }
