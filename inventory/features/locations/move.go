@@ -1,25 +1,46 @@
 package locations
 
 import (
+	"black-friday/fail"
 	. "black-friday/inventory/api"
 	"black-friday/inventory/app"
-	"database/sql"
 )
 
 func Move(a *app.Context, r *MoveLocationReq) (*MoveLocationResp, error) {
-	parent, err := a.QueryUint64("SELECT Parent FROM Locations WHERE Id=?", r.Id)
 
-	if err == sql.ErrNoRows {
-		return nil, ErrNotFound
-	} else if err != nil {
-		return nil, err
+	// need to check if the new parent is not the child of the current node
+	// OR the current node itself
+	// we shouldn't let the new parent to be a child of the node being moved
+	// so let's inspect that
+
+	ancestor := r.NewParent
+	for {
+		if ancestor == 0 {
+			break
+		}
+
+		if ancestor == r.Id {
+			return nil, ErrPrecondition
+		}
+
+		ancestor = a.LookupUint64("SELECT Parent FROM Locations WHERE Id=?", ancestor)
+
 	}
 
-	a.Apply(&LocationMoved{
+	// this will be the old parent
+	parent := a.LookupUint64("SELECT Parent FROM Locations WHERE Id=?", r.Id)
+
+	err, f := a.Apply(&LocationMoved{
 		Id:        r.Id,
 		OldParent: parent,
 		NewParent: r.NewParent,
 	})
+	switch f {
+	case fail.None:
+	default:
+		return nil, ErrInternal(err, f)
+
+	}
 
 	return &MoveLocationResp{}, nil
 

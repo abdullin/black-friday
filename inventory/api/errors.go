@@ -11,6 +11,7 @@ var (
 	ErrDuplicateName    = status.Error(codes.AlreadyExists, "Duplicate name")
 	ErrNotFound         = status.Error(codes.NotFound, "Entity not found")
 	ErrNotUnimplemented = status.Error(codes.Unimplemented, "Implement me!")
+	ErrPrecondition     = status.Error(codes.FailedPrecondition, "failed precondition")
 )
 
 func ErrInternal(err error, code fail.Code) error {
