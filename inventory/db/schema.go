@@ -1,6 +1,9 @@
 package db
 
-import "database/sql"
+import (
+	"database/sql"
+	"fmt"
+)
 
 import _ "embed"
 
@@ -9,5 +12,8 @@ var schema string
 
 func CreateSchema(db *sql.DB) error {
 	_, err := db.Exec(schema)
-	return err
+	if err != nil {
+		return fmt.Errorf("create schema: %w", err)
+	}
+	return nil
 }

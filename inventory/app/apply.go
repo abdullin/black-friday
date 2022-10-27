@@ -58,6 +58,23 @@ UPDATE sqlite_sequence SET seq=? WHERE name=?
 		} else {
 			return tx.Exec("UPDATE Inventory SET OnHand=? WHERE Product=? AND Location=?", t.OnHand, t.Product, t.Location)
 		}
+	case *api.Reserved:
+		err := tx.Exec(`
+INSERT INTO Reservations(Id, Code) VALUES(?,?);
+UPDATE sqlite_sequence SET seq=? WHERE name=?
+`, t.Reservation, t.Code, t.Reservation, "Reservations")
+		if err == nil {
+			return err
+		}
+		for _, i := range t.Items {
+			err = tx.Exec("INSERT INTO Reserves (Reservation, Product, Quantity, Location) VALUES(?,?,?,?)",
+				t.Reservation, i.Product, i.Quantity, i.Location,
+			)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
 
 	default:
 		return fmt.Errorf("Unhandled event: %s", e.ProtoReflect().Descriptor().Name())

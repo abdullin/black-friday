@@ -23,7 +23,7 @@ func init() {
 			},
 		},
 		ThenResponse: &ReserveResp{
-			Code: 1,
+			Reservation: 1,
 		},
 		ThenEvents: []proto.Message{
 			&Reserved{

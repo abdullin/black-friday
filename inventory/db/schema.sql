@@ -28,9 +28,28 @@ CREATE TABLE Inventory (
     FOREIGN KEY(Product) REFERENCES Products(Id)
 );
 
+CREATE TABLE Reservations (
+    Id INTEGER PRIMARY KEY,
+    Code TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE Reserves (
+    Reservation INTEGER NOT NULL,
+    Product INTEGER NOT NULL,
+    Quantity INTEGER NOT NULL,
+    -- CAN be null for ROOT
+    -- TODO: Introduce root location of zero?
+    Location INTEGER,
+    FOREIGN KEY(Reservation) REFERENCES Reservations(Id),
+    FOREIGN KEY(Product) REFERENCES Products(Id),
+    FOREIGN KEY(Location) REFERENCES Locations(Id)
+
+);
+
 INSERT INTO sqlite_sequence (name, seq) VALUES
     ('Locations', 0),
-    ('Products', 0);
+    ('Products', 0),
+    ('Reservations', 0);
 
 
 

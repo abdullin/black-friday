@@ -136,7 +136,7 @@ func main() {
 		result, err := RunSpec(ctx, svc, s)
 		deltas := result.Deltas
 		if len(deltas) == 0 && err == nil {
-			fmt.Printf("✔ %s️\n", s.Name)
+			//fmt.Printf("✔ %s️\n", s.Name)
 		} else {
 			fmt.Printf(red("x %s\n"), s.Name)
 
