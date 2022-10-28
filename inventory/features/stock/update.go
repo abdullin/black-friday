@@ -2,22 +2,17 @@ package stock
 
 import (
 	"black-friday/fail"
+	"black-friday/fx"
 	"black-friday/inventory/api"
-	"black-friday/inventory/app"
-	"database/sql"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func Update(ctx *app.Context, req *api.UpdateInventoryReq) (r *api.UpdateInventoryResp, err error) {
+func Update(ctx fx.Tx, req *api.UpdateInventoryReq) (r *api.UpdateInventoryResp, err error) {
 
-	onHand, err := ctx.QueryInt64("SELECT OnHand FROM Inventory WHERE Location=? AND Product=?",
+	onHand := ctx.LookupInt64("SELECT OnHand FROM Inventory WHERE Location=? AND Product=?",
 		req.Location,
 		req.Product)
-
-	if err != sql.ErrNoRows {
-		return nil, err
-	}
 
 	onHand += req.OnHandChange
 

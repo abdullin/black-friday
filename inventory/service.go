@@ -1,31 +1,28 @@
 package inventory
 
 import (
+	"black-friday/fx"
 	"black-friday/inventory/api"
-	"black-friday/inventory/app"
 	"black-friday/inventory/features/locations"
 	"black-friday/inventory/features/products"
 	"black-friday/inventory/features/stock"
 	"context"
-	"database/sql"
 	"google.golang.org/protobuf/proto"
 	"log"
 )
 
 // server implements GRPC server. It wires together all features
 type server struct {
-	app *app.App
+	app fx.Transactor
 	api.UnimplementedInventoryServiceServer
 }
 
-func New(db *sql.DB) api.InventoryServiceServer {
-
-	a := app.New(db)
+func New(a fx.Transactor) api.InventoryServiceServer {
 
 	return &server{app: a}
 }
 
-func apiDispatch[A proto.Message, B proto.Message](a *app.App, c context.Context, req A, x func(c *app.Context, a A) (b B, err error)) (B, error) {
+func apiDispatch[A proto.Message, B proto.Message](a fx.Transactor, c context.Context, req A, x func(c fx.Tx, a A) (b B, err error)) (B, error) {
 
 	ctx, err := a.Begin(c)
 	if err != nil {

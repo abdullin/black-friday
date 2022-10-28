@@ -2,11 +2,11 @@ package locations
 
 import (
 	"black-friday/fail"
+	"black-friday/fx"
 	. "black-friday/inventory/api"
-	"black-friday/inventory/app"
 )
 
-func Move(a *app.Context, r *MoveLocationReq) (*MoveLocationResp, error) {
+func Move(a fx.Tx, r *MoveLocationReq) (*MoveLocationResp, error) {
 
 	// root is not touchable
 	if r.Id == 0 {
@@ -28,12 +28,12 @@ func Move(a *app.Context, r *MoveLocationReq) (*MoveLocationResp, error) {
 			return nil, ErrPrecondition
 		}
 
-		ancestor = a.LookupUint64("SELECT Parent FROM Locations WHERE Id=?", ancestor)
+		ancestor = a.LookupInt64("SELECT Parent FROM Locations WHERE Id=?", ancestor)
 
 	}
 
 	// this will be the old parent
-	parent := a.LookupUint64("SELECT Parent FROM Locations WHERE Id=?", r.Id)
+	parent := a.LookupInt64("SELECT Parent FROM Locations WHERE Id=?", r.Id)
 
 	err, f := a.Apply(&LocationMoved{
 		Id:        r.Id,

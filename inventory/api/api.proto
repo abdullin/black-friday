@@ -16,15 +16,15 @@ message AddLocationsReq {
 
   repeated Loc locs = 1;
 
-  uint64 parent = 2;
+  int64 parent = 2;
 }
 
 message AddLocationsResp {
   message Loc {
     string name = 1;
     //LocType type = 2;
-    uint64 id = 3;
-    uint64 parent = 4;
+    int64 id = 3;
+    int64 parent = 4;
 
     repeated Loc locs = 5;
   }
@@ -32,23 +32,23 @@ message AddLocationsResp {
 }
 
 message LocationAdded {
-  uint64 id = 1;
+  int64 id = 1;
   string name = 2;
   //LocType type = 3;
 
   // added later
-  uint64 parent = 4;
+  int64 parent = 4;
 }
 
 message LocationMoved {
-  uint64 id = 1;
-  uint64 oldParent = 2;
-  uint64 newParent = 3;
+  int64 id = 1;
+  int64 oldParent = 2;
+  int64 newParent = 3;
 }
 
 message MoveLocationReq {
-  uint64 id = 1;
-  uint64 newParent = 2;
+  int64 id = 1;
+  int64 newParent = 2;
 }
 
 message MoveLocationResp {
@@ -62,17 +62,17 @@ message AddProductsReq {
 
 
 message AddProductsResp {
-  repeated uint64 ids = 2;
+  repeated int64 ids = 2;
 }
 
 message ProductAdded {
-  uint64 id = 1;
+  int64 id = 1;
   string sku = 2;
 }
 
 message UpdateInventoryReq {
-  uint64 location = 1;
-  uint64 product = 2;
+  int64 location = 1;
+  int64 product = 2;
   int64 OnHandChange = 3;
 }
 
@@ -82,22 +82,22 @@ message UpdateInventoryResp {
 }
 
 message InventoryUpdated{
-  uint64 location = 1;
-  uint64 product = 2;
+  int64 location = 1;
+  int64 product = 2;
   int64 OnHandChange = 3;
   int64 OnHand = 4;
 }
 
 message ListLocationsReq {
-  uint64 location = 1;
+  int64 location = 1;
 }
 
 message ListLocationsResp {
   message Loc {
     string name = 1;
     //LocType type = 2;
-    uint64 id = 3;
-    uint64 parent = 4;
+    int64 id = 3;
+    int64 parent = 4;
 
     repeated Loc chidren = 5;
   }
@@ -108,14 +108,14 @@ message ListLocationsResp {
 
 
 message GetLocInventoryReq {
-  uint64 location = 1;
+  int64 location = 1;
 }
 
 // this counts nested locations
 message GetLocInventoryResp {
 
   message Item {
-    uint64 Product = 1;
+    int64 Product = 1;
     int64 OnHand = 2;
   }
 
@@ -135,18 +135,18 @@ message ReserveReq {
 
 
 message ReserveResp {
-  uint64 reservation = 1;
+  int64 reservation = 1;
 }
 
 message Reserved {
-  uint64 reservation = 1;
+  int64 reservation = 1;
   string code = 2;
 
   message Item {
-    uint64 product = 1;
+    int64 product = 1;
     int64 quantity = 2;
 
-    uint64 location = 3;
+    int64 location = 3;
   }
 
   repeated Item items = 4;

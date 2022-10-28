@@ -1,11 +1,11 @@
 package locations
 
 import (
+	"black-friday/fx"
 	"black-friday/inventory/api"
-	"black-friday/inventory/app"
 )
 
-func List(ctx *app.Context, req *api.ListLocationsReq) (*api.ListLocationsResp, error) {
+func List(ctx fx.Tx, req *api.ListLocationsReq) (*api.ListLocationsResp, error) {
 
 	rows, err := ctx.QueryHack(`
 WITH RECURSIVE cte_Locations(Id, Parent, Name) AS (
@@ -28,11 +28,11 @@ SELECT * FROM cte_Locations
 
 	var results []*api.ListLocationsResp_Loc
 
-	lookup := make(map[uint64]*api.ListLocationsResp_Loc)
+	lookup := make(map[int64]*api.ListLocationsResp_Loc)
 
 	for rows.Next() {
-		var id uint64
-		var parent uint64
+		var id int64
+		var parent int64
 		var name string
 		err := rows.Scan(&id, &parent, &name)
 		if err != nil {

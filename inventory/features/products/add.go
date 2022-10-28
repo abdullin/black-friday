@@ -2,15 +2,15 @@ package products
 
 import (
 	"black-friday/fail"
+	"black-friday/fx"
 	. "black-friday/inventory/api"
-	"black-friday/inventory/app"
 )
 
-func Add(ctx *app.Context, req *AddProductsReq) (r *AddProductsResp, err error) {
+func Add(ctx fx.Tx, req *AddProductsReq) (r *AddProductsResp, err error) {
 
 	id := ctx.GetSeq("Products")
 
-	results := make([]uint64, len(req.Skus))
+	results := make([]int64, len(req.Skus))
 	for i, sku := range req.Skus {
 
 		id += 1

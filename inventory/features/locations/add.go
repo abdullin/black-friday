@@ -2,17 +2,17 @@ package locations
 
 import (
 	"black-friday/fail"
+	"black-friday/fx"
 	. "black-friday/inventory/api"
-	"black-friday/inventory/app"
 )
 
-func Add(c *app.Context, req *AddLocationsReq) (*AddLocationsResp, error) {
+func Add(c fx.Tx, req *AddLocationsReq) (*AddLocationsResp, error) {
 
 	id := c.GetSeq("Locations")
 
-	var addLoc func(parent uint64, ls []*AddLocationsReq_Loc) ([]*AddLocationsResp_Loc, error)
+	var addLoc func(parent int64, ls []*AddLocationsReq_Loc) ([]*AddLocationsResp_Loc, error)
 
-	addLoc = func(parent uint64, ls []*AddLocationsReq_Loc) ([]*AddLocationsResp_Loc, error) {
+	addLoc = func(parent int64, ls []*AddLocationsReq_Loc) ([]*AddLocationsResp_Loc, error) {
 
 		var r []*AddLocationsResp_Loc
 

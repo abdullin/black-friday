@@ -1,36 +1,13 @@
-package app
+package apply
 
 import (
-	"black-friday/fail"
+	"black-friday/fx"
 	"black-friday/inventory/api"
 	"fmt"
 	"google.golang.org/protobuf/proto"
-	"reflect"
 )
 
-func (c *Context) Apply(e proto.Message) (error, fail.Code) {
-
-	err := applyInner(c, e)
-
-	if err != nil {
-		extracted, failCode := fail.Extract(err)
-		return fmt.Errorf("apply %s: %w", reflect.TypeOf(e).String(), extracted), failCode
-	}
-
-	c.events = append(c.events, e)
-	return nil, fail.None
-
-}
-
-func (c *Context) TestClear() {
-	c.events = nil
-}
-
-func (c *Context) TestGet() []proto.Message {
-	return c.events
-}
-
-func applyInner(tx *Context, e proto.Message) error {
+func Event(tx fx.Tx, e proto.Message) error {
 	switch t := e.(type) {
 	case *api.LocationAdded:
 		values := []any{t.Id, t.Name, t.Parent, t.Id, "Locations"}

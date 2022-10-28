@@ -2,11 +2,11 @@ package stock
 
 import (
 	"black-friday/fail"
+	"black-friday/fx"
 	. "black-friday/inventory/api"
-	"black-friday/inventory/app"
 )
 
-func Reserve(a *app.Context, r *ReserveReq) (*ReserveResp, error) {
+func Reserve(a fx.Tx, r *ReserveReq) (*ReserveResp, error) {
 
 	// by default, we reserve against the root.
 
@@ -18,7 +18,7 @@ func Reserve(a *app.Context, r *ReserveReq) (*ReserveResp, error) {
 
 	for _, i := range r.Items {
 
-		pid := a.LookupUint64("SELECT Id FROM Products WHERE Sku=?", i.Sku)
+		pid := a.LookupInt64("SELECT Id FROM Products WHERE Sku=?", i.Sku)
 		if pid == 0 {
 			return nil, ErrSkuNotFound(i.Sku)
 		}

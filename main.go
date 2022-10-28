@@ -2,21 +2,12 @@ package main
 
 import (
 	"black-friday/inventory/api"
-	"black-friday/inventory/app"
 	"black-friday/inventory/db"
-	"black-friday/inventory/features/locations"
-	"black-friday/inventory/features/products"
-	"black-friday/inventory/features/stock"
 	"black-friday/specs"
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/abdullin/go-seq"
-	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/proto"
-	"log"
 	"os"
-	"reflect"
 	"runtime"
 
 	"sync"
@@ -60,7 +51,7 @@ func speed_test() {
 
 	fmt.Printf("Speed test with %d cores... ", cores)
 
-	var services []*app.App
+	var services []*specs.Env
 	var wg sync.WaitGroup
 	for i := 0; i < cores; i++ {
 		dbs, err := sql.Open("sqlite3", file)
@@ -69,7 +60,7 @@ func speed_test() {
 
 		guard(db.CreateSchema(dbs))
 
-		svc := app.New(dbs)
+		svc := specs.NewEnv(ctx, dbs)
 		services = append(services, svc)
 		wg.Add(1)
 	}
@@ -90,7 +81,7 @@ func speed_test() {
 			for time.Since(started) < duration {
 				for _, s := range api.Specs {
 					local_count += 1
-					result, err := RunSpec(ctx, svc, s)
+					result, err := svc.RunSpec(s)
 					if err != nil {
 						panic(err)
 					}
@@ -127,9 +118,8 @@ func main() {
 
 	guard(db.CreateSchema(dbs))
 
-	svc := app.New(dbs)
-
 	ctx := context.Background()
+	env := specs.NewEnv(ctx, dbs)
 
 	// speed test
 
@@ -137,7 +127,7 @@ func main() {
 
 	for _, s := range api.Specs {
 
-		result, err := RunSpec(ctx, svc, s)
+		result, err := env.RunSpec(s)
 		deltas := result.Deltas
 		if len(deltas) == 0 && err == nil {
 			//fmt.Printf("✔ %s️\n", s.Name)
@@ -170,79 +160,4 @@ func guard(err error) {
 	if err != nil {
 		panic(err)
 	}
-}
-
-type SpecResult struct {
-	EventCount int
-	Deltas     seq.Issues
-}
-
-func dispatch(ctx *app.Context, m proto.Message) (r proto.Message, err error) {
-
-	switch t := m.(type) {
-	case *api.AddLocationsReq:
-		r, err = locations.Add(ctx, t)
-	case *api.AddProductsReq:
-		r, err = products.Add(ctx, t)
-	case *api.UpdateInventoryReq:
-		r, err = stock.Update(ctx, t)
-	case *api.ListLocationsReq:
-		r, err = locations.List(ctx, t)
-	case *api.GetLocInventoryReq:
-		r, err = stock.Query(ctx, t)
-	case *api.ReserveReq:
-		r, err = stock.Reserve(ctx, t)
-	case *api.MoveLocationReq:
-		r, err = locations.Move(ctx, t)
-	default:
-		return nil, fmt.Errorf("missing dispatch for %v", reflect.TypeOf(m))
-	}
-
-	if r != nil && reflect.ValueOf(r).IsNil() {
-		r = nil
-	}
-	return r, err
-}
-
-func RunSpec(ctx context.Context, a *app.App, spec *api.Spec) (*SpecResult, error) {
-
-	c, err := a.Begin(ctx)
-	if err != nil {
-		log.Panicln(err)
-	}
-
-	defer c.Rollback()
-
-	for i, e := range spec.Given {
-		err, fail := c.Apply(e)
-
-		if err != nil {
-			panic(fmt.Sprintf("#%v problem with spec '%s' event %d.%s: %s",
-				fail,
-				spec.Name,
-				i+1,
-				reflect.TypeOf(e).String(),
-				err))
-		}
-	}
-
-	eventCount := len(spec.Given)
-
-	c.TestClear()
-
-	actualResp, err := dispatch(c, spec.When)
-	actualStatus, _ := status.FromError(err)
-	var actualEvents []proto.Message
-	if err == nil {
-		actualEvents = c.TestGet()
-	}
-
-	eventCount += len(actualEvents)
-
-	issues := specs.Compare(spec, actualResp, actualStatus, actualEvents)
-
-	return &SpecResult{
-		EventCount: eventCount,
-		Deltas:     issues,
-	}, nil
 }
