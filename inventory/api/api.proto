@@ -117,6 +117,7 @@ message GetLocInventoryResp {
   message Item {
     int64 Product = 1;
     int64 OnHand = 2;
+    int64 Available = 3;
   }
 
   repeated Item items = 1;

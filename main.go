@@ -7,8 +7,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/abdullin/go-seq"
 	"os"
 	"runtime"
+	"strings"
 
 	"sync"
 	"sync/atomic"
@@ -34,6 +36,11 @@ func red(s string) string {
 func yellow(s string) string {
 
 	return fmt.Sprintf("%s%s%s", YELLOW, s, CLEAR)
+}
+
+func green(s string) string {
+
+	return fmt.Sprintf("%s%s%s", GREEN, s, CLEAR)
 }
 
 func speed_test() {
@@ -150,7 +157,7 @@ func main() {
 			fmt.Println(yellow("ISSUES:"))
 
 			for _, d := range deltas {
-				fmt.Printf("  %sΔ %s%s\n", ANOTHER, d.String(), CLEAR)
+				fmt.Printf("  %sΔ %s%s\n", ANOTHER, IssueToString(d), CLEAR)
 			}
 			println()
 		}
@@ -158,6 +165,14 @@ func main() {
 	}
 
 	fmt.Printf("Total: ✔%d x%d\n", oks, fails)
+
+}
+
+func IssueToString(d seq.Issue) string {
+	return fmt.Sprintf("Expected %v to be %v but got %v",
+		strings.Replace(seq.JoinPath(d.Path), ".[", "[", -1),
+		specs.Format(d.Expected),
+		specs.Format(d.Actual))
 
 }
 

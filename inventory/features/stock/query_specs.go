@@ -41,7 +41,7 @@ func init() {
 		When: &GetLocInventoryReq{Location: 1},
 		// warehouse should show 15 cards as being onHand
 		ThenResponse: &GetLocInventoryResp{Items: []*GetLocInventoryResp_Item{
-			{Product: 1, OnHand: 15},
+			{Product: 1, OnHand: 15, Available: 15},
 		}},
 	})
 
@@ -51,7 +51,25 @@ func init() {
 		// we query unloading
 		When: &GetLocInventoryReq{Location: 2},
 		ThenResponse: &GetLocInventoryResp{Items: []*GetLocInventoryResp_Item{
-			{Product: 1, OnHand: 10},
+			{Product: 1, OnHand: 10, Available: 10},
+		}},
+	})
+
+	Define(&Spec{
+		Name: "reservation reduced availability",
+		Given: []proto.Message{
+			&ProductAdded{Id: 1, Sku: "pixel"},
+			&LocationAdded{Id: 1, Name: "Warehouse"},
+			&InventoryUpdated{Location: 1, Product: 1, OnHandChange: 10, OnHand: 10,},
+			&Reserved{
+				Reservation: 1,
+				Code:        "sale",
+				Items:       []*Reserved_Item{{Product: 1, Quantity: 3, Location: 1,}},
+			},
+		},
+		When: &GetLocInventoryReq{Location: 1},
+		ThenResponse: &GetLocInventoryResp{Items: []*GetLocInventoryResp_Item{
+			{Product: 1, OnHand: 10, Available: 7,},
 		}},
 	})
 }
