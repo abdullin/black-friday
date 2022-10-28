@@ -19,7 +19,11 @@ type tx struct {
 
 func (c *tx) QueryHack(q string, args ...any) (*sql.Rows, error) {
 	// can we make this prettier?
-	return c.tx.QueryContext(c.ctx, q, args...)
+	//	start := time.Now()
+	rows, err := c.tx.QueryContext(c.ctx, q, args...)
+
+	return rows, err
+
 }
 
 func (c *tx) GetSeq(name string) int64 {
@@ -44,7 +48,7 @@ func (c *tx) Rollback() error {
 
 }
 func (c *tx) Commit() error {
-	panic("Not implemented")
+	panic("Shouldn't be called from test env")
 	return c.tx.Commit()
 }
 

@@ -36,7 +36,6 @@ func init() {
 		},
 		ThenError: codes.FailedPrecondition,
 	})
-
 	Define(&Spec{
 		Name: "don't move location to itself",
 		Given: []proto.Message{
