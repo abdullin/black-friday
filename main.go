@@ -107,7 +107,7 @@ func main() {
 
 	//speed_test()
 
-	fmt.Printf("Discovered %d specs\n", len(api.Specs))
+	fmt.Printf("Found %d specs to run\n", len(api.Specs))
 
 	file := "/tmp/tests.sqlite"
 	file = ":memory:"
@@ -126,9 +126,9 @@ func main() {
 
 	oks, fails := 0, 0
 
-	for _, s := range api.Specs {
+	for i, s := range api.Specs {
 
-		fmt.Printf("%s - taking too much time...", s.Name)
+		fmt.Printf("#%d. %s - taking too much time...", i+1, yellow(s.Name))
 
 		result, err := env.RunSpec(s)
 		deltas := result.Deltas
