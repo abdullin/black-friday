@@ -25,6 +25,7 @@ const (
 	GREEN = "\033[32m"
 
 	ANOTHER = "\033[34m"
+	ERASE   = "\033[2K"
 )
 
 func red(s string) string {
@@ -127,12 +128,14 @@ func main() {
 
 	for _, s := range api.Specs {
 
-		fmt.Printf(s.Name)
+		fmt.Printf("%s - taking too much time...", s.Name)
 
 		result, err := env.RunSpec(s)
 		deltas := result.Deltas
+
+		fmt.Print(ERASE, "\r")
 		if len(deltas) == 0 && err == nil {
-			fmt.Printf(" ✔\n")
+			//fmt.Printf(" ✔\n")
 			oks += 1
 		} else {
 			fails += 1
