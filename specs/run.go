@@ -2,6 +2,7 @@ package specs
 
 import (
 	"black-friday/inventory/api"
+	"database/sql"
 	"fmt"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
@@ -9,21 +10,16 @@ import (
 	"reflect"
 )
 
-func (t *Env) RunSpec(spec *api.Spec) (*SpecResult, error) {
+func (env *Env) RunSpec(spec *api.Spec) (*SpecResult, error) {
 
-	stx, err := t.db.Begin()
+	ttx, err := env.Begin()
 	if err != nil {
 		return nil, fmt.Errorf("create tx: %w", err)
 	}
-
-	ttx := &tx{
-		ctx: t.ctx,
-		tx:  stx,
-	}
 	defer func() {
 		err := ttx.Rollback()
-		if err != nil {
-			log.Fatalln(err)
+		if err != nil && err != sql.ErrTxDone {
+			log.Panicln(fmt.Errorf("spec rollback: %w", err))
 		}
 	}()
 

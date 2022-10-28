@@ -44,6 +44,7 @@ func (c *tx) Rollback() error {
 
 }
 func (c *tx) Commit() error {
+	panic("Not implemented")
 	return c.tx.Commit()
 }
 
