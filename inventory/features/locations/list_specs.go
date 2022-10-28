@@ -75,12 +75,10 @@ func init() {
 		},
 		When: &ListLocationsReq{},
 		ThenResponse: &ListLocationsResp{Locs: []*ListLocationsResp_Loc{
-			{Name: "WH1", Id: 2},
-			{
-				Name:    "WH2",
-				Id:      1,
-				Chidren: []*ListLocationsResp_Loc{},
-			},
+			{Name: "WH1", Id: 1, Chidren: []*ListLocationsResp_Loc{
+				{Name: "Shelf", Id: 3, Parent: 1},
+			}},
+			{Name: "WH2", Id: 2},
 		}},
 	})
 
