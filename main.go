@@ -139,7 +139,7 @@ func main() {
 			oks += 1
 		} else {
 			fails += 1
-			fmt.Printf(red(" x\n"))
+			fmt.Printf(red("x %s\n"), red(s.Name))
 
 			specs.Print(s)
 

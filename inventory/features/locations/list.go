@@ -3,11 +3,32 @@ package locations
 import (
 	"black-friday/fx"
 	"black-friday/inventory/api"
+	"database/sql"
 )
 
 func List(ctx fx.Tx, req *api.ListLocationsReq) (*api.ListLocationsResp, error) {
 
-	rows, err := ctx.QueryHack(`
+	var (
+		err  error
+		rows *sql.Rows
+	)
+	if req.Location == 0 {
+		rows, err = ctx.QueryHack(`
+WITH RECURSIVE cte_Locations(Id, Parent, Name) AS (
+	SELECT l.Id, l.Parent, l.Name
+	FROM Locations l
+	WHERE l.Parent = 0 and l.Id != 0
+
+	UNION ALL
+
+	SELECT l.Id, l.Parent, l.Name
+	FROM Locations l
+	JOIN cte_Locations c ON c.Id = l.Parent
+)
+SELECT * FROM cte_Locations
+`)
+	} else {
+		rows, err = ctx.QueryHack(`
 WITH RECURSIVE cte_Locations(Id, Parent, Name) AS (
 	SELECT l.Id, l.Parent, l.Name
 	FROM Locations l
@@ -21,6 +42,7 @@ WITH RECURSIVE cte_Locations(Id, Parent, Name) AS (
 )
 SELECT * FROM cte_Locations
 `, req.Location)
+	}
 	if err != nil {
 		return nil, err
 	}
