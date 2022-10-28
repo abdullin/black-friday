@@ -104,7 +104,7 @@ func speed_test() {
 
 func main() {
 
-	speed_test()
+	//speed_test()
 
 	fmt.Printf("Discovered %d specs\n", len(api.Specs))
 
@@ -127,14 +127,16 @@ func main() {
 
 	for _, s := range api.Specs {
 
+		fmt.Printf(s.Name)
+
 		result, err := env.RunSpec(s)
 		deltas := result.Deltas
 		if len(deltas) == 0 && err == nil {
-			//fmt.Printf("✔ %s️\n", s.Name)
+			fmt.Printf(" ✔\n")
 			oks += 1
 		} else {
 			fails += 1
-			fmt.Printf(red("x %s\n"), s.Name)
+			fmt.Printf(red(" x\n"))
 
 			specs.Print(s)
 
