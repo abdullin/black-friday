@@ -54,7 +54,7 @@ func Format(val any) string {
 	case proto.Message:
 
 		repr := prototext.MarshalOptions{Multiline: false}.Format(v)
-		return string(v.ProtoReflect().Descriptor().Name()) + ":{" + repr + "}"
+		return string(v.ProtoReflect().Descriptor().Name()) + " " + repr + ""
 	case []proto.Message:
 		names := []string{}
 		for _, m := range v {

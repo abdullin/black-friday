@@ -1,9 +1,9 @@
 package main
 
 import (
+	specs2 "black-friday/env/specs"
 	"black-friday/inventory/api"
 	"black-friday/inventory/db"
-	"black-friday/specs"
 	"context"
 	"database/sql"
 	"fmt"
@@ -59,7 +59,7 @@ func speed_test() {
 
 	fmt.Printf("Speed test with %d cores... ", cores)
 
-	var services []*specs.Env
+	var services []*specs2.Env
 	var wg sync.WaitGroup
 	for i := 0; i < cores; i++ {
 		dbs, err := sql.Open("sqlite3", file)
@@ -68,7 +68,7 @@ func speed_test() {
 
 		guard(db.CreateSchema(dbs))
 
-		svc := specs.NewEnv(ctx, dbs)
+		svc := specs2.NewEnv(ctx, dbs)
 		services = append(services, svc)
 		wg.Add(1)
 	}
@@ -127,7 +127,7 @@ func main() {
 	guard(db.CreateSchema(dbs))
 
 	ctx := context.Background()
-	env := specs.NewEnv(ctx, dbs)
+	env := specs2.NewEnv(ctx, dbs)
 
 	// speed test
 
@@ -146,9 +146,9 @@ func main() {
 			oks += 1
 		} else {
 			fails += 1
-			fmt.Printf(red("x %s\n"), red(s.Name))
+			fmt.Printf(red("X %s\n"), red(s.Name))
 
-			specs.Print(s)
+			specs2.Print(s)
 
 			if err != nil {
 				fmt.Printf(red("  FATAL: %s\n"), err.Error())
@@ -164,15 +164,15 @@ func main() {
 
 	}
 
-	fmt.Printf("Total: ✔%d x%d\n", oks, fails)
+	fmt.Printf("Total: ✔%d X%d\n", oks, fails)
 
 }
 
 func IssueToString(d seq.Issue) string {
 	return fmt.Sprintf("Expected %v to be %v but got %v",
 		strings.Replace(seq.JoinPath(d.Path), ".[", "[", -1),
-		specs.Format(d.Expected),
-		specs.Format(d.Actual))
+		specs2.Format(d.Expected),
+		specs2.Format(d.Actual))
 
 }
 
