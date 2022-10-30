@@ -1,6 +1,7 @@
 package test
 
 import (
+	"flag"
 	"github.com/mitchellh/cli"
 )
 
@@ -14,7 +15,17 @@ func (c cmd) Help() string {
 
 func (c cmd) Run(args []string) int {
 
-	test_specs()
+	var db string
+
+	flags := flag.NewFlagSet("test", flag.ExitOnError)
+	flags.StringVar(&db, "db", ":memory:", "sqlite db to use")
+
+	if err := flags.Parse(args); err != nil {
+		flags.Usage()
+		return 1
+	}
+
+	test_specs(db)
 	return 0
 }
 

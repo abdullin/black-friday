@@ -39,7 +39,7 @@ UPDATE sqlite_sequence SET seq=? WHERE name=?
 INSERT INTO Reservations(Id, Code) VALUES(?,?);
 UPDATE sqlite_sequence SET seq=? WHERE name=?
 `, t.Reservation, t.Code, t.Reservation, "Reservations")
-		if err == nil {
+		if err != nil {
 			return err
 		}
 		for _, i := range t.Items {

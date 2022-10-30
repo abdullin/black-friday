@@ -16,7 +16,7 @@ func init() {
 		},
 		When: &GetLocInventoryReq{Location: 1},
 		ThenResponse: &GetLocInventoryResp{
-			Items: []*GetLocInventoryResp_Item{{Product: 2, OnHand: 2}}},
+			Items: []*GetLocInventoryResp_Item{{Product: 2, OnHand: 2, Available: 2}}},
 	})
 
 	container_with_gpus_inbound := []proto.Message{
@@ -60,16 +60,16 @@ func init() {
 		Given: []proto.Message{
 			&ProductAdded{Id: 1, Sku: "pixel"},
 			&LocationAdded{Id: 1, Name: "Warehouse"},
-			&InventoryUpdated{Location: 1, Product: 1, OnHandChange: 10, OnHand: 10,},
+			&InventoryUpdated{Location: 1, Product: 1, OnHandChange: 10, OnHand: 10},
 			&Reserved{
 				Reservation: 1,
 				Code:        "sale",
-				Items:       []*Reserved_Item{{Product: 1, Quantity: 3, Location: 1,}},
+				Items:       []*Reserved_Item{{Product: 1, Quantity: 3, Location: 1}},
 			},
 		},
 		When: &GetLocInventoryReq{Location: 1},
 		ThenResponse: &GetLocInventoryResp{Items: []*GetLocInventoryResp_Item{
-			{Product: 1, OnHand: 10, Available: 7,},
+			{Product: 1, OnHand: 10, Available: 7},
 		}},
 	})
 }

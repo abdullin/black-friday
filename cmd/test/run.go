@@ -36,14 +36,13 @@ func green(s string) string {
 	return fmt.Sprintf("%s%s%s", GREEN, s, CLEAR)
 }
 
-func test_specs() {
+func test_specs(file string) {
 
 	//speed_test()
 
 	fmt.Printf("Found %d specs to run\n", len(api.Specs))
+	fmt.Printf("Using %s\n", file)
 
-	file := "/tmp/tests.sqlite"
-	file = ":memory:"
 	_ = os.Remove(file)
 
 	dbs, err := sql.Open("sqlite3", file)

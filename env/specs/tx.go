@@ -48,7 +48,6 @@ func (c *tx) Rollback() error {
 
 }
 func (c *tx) Commit() error {
-	panic("Shouldn't be called from test env")
 	return c.tx.Commit()
 }
 
