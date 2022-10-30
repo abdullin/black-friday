@@ -1,6 +1,7 @@
 package main
 
 import (
+	"black-friday/cmd/perf"
 	"black-friday/cmd/test"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/mitchellh/cli"
@@ -13,6 +14,7 @@ func main() {
 	c.Args = os.Args[1:]
 	c.Commands = map[string]cli.CommandFactory{
 		"test": test.Factory,
+		"perf": perf.Factory,
 	}
 
 	exitStatus, err := c.Run()

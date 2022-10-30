@@ -1,25 +1,22 @@
-package test
+package perf
 
-import (
-	"github.com/mitchellh/cli"
-)
+import "github.com/mitchellh/cli"
 
 type cmd struct {
 }
 
 func (c cmd) Help() string {
-
-	return "run specs"
+	return "Run performance tests"
+	//TODO implement me
 }
 
 func (c cmd) Run(args []string) int {
-
-	test_specs()
+	speed_test()
 	return 0
 }
 
 func (c cmd) Synopsis() string {
-	return "run specs"
+	return "runs speed test"
 }
 
 func Factory() (cli.Command, error) {
