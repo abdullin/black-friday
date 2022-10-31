@@ -132,11 +132,22 @@ message ReserveReq {
   }
 
   repeated Item items = 2;
+  map<string,string> tags = 3;
 }
 
 
 message ReserveResp {
   int64 reservation = 1;
+}
+
+enum Lambda{
+  UNSPECIFIED = 0;
+  RESERVE = 1;
+}
+
+message LambdaInstalled{
+  Lambda type = 1;
+  string code = 2;
 }
 
 message Reserved {

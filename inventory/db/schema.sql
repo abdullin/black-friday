@@ -42,7 +42,11 @@ CREATE TABLE Reserves (
     FOREIGN KEY(Reservation) REFERENCES Reservations(Id),
     FOREIGN KEY(Product) REFERENCES Products(Id),
     FOREIGN KEY(Location) REFERENCES Locations(Id)
+);
 
+CREATE TABLE Lambdas (
+    Type TEXT PRIMARY KEY,
+    Code TEXT NOT NULL
 );
 
 INSERT INTO sqlite_sequence (name, seq) VALUES

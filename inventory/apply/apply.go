@@ -2,29 +2,29 @@ package apply
 
 import (
 	"black-friday/fx"
-	"black-friday/inventory/api"
+	. "black-friday/inventory/api"
 	"fmt"
 	"google.golang.org/protobuf/proto"
 )
 
 func Event(tx fx.Tx, e proto.Message) error {
 	switch t := e.(type) {
-	case *api.LocationAdded:
+	case *LocationAdded:
 		values := []any{t.Id, t.Name, t.Parent, t.Id, "Locations"}
 		return tx.Exec(`
 INSERT INTO Locations(Id, Name, Parent) VALUES (?,?,?);
 UPDATE sqlite_sequence SET seq=? WHERE name=?
 `, values...)
-	case *api.LocationMoved:
+	case *LocationMoved:
 		return tx.Exec(`
 UPDATE Locations SET Parent=? WHERE Id=?
 `, t.NewParent, t.Id)
-	case *api.ProductAdded:
+	case *ProductAdded:
 		return tx.Exec(`
 INSERT INTO Products(Id, Sku) VALUES (?,?);
 UPDATE sqlite_sequence SET seq=? WHERE name=?
 `, t.Id, t.Sku, t.Id, "Products")
-	case *api.InventoryUpdated:
+	case *InventoryUpdated:
 
 		before := t.OnHand - t.OnHandChange
 		if t.OnHand == 0 {
@@ -34,7 +34,7 @@ UPDATE sqlite_sequence SET seq=? WHERE name=?
 		} else {
 			return tx.Exec("UPDATE Inventory SET OnHand=? WHERE Product=? AND Location=?", t.OnHand, t.Product, t.Location)
 		}
-	case *api.Reserved:
+	case *Reserved:
 		err := tx.Exec(`
 INSERT INTO Reservations(Id, Code) VALUES(?,?);
 UPDATE sqlite_sequence SET seq=? WHERE name=?
@@ -51,7 +51,9 @@ UPDATE sqlite_sequence SET seq=? WHERE name=?
 			}
 		}
 		return nil
-
+	case *LambdaInstalled:
+		return tx.Exec(`INSERT INTO Lambdas(Type, Code) VALUES(?,?)`,
+			t.Type.String(), t.Code)
 	default:
 		return fmt.Errorf("Unhandled event: %s", e.ProtoReflect().Descriptor().Name())
 	}

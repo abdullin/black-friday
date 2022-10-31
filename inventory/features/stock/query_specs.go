@@ -56,7 +56,7 @@ func init() {
 	})
 
 	Define(&Spec{
-		Name: "reservation reduced availability",
+		Name: "reservation reduces availability",
 		Given: []proto.Message{
 			&ProductAdded{Id: 1, Sku: "pixel"},
 			&LocationAdded{Id: 1, Name: "Warehouse"},
@@ -70,6 +70,42 @@ func init() {
 		When: &GetLocInventoryReq{Location: 1},
 		ThenResponse: &GetLocInventoryResp{Items: []*GetLocInventoryResp_Item{
 			{Product: 1, OnHand: 10, Available: 7},
+		}},
+	})
+
+	Define(&Spec{
+		Name: "moving container with a reservation",
+		Given: []proto.Message{
+			&ProductAdded{Id: 1, Sku: "NVidia 4080"},
+			// we have a warehouse with unloading zone and a shelf
+			&LocationAdded{Id: 1, Name: "Warehouse"},
+			&LocationAdded{Id: 2, Name: "Unloading", Parent: 1},
+			&LocationAdded{Id: 3, Name: "Shelf", Parent: 1},
+			// 5 GPUS on a Shelf
+			&InventoryUpdated{Location: 3, Product: 1, OnHandChange: 5, OnHand: 5},
+			// and 3 reserved
+			&Reserved{
+				Reservation: 1,
+				Code:        "sale1",
+				Items:       []*Reserved_Item{{Product: 1, Quantity: 3, Location: 3}},
+			},
+
+			// we have a standalone container with some GPUs
+			&LocationAdded{Id: 4, Name: "Container"},
+			&InventoryUpdated{Location: 4, Product: 1, OnHandChange: 10, OnHand: 10},
+			// most of which was already promised to a customer
+			&Reserved{
+				Reservation: 2,
+				Code:        "sale2",
+				Items:       []*Reserved_Item{{Product: 1, Quantity: 9, Location: 4}},
+			},
+
+			// container was moved to the unloading zone in warehouse
+			&LocationMoved{Id: 4, NewParent: 2},
+		},
+		When: &GetLocInventoryReq{Location: 1},
+		ThenResponse: &GetLocInventoryResp{Items: []*GetLocInventoryResp_Item{
+			{Product: 1, OnHand: 15, Available: 3},
 		}},
 	})
 }

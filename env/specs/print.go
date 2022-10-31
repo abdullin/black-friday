@@ -44,10 +44,16 @@ func PrintFull(s *api.Spec, r *SpecResult) {
 			fmt.Printf(red("  FATAL: %s\n"), err.Error())
 		}
 	*/
-	fmt.Println(yellow("ISSUES:"))
+	if len(r.Deltas) == 0 {
+		fmt.Printf("%sNO ISSUES!%s\n", GREEN, CLEAR)
 
-	for _, d := range r.Deltas {
-		fmt.Printf("  %sΔ %s%s\n", ANOTHER, IssueToString(d), CLEAR)
+	} else {
+
+		fmt.Println(yellow("ISSUES:"))
+
+		for _, d := range r.Deltas {
+			fmt.Printf("  %sΔ %s%s\n", ANOTHER, IssueToString(d), CLEAR)
+		}
 	}
 
 }
