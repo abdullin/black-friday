@@ -21,9 +21,9 @@ func speed_test() {
 
 	seconds := 1.0
 	// set timeout, just in case
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(seconds+0.5))
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(seconds+1))
 
-	cores := runtime.NumCPU()
+	cores := runtime.NumCPU() / 2
 	if env := os.Getenv("REPL_ID"); env != "" {
 		// REPLIT is limited by default
 		cores = 1
