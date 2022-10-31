@@ -25,7 +25,7 @@ func (c cmd) Run(args []string) int {
 		return 1
 	}
 
-	test_specs(db)
+	test_specs()
 	return 0
 }
 

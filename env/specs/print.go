@@ -3,6 +3,7 @@ package specs
 import (
 	"black-friday/inventory/api"
 	"fmt"
+	"github.com/abdullin/go-seq"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
@@ -23,6 +24,40 @@ const (
 
 	ANOTHER = "\033[34m"
 )
+
+func red(s string) string {
+	return fmt.Sprintf("%s%s%s", RED, s, CLEAR)
+}
+
+func PrintFull(s *api.Spec, r *SpecResult) {
+
+	if r.DidFail() {
+
+		fmt.Printf(red("X %s (#%d)\n"), red(s.Name), s.Seq)
+	} else {
+		fmt.Printf("%sV %s %s(#%d)\n", GREEN, s.Name, CLEAR, s.Seq)
+	}
+
+	Print(s)
+	/*
+		if err != nil {
+			fmt.Printf(red("  FATAL: %s\n"), err.Error())
+		}
+	*/
+	fmt.Println(yellow("ISSUES:"))
+
+	for _, d := range r.Deltas {
+		fmt.Printf("  %sΔ %s%s\n", ANOTHER, IssueToString(d), CLEAR)
+	}
+
+}
+func IssueToString(d seq.Issue) string {
+	return fmt.Sprintf("Expected %v to be %v but got %v",
+		strings.Replace(seq.JoinPath(d.Path), ".[", "[", -1),
+		Format(d.Expected),
+		Format(d.Actual))
+
+}
 
 func Print(s *api.Spec) {
 	//println(s.Name)

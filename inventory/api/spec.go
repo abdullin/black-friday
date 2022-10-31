@@ -6,6 +6,7 @@ import (
 )
 
 type Spec struct {
+	Seq          int
 	Name         string
 	Given        []proto.Message
 	When         proto.Message
@@ -17,5 +18,6 @@ type Spec struct {
 var Specs []*Spec
 
 func Define(s *Spec) {
+	s.Seq = len(Specs) + 1
 	Specs = append(Specs, s)
 }

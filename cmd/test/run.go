@@ -1,15 +1,11 @@
 package test
 
 import (
-	specs2 "black-friday/env/specs"
+	specs "black-friday/env/specs"
 	"black-friday/inventory/api"
-	"black-friday/inventory/db"
 	"context"
-	"database/sql"
 	"fmt"
-	"github.com/abdullin/go-seq"
-	"os"
-	"strings"
+	"log"
 )
 
 const (
@@ -36,23 +32,17 @@ func green(s string) string {
 	return fmt.Sprintf("%s%s%s", GREEN, s, CLEAR)
 }
 
-func test_specs(file string) {
+func test_specs() {
 
 	//speed_test()
 
 	fmt.Printf("Found %d specs to run\n", len(api.Specs))
-	fmt.Printf("Using %s\n", file)
-
-	_ = os.Remove(file)
-
-	dbs, err := sql.Open("sqlite3", file)
-	guard(err)
-	defer dbs.Close()
-
-	guard(db.CreateSchema(dbs))
 
 	ctx := context.Background()
-	env := specs2.NewEnv(ctx, dbs)
+	env := specs.NewEnv(ctx, ":memory:")
+	defer env.Close()
+
+	env.EnsureSchema()
 
 	// speed test
 
@@ -62,7 +52,16 @@ func test_specs(file string) {
 
 		fmt.Printf("#%d. %s - taking too much time...", i+1, yellow(s.Name))
 
-		result, err := env.RunSpec(s)
+		tx, err := env.BeginTx()
+		if err != nil {
+			log.Panicln("begin tx", err)
+		}
+
+		result := env.RunSpec(s, tx)
+		if err := tx.Rollback(); err != nil {
+			log.Panicln("roll back")
+		}
+
 		deltas := result.Deltas
 
 		fmt.Print(ERASE, "\r")
@@ -71,33 +70,13 @@ func test_specs(file string) {
 			oks += 1
 		} else {
 			fails += 1
-			fmt.Printf(red("X %s\n"), red(s.Name))
-
-			specs2.Print(s)
-
-			if err != nil {
-				fmt.Printf(red("  FATAL: %s\n"), err.Error())
-			}
-
-			fmt.Println(yellow("ISSUES:"))
-
-			for _, d := range deltas {
-				fmt.Printf("  %sΔ %s%s\n", ANOTHER, IssueToString(d), CLEAR)
-			}
+			specs.PrintFull(s, result)
 			println()
 		}
 
 	}
 
 	fmt.Printf("Total: ✔%d X%d\n", oks, fails)
-
-}
-
-func IssueToString(d seq.Issue) string {
-	return fmt.Sprintf("Expected %v to be %v but got %v",
-		strings.Replace(seq.JoinPath(d.Path), ".[", "[", -1),
-		specs2.Format(d.Expected),
-		specs2.Format(d.Actual))
 
 }
 

@@ -3,11 +3,8 @@ package perf
 import (
 	specs2 "black-friday/env/specs"
 	"black-friday/inventory/api"
-	"black-friday/inventory/db"
 	"context"
-	"database/sql"
 	"fmt"
-	"log"
 	"os"
 	"runtime"
 	"sync"
@@ -34,18 +31,11 @@ func speed_test() {
 	var services []*specs2.Env
 	var wg sync.WaitGroup
 	for i := 0; i < cores; i++ {
-		dbs, err := sql.Open("sqlite3", file)
-		if err != nil {
-			log.Panicln(err)
-		}
-		defer dbs.Close()
 
-		err = db.CreateSchema(dbs)
-		if err != nil {
-			log.Panicln(err)
-		}
+		svc := specs2.NewEnv(ctx, file)
+		defer svc.Close()
 
-		svc := specs2.NewEnv(ctx, dbs)
+		svc.EnsureSchema()
 		services = append(services, svc)
 		wg.Add(1)
 	}
@@ -66,8 +56,12 @@ func speed_test() {
 			for time.Since(started) < duration {
 				for _, s := range api.Specs {
 					local_count += 1
-					result, err := svc.RunSpec(s)
+					tx, err := svc.BeginTx()
 					if err != nil {
+						panic(err)
+					}
+					result := svc.RunSpec(s, tx)
+					if err := tx.Rollback(); err != nil {
 						panic(err)
 					}
 					localEventCount += int64(result.EventCount)
