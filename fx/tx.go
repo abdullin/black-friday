@@ -11,7 +11,7 @@ type Tx interface {
 	GetSeq(table string) int64
 	Apply(e proto.Message) (error, fail.Code)
 	QueryHack(q string, args ...any) (*sql.Rows, error)
-	Scan(q string, args []any, dest ...any) bool
+	QueryRow(query string, args ...any) func(dest ...any) bool
 	Exec(sql string, args ...any) error
 	Rollback() error
 	Commit() error
