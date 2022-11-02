@@ -28,12 +28,16 @@ func Move(a fx.Tx, r *MoveLocationReq) (*MoveLocationResp, error) {
 			return nil, ErrPrecondition
 		}
 
-		ancestor = a.LookupInt64("SELECT Parent FROM Locations WHERE Id=?", ancestor)
+		found := a.Scan("SELECT Parent FROM Locations WHERE Id=?", []any{ancestor}, &ancestor)
+		if !found {
+			break
+		}
 
 	}
 
 	// this will be the old parent
-	parent := a.LookupInt64("SELECT Parent FROM Locations WHERE Id=?", r.Id)
+	var parent int64
+	a.Scan("SELECT Parent FROM Locations WHERE Id=?", []any{r.Id}, &parent)
 
 	err, f := a.Apply(&LocationMoved{
 		Id:        r.Id,

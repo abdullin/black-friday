@@ -10,9 +10,11 @@ import (
 
 func Update(ctx fx.Tx, req *api.UpdateInventoryReq) (r *api.UpdateInventoryResp, err error) {
 
-	onHand := ctx.LookupInt64("SELECT OnHand FROM Inventory WHERE Location=? AND Product=?",
-		req.Location,
-		req.Product)
+	var onHand int64
+
+	ctx.Scan("SELECT OnHand FROM Inventory WHERE Location=? AND Product=?",
+		[]any{req.Location, req.Product},
+		&onHand)
 
 	onHand += req.OnHandChange
 

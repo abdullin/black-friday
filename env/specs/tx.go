@@ -27,20 +27,21 @@ func (c *tx) QueryHack(q string, args ...any) (*sql.Rows, error) {
 }
 
 func (c *tx) GetSeq(name string) int64 {
-	return c.LookupInt64("select seq from sqlite_sequence where name=?", name)
+	var id int64
+	c.Scan("select seq from sqlite_sequence where name=?", []any{name}, &id)
+	return id
 }
 
-func (c *tx) LookupInt64(query string, args ...any) int64 {
+func (c *tx) Scan(query string, args []any, dest ...any) bool {
 	row := c.tx.QueryRowContext(c.ctx, query, args...)
-	var i int64
-	err := row.Scan(&i)
+	err := row.Scan(dest...)
 	if err == sql.ErrNoRows {
-		return 0
+		return false
 	} else if err != nil {
 		panic(fmt.Errorf("sql %s: %w", query, err))
 	}
 
-	return i
+	return true
 }
 
 func (c *tx) Rollback() error {
