@@ -2,7 +2,6 @@ package locations
 
 import (
 	. "black-friday/inventory/api"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -66,14 +65,14 @@ func init() {
 				Name: "L",
 			}},
 		},
-		ThenError: codes.NotFound,
+		ThenError: ErrLocationNotFound,
 	})
 
 	Define(&Spec{
 		Name:      "add location with nill name",
 		Given:     []proto.Message{},
 		When:      &AddLocationsReq{Locs: []*AddLocationsReq_Loc{{}}},
-		ThenError: codes.InvalidArgument,
+		ThenError: ErrArgNil("name"),
 	})
 	Define(&Spec{
 		Name: "insert duplicate location name in a batch",
@@ -81,7 +80,7 @@ func init() {
 			{Name: "W"},
 			{Name: "W"},
 		}},
-		ThenError: codes.AlreadyExists,
+		ThenError: ErrAlreadyExists,
 	})
 
 	Define(&Spec{
@@ -92,7 +91,7 @@ func init() {
 		When: &AddLocationsReq{Locs: []*AddLocationsReq_Loc{
 			{Name: "W"},
 		}},
-		ThenError: codes.AlreadyExists,
+		ThenError: ErrAlreadyExists,
 	})
 
 }

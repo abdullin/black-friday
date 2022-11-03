@@ -23,7 +23,7 @@ func Add(ctx fx.Tx, req *AddProductsReq) (r *AddProductsResp, err error) {
 		switch f {
 		case fail.None:
 		case fail.ConstraintUnique:
-			return nil, ErrDuplicateName
+			return nil, ErrAlreadyExists
 		default:
 			return nil, ErrInternal(err, f)
 		}

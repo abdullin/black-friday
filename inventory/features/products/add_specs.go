@@ -2,7 +2,6 @@ package products
 
 import (
 	. "black-friday/inventory/api"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -20,6 +19,6 @@ func init() {
 	Define(&Spec{
 		Name:      "one failing product fails the batch",
 		When:      &AddProductsReq{Skus: []string{"one", "one"}},
-		ThenError: codes.AlreadyExists,
+		ThenError: ErrAlreadyExists,
 	})
 }

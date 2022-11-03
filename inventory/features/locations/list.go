@@ -76,7 +76,7 @@ SELECT * FROM cte_Locations
 	}
 	// we should at list get one location
 	if len(results) == 0 {
-		return nil, api.ErrNotFound
+		return nil, api.ErrLocationNotFound
 	}
 	return &api.ListLocationsResp{Locs: results}, nil
 }

@@ -2,7 +2,6 @@ package locations
 
 import (
 	. "black-friday/inventory/api"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -34,7 +33,7 @@ func init() {
 			Id:        1,
 			NewParent: 2,
 		},
-		ThenError: codes.FailedPrecondition,
+		ThenError: ErrBadMove,
 	})
 	Define(&Spec{
 		Name: "don't move location to itself",
@@ -45,7 +44,7 @@ func init() {
 			Id:        1,
 			NewParent: 1,
 		},
-		ThenError: codes.FailedPrecondition,
+		ThenError: ErrBadMove,
 	})
 
 	Define(&Spec{
@@ -57,6 +56,6 @@ func init() {
 			Id:        0,
 			NewParent: 1,
 		},
-		ThenError: codes.InvalidArgument,
+		ThenError: ErrBadMove,
 	})
 }

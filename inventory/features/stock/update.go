@@ -3,12 +3,10 @@ package stock
 import (
 	"black-friday/fail"
 	"black-friday/fx"
-	"black-friday/inventory/api"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	. "black-friday/inventory/api"
 )
 
-func Update(ctx fx.Tx, req *api.UpdateInventoryReq) (r *api.UpdateInventoryResp, err error) {
+func Update(ctx fx.Tx, req *UpdateInventoryReq) (r *UpdateInventoryResp, err error) {
 
 	var onHand int64
 
@@ -18,10 +16,10 @@ func Update(ctx fx.Tx, req *api.UpdateInventoryReq) (r *api.UpdateInventoryResp,
 	onHand += req.OnHandChange
 
 	if onHand < 0 {
-		return nil, status.Errorf(codes.FailedPrecondition, "OnHand can't go negative!")
+		return nil, ErrNotEnough
 	}
 
-	e := &api.InventoryUpdated{
+	e := &InventoryUpdated{
 		Location:     req.Location,
 		Product:      req.Product,
 		OnHandChange: req.OnHandChange,
@@ -32,8 +30,8 @@ func Update(ctx fx.Tx, req *api.UpdateInventoryReq) (r *api.UpdateInventoryResp,
 	switch f {
 	case fail.None:
 	default:
-		return nil, api.ErrInternal(err, f)
+		return nil, ErrInternal(err, f)
 	}
 
-	return &api.UpdateInventoryResp{OnHand: e.OnHand}, nil
+	return &UpdateInventoryResp{OnHand: e.OnHand}, nil
 }

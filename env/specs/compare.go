@@ -4,20 +4,25 @@ import (
 	"black-friday/inventory/api"
 	"fmt"
 	"github.com/abdullin/go-seq"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 )
 
-func Compare(spec *api.Spec, resp proto.Message, status *status.Status, events []proto.Message) seq.Issues {
+func errToStr(e error) string {
+	if e == nil {
+		return ""
+	}
+	return e.Error()
+
+}
+
+func Compare(spec *api.Spec, resp proto.Message, actualErr error, events []proto.Message) seq.Issues {
 
 	issues := seq.Diff(spec.ThenResponse, resp, "response")
-	if spec.ThenError != status.Code() {
-		actualErr := "OK"
-		if status.Code() != codes.OK {
 
-			actualErr = fmt.Sprintf("%s: %s", status.Code(), status.Message())
-		}
+	actualErrStr := errToStr(actualErr)
+	expectErrStr := errToStr(spec.ThenError)
+
+	if actualErrStr != expectErrStr {
 
 		issues = append(issues, seq.Issue{
 			Expected: spec.ThenError,

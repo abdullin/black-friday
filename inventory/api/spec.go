@@ -1,7 +1,6 @@
 package api
 
 import (
-	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -11,7 +10,7 @@ type Spec struct {
 	Given        []proto.Message
 	When         proto.Message
 	ThenResponse proto.Message
-	ThenError    codes.Code
+	ThenError    error
 	ThenEvents   []proto.Message
 }
 

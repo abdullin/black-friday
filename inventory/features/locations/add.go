@@ -18,7 +18,7 @@ func Add(c fx.Tx, req *AddLocationsReq) (*AddLocationsResp, error) {
 
 		for _, l := range ls {
 			if l.Name == "" {
-				return nil, ErrArgNil("Name")
+				return nil, ErrArgNil("name")
 			}
 			id += 1
 
@@ -38,9 +38,9 @@ func Add(c fx.Tx, req *AddLocationsReq) (*AddLocationsResp, error) {
 			switch f {
 			case fail.None:
 			case fail.ConstraintUnique:
-				return nil, ErrDuplicateName
+				return nil, ErrAlreadyExists
 			case fail.ConstraintForeign:
-				return nil, ErrNotFound
+				return nil, ErrLocationNotFound
 			default:
 				return nil, ErrInternal(err, f)
 			}

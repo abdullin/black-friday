@@ -2,7 +2,6 @@ package locations
 
 import (
 	. "black-friday/inventory/api"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -63,7 +62,7 @@ func init() {
 	Define(&Spec{
 		Name:      "query locations from non-existent location",
 		When:      &ListLocationsReq{Location: 1},
-		ThenError: codes.NotFound,
+		ThenError: ErrLocationNotFound,
 	})
 
 	Define(&Spec{

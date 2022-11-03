@@ -19,7 +19,7 @@ func Reserve(a fx.Tx, r *ReserveReq) (*ReserveResp, error) {
 	for _, i := range r.Items {
 		var pid int64
 		if !a.QueryRow("SELECT Id FROM Products WHERE Sku=?", i.Sku)(&pid) {
-			return nil, ErrSkuNotFound(i.Sku)
+			return nil, ErrProductNotFound
 		}
 		e.Items = append(e.Items, &Reserved_Item{
 			Product:  pid,

@@ -2,7 +2,6 @@ package stock
 
 import (
 	. "black-friday/inventory/api"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -45,7 +44,7 @@ func init() {
 				{Sku: "sale", Quantity: 1},
 			},
 		},
-		ThenError: codes.NotFound,
+		ThenError: ErrProductNotFound,
 	})
 
 	Define(&Spec{

@@ -10,7 +10,7 @@ func Move(a fx.Tx, r *MoveLocationReq) (*MoveLocationResp, error) {
 
 	// root is not touchable
 	if r.Id == 0 {
-		return nil, ErrArgument
+		return nil, ErrBadMove
 	}
 
 	// need to check if the new parent is not the child of the current node
@@ -25,7 +25,7 @@ func Move(a fx.Tx, r *MoveLocationReq) (*MoveLocationResp, error) {
 		}
 
 		if ancestor == r.Id {
-			return nil, ErrPrecondition
+			return nil, ErrBadMove
 		}
 
 		found := a.QueryRow("SELECT Parent FROM Locations WHERE Id=?", ancestor)(&ancestor)

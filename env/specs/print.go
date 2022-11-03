@@ -4,7 +4,7 @@ import (
 	"black-friday/inventory/api"
 	"fmt"
 	"github.com/abdullin/go-seq"
-	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
 	"strings"
@@ -77,8 +77,9 @@ func Print(s *api.Spec) {
 	if s.ThenResponse != nil {
 		println(fmt.Sprintf("%s\n  %s", yellow("THEN RESPONSE:"), Format(s.ThenResponse)))
 	}
-	if s.ThenError != codes.OK {
-		println(fmt.Sprintf("%s\n  %s", yellow("THEN ERROR:"), s.ThenError))
+	if s.ThenError != nil {
+
+		println(fmt.Sprintf("%s\n  %s", yellow("THEN ERROR:"), Format(s.ThenError)))
 	}
 	if len(s.ThenEvents) > 0 {
 		println(yellow("THEN EVENTS:"))
@@ -88,10 +89,12 @@ func Print(s *api.Spec) {
 	}
 }
 func Format(val any) string {
+
 	if val == nil {
 		return "<nil>"
 	}
 	switch v := val.(type) {
+
 	case proto.Message:
 
 		repr := prototext.MarshalOptions{Multiline: false}.Format(v)
@@ -104,7 +107,14 @@ func Format(val any) string {
 		return fmt.Sprintf("[%s]", strings.Join(names, ", "))
 
 	case error:
-		return fmt.Sprintf("Error '%v'", v.Error())
+
+		st, ok := status.FromError(v)
+		if ok {
+			return fmt.Sprintf("\"%s\" (%v)", st.Message(), st.Code().String())
+		} else {
+
+			return fmt.Sprintf("Error '%v'", v.Error())
+		}
 	default:
 		return fmt.Sprintf("'%v'", v)
 	}

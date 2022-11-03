@@ -3,7 +3,6 @@ package specs
 import (
 	"black-friday/inventory/api"
 	"fmt"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"reflect"
 )
@@ -28,7 +27,6 @@ func (env *Env) RunSpec(spec *api.Spec, ttx *tx) *SpecResult {
 	ttx.events = nil
 
 	actualResp, err := dispatch(ttx, spec.When)
-	actualStatus, _ := status.FromError(err)
 	var actualEvents []proto.Message
 	if err == nil {
 		actualEvents = ttx.events
@@ -36,7 +34,7 @@ func (env *Env) RunSpec(spec *api.Spec, ttx *tx) *SpecResult {
 
 	eventCount += len(actualEvents)
 
-	issues := Compare(spec, actualResp, actualStatus, actualEvents)
+	issues := Compare(spec, actualResp, err, actualEvents)
 
 	return &SpecResult{
 		EventCount: eventCount,
