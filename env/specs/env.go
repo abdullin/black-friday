@@ -5,7 +5,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/abdullin/go-seq"
 	"log"
 )
 
@@ -68,11 +67,6 @@ func (env *Env) BeginTx() (*tx, error) {
 	}
 
 	return ttx, nil
-}
-
-type SpecResult struct {
-	EventCount int
-	Deltas     seq.Issues
 }
 
 func (s *SpecResult) DidFail() bool {

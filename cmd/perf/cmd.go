@@ -1,6 +1,10 @@
 package perf
 
-import "github.com/mitchellh/cli"
+import (
+	"flag"
+	"github.com/mitchellh/cli"
+	"runtime"
+)
 
 type cmd struct {
 }
@@ -10,8 +14,23 @@ func (c cmd) Help() string {
 	//TODO implement me
 }
 
+var (
+	DEFAULT_CORES = runtime.NumCPU() / 2
+)
+
 func (c cmd) Run(args []string) int {
-	speed_test()
+
+	var cores int
+
+	flags := flag.NewFlagSet("perf", flag.ExitOnError)
+	flags.IntVar(&cores, "cores", DEFAULT_CORES, "number of cores to use")
+
+	if err := flags.Parse(args); err != nil {
+		flags.Usage()
+		return 1
+	}
+
+	speed_test(cores)
 	return 0
 }
 
