@@ -11,6 +11,7 @@ import (
 
 func (env *Env) RunSpec(spec *api.Spec, ttx *tx) *SpecResult {
 
+	beforeEvent := time.Now()
 	for i, e := range spec.Given {
 		err, fail := ttx.Apply(e)
 
@@ -23,6 +24,7 @@ func (env *Env) RunSpec(spec *api.Spec, ttx *tx) *SpecResult {
 				err))
 		}
 	}
+	eventTime1 := time.Since(beforeEvent)
 
 	eventCount := len(spec.Given)
 
@@ -44,15 +46,14 @@ func (env *Env) RunSpec(spec *api.Spec, ttx *tx) *SpecResult {
 	issues := Compare(spec, actualResp, err, actualEvents)
 
 	return &SpecResult{
-		EventCount: eventCount,
-		Deltas:     issues,
-		Dispatch:   dispatchTime,
+		Deltas:    issues,
+		GivenTime: eventTime1,
+		Dispatch:  dispatchTime,
 	}
 }
 
 type SpecResult struct {
-	EventCount int
-	Deltas     seq.Issues
-
-	Dispatch time.Duration
+	Deltas    seq.Issues
+	GivenTime time.Duration
+	Dispatch  time.Duration
 }

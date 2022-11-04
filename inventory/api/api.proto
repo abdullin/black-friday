@@ -2,17 +2,12 @@ syntax = "proto3";
 package protos;
 option go_package = "black-friday/api";
 
-
+// locations are nested and could be bulk-added
 message AddLocationsReq {
-
   message Loc {
     string name = 1;
-    //LocType type = 2;
-    // added later
-    // added later
     repeated Loc locs = 4;
   }
-
 
   repeated Loc locs = 1;
 
@@ -22,11 +17,10 @@ message AddLocationsReq {
 message AddLocationsResp {
   message Loc {
     string name = 1;
-    //LocType type = 2;
-    int64 id = 3;
-    int64 parent = 4;
+    int64 id = 2;
+    int64 parent = 3;
 
-    repeated Loc locs = 5;
+    repeated Loc locs = 4;
   }
   repeated Loc locs = 1;
 }

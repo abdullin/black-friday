@@ -12,15 +12,15 @@ import (
 	"time"
 )
 
-func speed_test(cores int, specs []*api.Spec) {
+func speed_test(cores int, specs []*api.Spec, seconds int) {
 
 	file := ":memory:"
 
-	duration := time.Second
+	duration := time.Second * time.Duration(seconds)
 	// set timeout, just in case
 	ctx, cancel := context.WithTimeout(context.Background(), duration+time.Second)
 
-	fmt.Printf("Speed test with %d core(s)... \n", cores)
+	fmt.Printf("Speed test with %d core(s) for %ds\n", cores, seconds)
 
 	var services []*specs2.Env
 	var wg sync.WaitGroup
@@ -39,8 +39,9 @@ func speed_test(cores int, specs []*api.Spec) {
 	started := time.Now()
 
 	type counter struct {
-		specs, events int64
-		dispatchTime  int64
+		specs, given int64
+		dispatchTime int64
+		givenTime    int64
 	}
 	var global counter
 
@@ -59,15 +60,17 @@ func speed_test(cores int, specs []*api.Spec) {
 					if err := tx.Rollback(); err != nil {
 						panic(err)
 					}
-					local.events += int64(result.EventCount)
+					local.given += int64(len(s.Given))
+					local.givenTime += int64(result.GivenTime)
 
 					local.dispatchTime += int64(result.Dispatch)
 				}
 			}
 
-			atomic.AddInt64(&global.events, local.events)
+			atomic.AddInt64(&global.given, local.given)
 			atomic.AddInt64(&global.specs, local.specs)
 			atomic.AddInt64(&global.dispatchTime, local.dispatchTime)
+			atomic.AddInt64(&global.givenTime, local.givenTime)
 			wg.Done()
 		}(i)
 	}
@@ -90,9 +93,9 @@ func speed_test(cores int, specs []*api.Spec) {
 	}
 
 	data := [][]string{
-		hz("specs", global.specs, duration),
-		hz("events", global.events, duration),
-		hz("requests", global.specs, time.Duration(global.dispatchTime)),
+		hz("run spec", global.specs, duration),
+		hz("apply event", global.given, time.Duration(global.givenTime)),
+		hz("request", global.specs, time.Duration(global.dispatchTime)),
 	}
 
 	fmt.Println()

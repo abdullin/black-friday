@@ -118,17 +118,24 @@ var (
 	lock  sync.Mutex
 )
 
+var usecache = true
+
 func GetOrCompile(source string) (*lua.FunctionProto, error) {
-	lock.Lock()
-	defer lock.Unlock()
-	var err error
-	if cache == nil {
-		cache, err = CompileLua(source)
-		if err != nil {
-			return nil, err
+	if usecache {
+
+		lock.Lock()
+		defer lock.Unlock()
+		var err error
+		if cache == nil {
+			cache, err = CompileLua(source)
+			if err != nil {
+				return nil, err
+			}
 		}
+		return cache, nil
+	} else {
+		return CompileLua(source)
 	}
-	return cache, nil
 
 }
 
