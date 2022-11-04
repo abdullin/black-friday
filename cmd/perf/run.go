@@ -5,12 +5,14 @@ import (
 	"black-friday/inventory/api"
 	"context"
 	"fmt"
+	"github.com/olekukonko/tablewriter"
+	"os"
 	"sync"
 	"sync/atomic"
 	"time"
 )
 
-func speed_test(cores int) {
+func speed_test(cores int, specs []*api.Spec) {
 
 	file := ":memory:"
 
@@ -18,7 +20,7 @@ func speed_test(cores int) {
 	// set timeout, just in case
 	ctx, cancel := context.WithTimeout(context.Background(), duration+time.Second)
 
-	fmt.Printf("Speed test with %d cores... \n", cores)
+	fmt.Printf("Speed test with %d core(s)... \n", cores)
 
 	var services []*specs2.Env
 	var wg sync.WaitGroup
@@ -47,7 +49,7 @@ func speed_test(cores int) {
 			svc := services[pos]
 			var local counter
 			for time.Since(started) < duration {
-				for _, s := range api.Specs {
+				for _, s := range specs {
 					local.specs += 1
 					tx, err := svc.BeginTx()
 					if err != nil {
@@ -72,16 +74,46 @@ func speed_test(cores int) {
 	wg.Wait()
 	cancel()
 
-	hz := func(count int64, op time.Duration) string {
+	hz := func(name string, count int64, op time.Duration) []string {
 		khz := float64(count) / 1000.0 / op.Seconds()
 		ops := int(float64(count) / op.Seconds())
+		dur := op / time.Duration(count)
 
-		return fmt.Sprintf("%d ops/sec  (%.1f kHz)", ops, khz)
+		return []string{
+			name,
+			fmt.Sprintf("%d", count),
+			fmt.Sprintf("%d", ops),
+			fmt.Sprintf("%.1f", khz),
+			dur.String(),
+		}
+
 	}
 
-	fmt.Printf("executed %d specs\n", global.specs)
-	fmt.Printf("running specs:   %s\n", hz(global.specs, duration))
-	fmt.Printf("applying events: %s\n", hz(global.events, duration))
-	fmt.Printf("request speed:   %s\n", hz(global.specs, time.Duration(global.dispatchTime)))
+	data := [][]string{
+		hz("specs", global.specs, duration),
+		hz("events", global.events, duration),
+		hz("requests", global.specs, time.Duration(global.dispatchTime)),
+	}
 
+	fmt.Println()
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Operation", "Total", "ops/sec", "kHz", "sec per op"})
+
+	table.SetAutoWrapText(false)
+	table.SetAutoFormatHeaders(true)
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetCenterSeparator("")
+	table.SetColumnSeparator(" ")
+	table.SetRowSeparator("")
+	table.SetHeaderLine(false)
+	table.SetBorder(false)
+	table.SetTablePadding("\t") // pad with tabs
+	table.SetNoWhiteSpace(true)
+	table.AppendBulk(data)
+	table.Render() // Send output
+
+	fmt.Printf("\nexecuted %d specs\n\n", global.specs)
+	fmt.Println("CAVEAT: This benchmarks event-driven spec tests with a minimal database. Real world performance will be worse due to: disk flush, DB growth, event store and network commit latency.")
 }
