@@ -5,6 +5,9 @@ import (
 	"black-friday/fx"
 	. "black-friday/inventory/api"
 	lua "github.com/yuin/gopher-lua"
+	"github.com/yuin/gopher-lua/parse"
+	"strings"
+	"sync"
 )
 
 func Reserve(a fx.Tx, r *ReserveReq) (*ReserveResp, error) {
@@ -30,6 +33,7 @@ func Reserve(a fx.Tx, r *ReserveReq) (*ReserveResp, error) {
 	var code string
 	found := a.QueryRow("SELECT Code FROM Lambdas WHERE Type=?", Lambda_RESERVE.String())(&code)
 	if found {
+
 		vm := lua.NewState()
 		defer vm.Close()
 		// we have a custom handler
@@ -83,7 +87,8 @@ func Reserve(a fx.Tx, r *ReserveReq) (*ReserveResp, error) {
 
 		vm.SetGlobal("reserveAll", vm.NewFunction(ReserveAll))
 
-		err := vm.DoString(code)
+		err := DoLua(code, vm)
+
 		if err != nil {
 			return nil, err
 		}
@@ -106,4 +111,46 @@ func Reserve(a fx.Tx, r *ReserveReq) (*ReserveResp, error) {
 
 	return &ReserveResp{Reservation: id}, nil
 
+}
+
+var (
+	cache *lua.FunctionProto
+	lock  sync.Mutex
+)
+
+func GetOrCompile(source string) (*lua.FunctionProto, error) {
+	lock.Lock()
+	defer lock.Unlock()
+	var err error
+	if cache == nil {
+		cache, err = CompileLua(source)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return cache, nil
+
+}
+
+func DoLua(source string, L *lua.LState) error {
+	p, err := GetOrCompile(source)
+	if err != nil {
+		return err
+	}
+	f := L.NewFunctionFromProto(p)
+	L.Push(f)
+	return L.PCall(0, lua.MultRet, nil)
+}
+
+func CompileLua(source string) (*lua.FunctionProto, error) {
+
+	chunk, err := parse.Parse(strings.NewReader(source), "<string>")
+	if err != nil {
+		return nil, err
+	}
+	proto, err := lua.Compile(chunk, "<string>")
+	if err != nil {
+		return nil, err
+	}
+	return proto, nil
 }
