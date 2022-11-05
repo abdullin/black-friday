@@ -47,6 +47,42 @@ func init() {
 		ThenError: ErrProductNotFound,
 	})
 
+	Define(&Spec{
+		Name: "reserve when onHand isn't enough",
+		Given: []proto.Message{
+			&ProductAdded{Id: 1, Sku: "cola"},
+			&LocationAdded{Id: 1, Name: "WHS1"},
+			&InventoryUpdated{Location: 1, Product: 1, OnHandChange: 2, OnHand: 2},
+		},
+		When: &ReserveReq{
+			Reservation: "test",
+			Items: []*ReserveReq_Item{
+				{Sku: "cola", Quantity: 3},
+			},
+		},
+		ThenError: ErrNotEnough,
+	})
+
+	Define(&Spec{
+		Name: "over-reserve",
+		Given: []proto.Message{
+			&ProductAdded{Id: 1, Sku: "cola"},
+			&LocationAdded{Id: 1, Name: "WHS1"},
+			&InventoryUpdated{Location: 1, Product: 1, OnHandChange: 2, OnHand: 2},
+			&Reserved{
+				Reservation: 1,
+				Code:        "sale",
+				Items:       []*Reserved_Item{{Product: 1, Quantity: 1, Location: 1}},
+			},
+		},
+		When: &ReserveReq{
+			Reservation: "test",
+			Items: []*ReserveReq_Item{
+				{Sku: "cola", Quantity: 2},
+			},
+		},
+		ThenError: ErrNotEnough,
+	})
 	lamdaChannelSwitch := []proto.Message{
 		&LocationAdded{Id: 1, Name: "WHS1"},
 		&LocationAdded{Id: 2, Name: "WHS2"},
