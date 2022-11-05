@@ -3,6 +3,7 @@ package main
 import (
 	"black-friday/cmd/explore"
 	"black-friday/cmd/perf"
+	"black-friday/cmd/stress"
 	"black-friday/cmd/test"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/mitchellh/cli"
@@ -17,6 +18,7 @@ func main() {
 		"test":    test.Factory,
 		"perf":    perf.Factory,
 		"explore": explore.Factory,
+		"stress":  stress.Factory,
 	}
 
 	exitStatus, err := c.Run()

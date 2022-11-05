@@ -7,6 +7,7 @@ import (
 	"black-friday/inventory/features/products"
 	"black-friday/inventory/features/stock"
 	"context"
+	"database/sql"
 	"google.golang.org/protobuf/proto"
 	"log"
 )
@@ -25,11 +26,16 @@ func New(a fx.Transactor) api.InventoryServiceServer {
 func apiDispatch[A proto.Message, B proto.Message](a fx.Transactor, c context.Context, req A, x func(c fx.Tx, a A) (b B, err error)) (B, error) {
 
 	ctx, err := a.Begin(c)
+
+	var nilB B
 	if err != nil {
-		return nil, err
+		return nilB, err
 	}
 	defer func() {
 		err := ctx.Rollback()
+		if err == sql.ErrTxDone {
+			return
+		}
 		if err != nil {
 			log.Println("Additional error while rolling back: %s", err)
 		}
@@ -37,11 +43,11 @@ func apiDispatch[A proto.Message, B proto.Message](a fx.Transactor, c context.Co
 
 	response, handleErr := x(ctx, req)
 	if handleErr != nil {
-		return nil, handleErr
+		return nilB, handleErr
 	}
 	commitErr := ctx.Commit()
 	if commitErr != nil {
-		return nil, commitErr
+		return nilB, commitErr
 	}
 	return response, nil
 
