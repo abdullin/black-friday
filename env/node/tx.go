@@ -69,7 +69,11 @@ func (c *tx) Exec(query string, args ...any) error {
 }
 
 func (c *tx) Rollback() error {
-	return c.tx.Rollback()
+	err := c.tx.Rollback()
+	if err == sql.ErrTxDone {
+		return nil
+	}
+	return err
 }
 
 func (t *tx) Commit() error {

@@ -54,6 +54,10 @@ func (env *Env) EnsureSchema() {
 
 }
 
+func (env *Env) DB() *sql.DB {
+	return env.db
+}
+
 func (env *Env) Begin(ctx context.Context) (fx.Tx, error) {
 
 	dbtx, err := env.db.BeginTx(ctx, nil)

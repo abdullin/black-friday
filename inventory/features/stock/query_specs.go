@@ -89,17 +89,15 @@ func init() {
 				Code:        "sale1",
 				Items:       []*Reserved_Item{{Product: 1, Quantity: 3, Location: 3}},
 			},
-
 			// we have a standalone container with some GPUs
 			&LocationAdded{Id: 4, Name: "Container"},
 			&InventoryUpdated{Location: 4, Product: 1, OnHandChange: 10, OnHand: 10},
 			// most of which was already promised to a customer
 			&Reserved{
 				Reservation: 2,
-				Code:        "sale2",
+				Code:        "sale3",
 				Items:       []*Reserved_Item{{Product: 1, Quantity: 9, Location: 4}},
 			},
-
 			// container was moved to the unloading zone in warehouse
 			&LocationMoved{Id: 4, NewParent: 2},
 		},

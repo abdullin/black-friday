@@ -32,6 +32,7 @@ func apiDispatch[A proto.Message, B proto.Message](a fx.Transactor, c context.Co
 		return nilB, err
 	}
 	defer func() {
+
 		err := ctx.Rollback()
 		if err == sql.ErrTxDone {
 			return

@@ -6,7 +6,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"log"
-	"net"
 )
 
 func ConnectToServer(ctx context.Context, s *grpc.Server) (*grpc.ClientConn, func()) {
@@ -25,9 +24,7 @@ func ConnectToServer(ctx context.Context, s *grpc.Server) (*grpc.ClientConn, fun
 	fmt.Printf("Dialing '%s'\n", pipe.Addr())
 	clientConn, err := grpc.DialContext(ctx, `sim`,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithContextDialer(func(c context.Context, s string) (net.Conn, error) {
-			return pipe.DialContext(c, `sim`, s)
-		}),
+		grpc.WithContextDialer(pipe.DialContext),
 	)
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)

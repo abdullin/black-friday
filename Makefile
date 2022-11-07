@@ -1,8 +1,8 @@
-.PHONY: clean schema specs
+.PHONY: clean schema
 
 
 build:
-	@go build  -buildmode=pie  -o bin/bf main.go
+	@go build -buildmode=pie -o bin/bf main.go
 
 
 
@@ -11,8 +11,9 @@ schema:
 		--go-grpc_out=paths=source_relative:.  \
     	inventory/api/api.proto
 
+clean:
+	@rm -rf bin/bf
 
 
-
-specs:
-	@go run  -buildmode=pie *.go
+test: build
+	@bin/bf test

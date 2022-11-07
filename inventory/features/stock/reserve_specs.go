@@ -19,18 +19,13 @@ func init() {
 				{Sku: "GPU", Quantity: 10},
 			},
 		},
-		ThenResponse: &ReserveResp{
-			Reservation: 1,
-		},
+		ThenResponse: &ReserveResp{Reservation: 1},
 		ThenEvents: []proto.Message{
 			&Reserved{
 				Reservation: 1,
 				Code:        "sale",
 				Items: []*Reserved_Item{
-					{
-						Product:  1,
-						Quantity: 10,
-					},
+					{Product: 1, Quantity: 10},
 				},
 			},
 		},

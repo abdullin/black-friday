@@ -3,7 +3,6 @@ package pipe
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -30,7 +29,7 @@ func ListenPipe() *PipeListener {
 func (l *PipeListener) Accept() (c net.Conn, e error) {
 	select {
 	case c = <-l.ch:
-		fmt.Printf("accepted connection: '%s'\n", c.RemoteAddr().String())
+		//fmt.Printf("accepted connection: '%s'\n", c.RemoteAddr().String())
 	case <-l.close:
 		e = ErrPipeListenerClosed
 	}
@@ -56,10 +55,8 @@ func (l *PipeListener) Close() (e error) {
 func (l *PipeListener) Addr() net.Addr {
 	return pipeAddr(0)
 }
-func (l *PipeListener) Dial(network, addr string) (net.Conn, error) {
-	return l.DialContext(context.Background(), network, addr)
-}
-func (l *PipeListener) DialContext(ctx context.Context, network, addr string) (conn net.Conn, e error) {
+
+func (l *PipeListener) DialContext(ctx context.Context, addr string) (conn net.Conn, e error) {
 	// PipeListener是否已经关闭
 	if atomic.LoadUint32(&l.done) != 0 {
 		e = ErrPipeListenerClosed

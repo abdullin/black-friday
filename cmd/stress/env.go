@@ -1,6 +1,7 @@
 package stress
 
 import (
+	"black-friday/env/rnd"
 	"black-friday/inventory/api"
 	"context"
 	"fmt"
@@ -8,11 +9,73 @@ import (
 )
 
 type env struct {
-	products   int
-	locations  int
-	warehouses int
+	products     int64
+	locations    int64
+	warehouses   int64
+	reservations int64
+
+	bins int64
+
+	r *rnd.Rand
 
 	client api.InventoryServiceClient
+}
+
+func NewEnv(client api.InventoryServiceClient) *env {
+	return &env{client: client, r: rnd.New()}
+}
+
+func (e *env) ReserveInventory(ctx context.Context, count int) {
+
+	for j := 0; j < count; j++ {
+
+		e.reservations += 1
+		name := fmt.Sprintf("sale-%d", e.reservations)
+
+		c := int(e.r.Int63n(10) + 1)
+
+		var items []*api.ReserveReq_Item
+
+		for i := 0; i < c; i++ {
+			product := e.r.Int63n(e.products-1) + 1
+			items = append(items, &api.ReserveReq_Item{
+				Sku:      SKU(product),
+				Quantity: e.r.Int63n(5) + 1,
+			})
+
+		}
+
+		_, _ = e.client.Reserve(ctx, &api.ReserveReq{
+			Reservation: name,
+			Items:       items,
+		})
+	}
+
+}
+
+func (e *env) AddInventory(ctx context.Context, count int) {
+
+	for i := 0; i < count; i++ {
+
+		product := e.r.Int63n(e.products-1) + 1
+		locations := e.r.Int63n(e.locations-1) + 1
+
+		quantity := e.r.Int63n(100)
+
+		_, err := e.client.UpdateInventory(ctx, &api.UpdateInventoryReq{
+			Location:     locations,
+			Product:      product,
+			OnHandChange: quantity,
+		})
+
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}
+
+	// which product?
+
+	//
 }
 
 func (e *env) AddProducts(ctx context.Context, count int) {
@@ -20,7 +83,7 @@ func (e *env) AddProducts(ctx context.Context, count int) {
 	for p := 0; p < count; p++ {
 
 		e.products += 1
-		skus = append(skus, sku(e.products))
+		skus = append(skus, SKU(e.products))
 
 	}
 
@@ -32,35 +95,45 @@ func (e *env) AddProducts(ctx context.Context, count int) {
 	}
 }
 
+func SKU(e int64) string {
+	return fmt.Sprintf("product-%d", e)
+}
+
 func (e *env) AddWarehouse(ctx context.Context) (*api.AddLocationsResp, error) {
 
 	e.warehouses += 1
 
-	name := fmt.Sprintf("WHS-%d", e.warehouses)
+	whsName := fmt.Sprintf("WHS-%d", e.warehouses)
 
 	whs := &api.AddLocationsReq_Loc{
-		Name: name,
+		Name: whsName,
 	}
 
-	bins := 0
+	e.locations += 1
 
 	// add rows
 	for r := 0; r < 10; r++ {
-		name := fmt.Sprintf("WHS-%d/ROW-%d", e.warehouses, r+1)
+		rowName := fmt.Sprintf("%s/ROW-%d", whsName, r+1)
 		row := &api.AddLocationsReq_Loc{
-			Name: name}
+			Name: rowName}
 		whs.Locs = append(whs.Locs, row)
 
+		e.locations += 1
+
 		for s := 0; s < 5; s++ {
-			shelfName := fmt.Sprintf("SHELF-%d", s+1)
+			shelfName := fmt.Sprintf("%s/SHELF-%d", rowName, s+1)
 			shelf := &api.AddLocationsReq_Loc{Name: shelfName}
 			row.Locs = append(row.Locs, shelf)
 
+			e.locations += 1
+
 			for b := 0; b < 9; b++ {
-				bins += 1
-				binName := fmt.Sprintf("BIN-%d", bins)
+				e.bins += 1
+				binName := fmt.Sprintf("BIN-%d", e.bins)
 				bin := &api.AddLocationsReq_Loc{Name: binName}
 				shelf.Locs = append(shelf.Locs, bin)
+
+				e.locations += 1
 			}
 
 		}
@@ -71,9 +144,4 @@ func (e *env) AddWarehouse(ctx context.Context) (*api.AddLocationsResp, error) {
 		Locs:   []*api.AddLocationsReq_Loc{whs},
 		Parent: 0,
 	})
-}
-
-func sku(id int) string {
-	return fmt.Sprintf("product-%d", id)
-
 }

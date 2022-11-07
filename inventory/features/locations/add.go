@@ -7,7 +7,6 @@ import (
 )
 
 func Add(c fx.Tx, req *AddLocationsReq) (*AddLocationsResp, error) {
-
 	id := c.GetSeq("Locations")
 
 	var addLoc func(parent int64, ls []*AddLocationsReq_Loc) ([]*AddLocationsResp_Loc, error)
@@ -22,16 +21,8 @@ func Add(c fx.Tx, req *AddLocationsReq) (*AddLocationsResp, error) {
 			}
 			id += 1
 
-			e := &LocationAdded{
-				Name:   l.Name,
-				Id:     id,
-				Parent: parent,
-			}
-			node := &AddLocationsResp_Loc{
-				Name:   l.Name,
-				Id:     id,
-				Parent: parent,
-			}
+			e := &LocationAdded{Name: l.Name, Id: id, Parent: parent}
+			node := &AddLocationsResp_Loc{Name: l.Name, Id: id, Parent: parent}
 			r = append(r, node)
 
 			err, f := c.Apply(e)
@@ -59,8 +50,5 @@ func Add(c fx.Tx, req *AddLocationsReq) (*AddLocationsResp, error) {
 		return nil, err
 	}
 
-	return &AddLocationsResp{
-		Locs: results,
-	}, nil
-
+	return &AddLocationsResp{Locs: results}, nil
 }
