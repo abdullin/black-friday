@@ -1,10 +1,16 @@
 package test
 
 import (
+	"black-friday/env/pipe"
 	specs "black-friday/env/specs"
 	"black-friday/inventory/api"
 	"context"
 	"fmt"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/anypb"
 	"log"
 )
 
@@ -32,17 +38,50 @@ func green(s string) string {
 	return fmt.Sprintf("%s%s%s", GREEN, s, CLEAR)
 }
 
+func mustAny(p proto.Message) *anypb.Any {
+	r, err := anypb.New(p)
+	if err != nil {
+		log.Panicln("failed to convert to any: %w", err)
+	}
+	return r
+}
+
+func mustMsg(a *anypb.Any) proto.Message {
+	if a == nil {
+		return nil
+	}
+	p, err := a.UnmarshalNew()
+	if err != nil {
+		log.Panicln("failed to convert from any: %w", err)
+	}
+	return p
+}
+
 func test_specs() {
 
 	//speed_test()
 
 	fmt.Printf("Found %d specs to run\n", len(api.Specs))
 
-	ctx := context.Background()
-	env := specs.NewEnv(ctx, ":memory:")
+	env := specs.NewEnv(":memory:")
 	defer env.Close()
 
 	env.EnsureSchema()
+
+	// setup subject
+
+	subj := &subject{env: env}
+
+	s := grpc.NewServer()
+	api.RegisterSpecServiceServer(s, subj)
+
+	ctx := context.Background()
+	fmt.Println("Setup simulated network")
+	channel, cancel := pipe.ConnectToServer(ctx, s)
+	defer cancel()
+
+	// setup client
+	client := api.NewSpecServiceClient(channel)
 
 	// speed test
 
@@ -52,25 +91,31 @@ func test_specs() {
 
 		fmt.Printf("#%d. %s - taking too much time...", i+1, yellow(s.Name))
 
-		tx, err := env.BeginTx()
-		if err != nil {
-			log.Panicln("begin tx", err)
+		request := &api.SpecRequest{
+			When: mustAny(s.When),
 		}
 
-		result := env.RunSpec(s, tx)
-		if err := tx.Rollback(); err != nil {
-			log.Panicln("roll back")
+		for _, e := range s.Given {
+			request.Given = append(request.Given, mustAny(e))
 		}
 
-		deltas := result.Deltas
+		resp, err := client.Spec(ctx, request)
+		var events []proto.Message
+		for _, e := range resp.Events {
+			events = append(events, mustMsg(e))
+		}
+
+		st := status.New(codes.Code(resp.Status), resp.Error)
+
+		issues := specs.Compare(s, mustMsg(resp.Response), st.Err(), events)
 
 		fmt.Print(ERASE, "\r")
-		if len(deltas) == 0 && err == nil {
+		if len(issues) == 0 && err == nil {
 			//fmt.Printf(" ✔\n")
 			oks += 1
 		} else {
 			fails += 1
-			specs.PrintFull(s, result)
+			specs.PrintFull(s, issues)
 			println()
 		}
 
@@ -78,10 +123,4 @@ func test_specs() {
 
 	fmt.Printf("Total: ✔%d X%d\n", oks, fails)
 
-}
-
-func guard(err error) {
-	if err != nil {
-		panic(err)
-	}
 }

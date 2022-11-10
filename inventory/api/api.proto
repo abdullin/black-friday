@@ -170,3 +170,25 @@ service InventoryService {
   rpc GetLocInventory(GetLocInventoryReq) returns (GetLocInventoryResp);
   rpc Reserve(ReserveReq) returns (ReserveResp);
 }
+
+
+// this is for spec testing another server. Work with Christian Folie
+import "google/protobuf/any.proto";
+message SpecRequest {
+  repeated google.protobuf.Any given = 1;
+  google.protobuf.Any when = 2;
+}
+
+message SpecResponse {
+  google.protobuf.Any response = 1;
+  repeated google.protobuf.Any events = 2;
+  // maps to [google.rpc.Code][google.rpc.Code]
+  int32 status = 3;
+  // logical error in english
+  string error = 4;
+}
+
+
+service SpecService {
+  rpc Spec(SpecRequest) returns (SpecResponse);
+}

@@ -319,3 +319,89 @@ var InventoryService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "inventory/api/api.proto",
 }
+
+// SpecServiceClient is the client API for SpecService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type SpecServiceClient interface {
+	Spec(ctx context.Context, in *SpecRequest, opts ...grpc.CallOption) (*SpecResponse, error)
+}
+
+type specServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewSpecServiceClient(cc grpc.ClientConnInterface) SpecServiceClient {
+	return &specServiceClient{cc}
+}
+
+func (c *specServiceClient) Spec(ctx context.Context, in *SpecRequest, opts ...grpc.CallOption) (*SpecResponse, error) {
+	out := new(SpecResponse)
+	err := c.cc.Invoke(ctx, "/protos.SpecService/Spec", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// SpecServiceServer is the server API for SpecService service.
+// All implementations must embed UnimplementedSpecServiceServer
+// for forward compatibility
+type SpecServiceServer interface {
+	Spec(context.Context, *SpecRequest) (*SpecResponse, error)
+	mustEmbedUnimplementedSpecServiceServer()
+}
+
+// UnimplementedSpecServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedSpecServiceServer struct {
+}
+
+func (UnimplementedSpecServiceServer) Spec(context.Context, *SpecRequest) (*SpecResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Spec not implemented")
+}
+func (UnimplementedSpecServiceServer) mustEmbedUnimplementedSpecServiceServer() {}
+
+// UnsafeSpecServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to SpecServiceServer will
+// result in compilation errors.
+type UnsafeSpecServiceServer interface {
+	mustEmbedUnimplementedSpecServiceServer()
+}
+
+func RegisterSpecServiceServer(s grpc.ServiceRegistrar, srv SpecServiceServer) {
+	s.RegisterService(&SpecService_ServiceDesc, srv)
+}
+
+func _SpecService_Spec_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SpecRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SpecServiceServer).Spec(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.SpecService/Spec",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SpecServiceServer).Spec(ctx, req.(*SpecRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// SpecService_ServiceDesc is the grpc.ServiceDesc for SpecService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var SpecService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "protos.SpecService",
+	HandlerType: (*SpecServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Spec",
+			Handler:    _SpecService_Spec_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "inventory/api/api.proto",
+}

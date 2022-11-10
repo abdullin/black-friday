@@ -11,7 +11,7 @@ import (
 	"reflect"
 )
 
-func dispatch(ctx fx.Tx, m proto.Message) (r proto.Message, err error) {
+func Dispatch(ctx fx.Tx, m proto.Message) (r proto.Message, err error) {
 
 	switch t := m.(type) {
 	case *api.AddLocationsReq:
@@ -29,7 +29,7 @@ func dispatch(ctx fx.Tx, m proto.Message) (r proto.Message, err error) {
 	case *api.MoveLocationReq:
 		r, err = locations.Move(ctx, t)
 	default:
-		return nil, fmt.Errorf("missing dispatch for %v", reflect.TypeOf(m))
+		return nil, fmt.Errorf("missing Dispatch for %v", reflect.TypeOf(m))
 	}
 
 	if r != nil && reflect.ValueOf(r).IsNil() {

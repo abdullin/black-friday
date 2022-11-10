@@ -10,14 +10,14 @@ import (
 	"reflect"
 )
 
-// tx provides access to the current transaction context and app in one go
-type tx struct {
+// Tx provides access to the current transaction context and app in one go
+type Tx struct {
 	ctx    context.Context
 	tx     *sql.Tx
-	events []proto.Message
+	Events []proto.Message
 }
 
-func (c *tx) QueryHack(q string, args ...any) (*sql.Rows, error) {
+func (c *Tx) QueryHack(q string, args ...any) (*sql.Rows, error) {
 	// can we make this prettier?
 	//	start := time.Now()
 	rows, err := c.tx.QueryContext(c.ctx, q, args...)
@@ -26,14 +26,14 @@ func (c *tx) QueryHack(q string, args ...any) (*sql.Rows, error) {
 
 }
 
-func (c *tx) GetSeq(name string) int64 {
+func (c *Tx) GetSeq(name string) int64 {
 	var id int64
 	c.QueryRow("select seq from sqlite_sequence where name=?", name)(&id)
 	return id
 
 }
 
-func (c *tx) QueryRow(query string, args ...any) func(dest ...any) bool {
+func (c *Tx) QueryRow(query string, args ...any) func(dest ...any) bool {
 
 	return func(dest ...any) bool {
 
@@ -50,15 +50,16 @@ func (c *tx) QueryRow(query string, args ...any) func(dest ...any) bool {
 
 }
 
-func (c *tx) Rollback() error {
+func (c *Tx) Rollback() error {
+
 	return c.tx.Rollback()
 
 }
-func (c *tx) Commit() error {
+func (c *Tx) Commit() error {
 	return c.tx.Commit()
 }
 
-func (c *tx) Apply(e proto.Message) (error, fail.Code) {
+func (c *Tx) Apply(e proto.Message) (error, fail.Code) {
 
 	err := apply.Event(c, e)
 
@@ -67,12 +68,12 @@ func (c *tx) Apply(e proto.Message) (error, fail.Code) {
 		return fmt.Errorf("apply %s: %w", reflect.TypeOf(e).String(), extracted), failCode
 	}
 
-	c.events = append(c.events, e)
+	c.Events = append(c.Events, e)
 	return nil, fail.None
 
 }
 
-func (c *tx) Exec(query string, args ...any) error {
+func (c *Tx) Exec(query string, args ...any) error {
 
 	_, err := c.tx.ExecContext(c.ctx, query, args...)
 

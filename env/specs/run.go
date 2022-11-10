@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func (env *Env) RunSpec(spec *api.Spec, ttx *tx) *SpecResult {
+func (env *Env) RunSpec(spec *api.Spec, ttx *Tx) *SpecResult {
 
 	beforeEvent := time.Now()
 	for i, e := range spec.Given {
@@ -28,17 +28,17 @@ func (env *Env) RunSpec(spec *api.Spec, ttx *tx) *SpecResult {
 
 	eventCount := len(spec.Given)
 
-	ttx.events = nil
+	ttx.Events = nil
 
 	beforeDispatch := time.Now()
 
-	actualResp, err := dispatch(ttx, spec.When)
+	actualResp, err := Dispatch(ttx, spec.When)
 
 	dispatchTime := time.Since(beforeDispatch)
 
 	var actualEvents []proto.Message
 	if err == nil {
-		actualEvents = ttx.events
+		actualEvents = ttx.Events
 	}
 
 	eventCount += len(actualEvents)

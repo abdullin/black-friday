@@ -36,11 +36,11 @@ func Compare(spec *api.Spec, resp proto.Message, actualErr error, events []proto
 		issues = append(issues, seq.Issue{
 			Expected: spec.ThenEvents,
 			Actual:   events,
-			Path:     []string{"events"},
+			Path:     []string{"Events"},
 		})
 	} else {
 		for i, e := range spec.ThenEvents {
-			p := []string{"events", fmt.Sprintf("[%d]", i)}
+			p := []string{"Events", fmt.Sprintf("[%d]", i)}
 			issues = append(issues, seq.Diff(e, events[i], p...)...)
 		}
 	}

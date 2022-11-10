@@ -29,9 +29,9 @@ func red(s string) string {
 	return fmt.Sprintf("%s%s%s", RED, s, CLEAR)
 }
 
-func PrintFull(s *api.Spec, r *SpecResult) {
+func PrintFull(s *api.Spec, issues seq.Issues) {
 
-	if r.DidFail() {
+	if len(issues) > 0 {
 
 		fmt.Printf(red("X %s (#%d)\n"), red(s.Name), s.Seq)
 	} else {
@@ -44,14 +44,14 @@ func PrintFull(s *api.Spec, r *SpecResult) {
 			fmt.Printf(red("  FATAL: %s\n"), err.Error())
 		}
 	*/
-	if len(r.Deltas) == 0 {
+	if len(issues) == 0 {
 		fmt.Printf("%sNO ISSUES!%s\n", GREEN, CLEAR)
 
 	} else {
 
 		fmt.Println(yellow("ISSUES:"))
 
-		for _, d := range r.Deltas {
+		for _, d := range issues {
 			fmt.Printf("  %sΔ %s%s\n", ANOTHER, IssueToString(d), CLEAR)
 		}
 	}

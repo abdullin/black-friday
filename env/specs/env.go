@@ -9,13 +9,12 @@ import (
 )
 
 type Env struct {
-	ctx context.Context
-	db  *sql.DB
+	db *sql.DB
 
 	schemaReady bool
 }
 
-func NewEnv(ctx context.Context, file string) *Env {
+func NewEnv(file string) *Env {
 
 	dbs, err := sql.Open("sqlite3", file)
 	if err != nil {
@@ -23,7 +22,6 @@ func NewEnv(ctx context.Context, file string) *Env {
 	}
 
 	return &Env{
-		ctx:         ctx,
 		db:          dbs,
 		schemaReady: false,
 	}
@@ -53,17 +51,17 @@ func (env *Env) EnsureSchema() {
 
 }
 
-func (env *Env) BeginTx() (*tx, error) {
+func (env *Env) BeginTx(ctx context.Context) (*Tx, error) {
 
-	dbtx, err := env.db.BeginTx(env.ctx, nil)
+	dbtx, err := env.db.BeginTx(ctx, nil)
 	if err != nil {
-		return nil, fmt.Errorf("begin tx: %w", err)
+		return nil, fmt.Errorf("begin Tx: %w", err)
 	}
 
-	ttx := &tx{
-		ctx:    env.ctx,
+	ttx := &Tx{
+		ctx:    ctx,
 		tx:     dbtx,
-		events: nil,
+		Events: nil,
 	}
 
 	return ttx, nil

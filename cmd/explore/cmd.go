@@ -34,19 +34,20 @@ func (c cmd) Run(args []string) int {
 
 	_ = os.Remove(file)
 	ctx := context.Background()
-	env := specs.NewEnv(ctx, file)
+	env := specs.NewEnv(file)
+
 	defer env.Close()
 
 	spec := api.Specs[specNum-1]
 
 	env.EnsureSchema()
 
-	ttx, err := env.BeginTx()
+	ttx, err := env.BeginTx(ctx)
 	if err != nil {
 		log.Panicln("begin tx:", err)
 	}
 	result := env.RunSpec(spec, ttx)
-	specs.PrintFull(spec, result)
+	specs.PrintFull(spec, result.Deltas)
 
 	err = ttx.Commit()
 	if err != nil {

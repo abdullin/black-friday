@@ -26,7 +26,7 @@ func speed_test(cores int, specs []*api.Spec, seconds int) {
 	var wg sync.WaitGroup
 	for i := 0; i < cores; i++ {
 
-		svc := specs2.NewEnv(ctx, file)
+		svc := specs2.NewEnv(file)
 		defer svc.Close()
 
 		svc.EnsureSchema()
@@ -52,7 +52,7 @@ func speed_test(cores int, specs []*api.Spec, seconds int) {
 			for time.Since(started) < duration {
 				for _, s := range specs {
 					local.specs += 1
-					tx, err := svc.BeginTx()
+					tx, err := svc.BeginTx(ctx)
 					if err != nil {
 						panic(err)
 					}
