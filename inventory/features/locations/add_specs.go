@@ -100,7 +100,10 @@ func init() {
 			&LocationAdded{Id: 2, Name: "Inbox", Parent: 1},
 			&LocationAdded{Id: 3, Name: "WHS2"},
 		},
-		When:       &AddLocationsReq{Parent: 3, Locs: []*AddLocationsReq_Loc{{Name: "Inbox"}}},
+		When: &AddLocationsReq{Parent: 3, Locs: []*AddLocationsReq_Loc{{Name: "Inbox"}}},
+		ThenResponse: &AddLocationsResp{Locs: []*AddLocationsResp_Loc{
+			{Id: 4, Parent: 3, Name: "Inbox"},
+		}},
 		ThenEvents: []proto.Message{&LocationAdded{Id: 4, Parent: 3, Name: "Inbox"}},
 	})
 

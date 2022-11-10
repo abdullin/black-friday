@@ -6,11 +6,11 @@ create table dummy (id integer primary key autoincrement);
 
 
 CREATE TABLE Locations (
-
     Id INTEGER PRIMARY KEY,
     Parent INTEGER NOT NULL,
-    Name TEXT NOT NULL UNIQUE,
-    FOREIGN KEY(Parent) REFERENCES Locations(Id)
+    Name TEXT NOT NULL,
+    FOREIGN KEY(Parent) REFERENCES Locations(Id),
+    UNIQUE (Name, Parent)
 );
 
 
