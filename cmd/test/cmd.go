@@ -16,16 +16,18 @@ func (c cmd) Help() string {
 func (c cmd) Run(args []string) int {
 
 	var db string
+	var addr string
 
 	flags := flag.NewFlagSet("test", flag.ExitOnError)
 	flags.StringVar(&db, "db", ":memory:", "sqlite db to use")
+	flags.StringVar(&addr, "addr", "", "Subject to test")
 
 	if err := flags.Parse(args); err != nil {
 		flags.Usage()
 		return 1
 	}
 
-	test_specs()
+	test_specs(db, addr)
 	return 0
 }
 

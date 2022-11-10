@@ -57,18 +57,22 @@ func mustMsg(a *anypb.Any) proto.Message {
 	return p
 }
 
-func test_specs() {
+func test_specs(db, addr string) {
 
 	//speed_test()
 
 	fmt.Printf("Found %d specs to run\n", len(api.Specs))
 
-	env := specs.NewEnv(":memory:")
+	env := specs.NewEnv(db)
 	defer env.Close()
 
 	env.EnsureSchema()
 
 	// setup subject
+
+	if addr != "" {
+		log.Panicln("Remote connection not implemented, yet!")
+	}
 
 	subj := &subject{env: env}
 
