@@ -10,31 +10,30 @@ import (
 // these are slighly more detailed error codes
 // they are STILL very generic. TODO: add context details later
 var (
-	ErrNotUnimplemented = status.Error(codes.Unimplemented, "Implement me!")
-	ErrPrecondition     = status.Error(codes.FailedPrecondition, "failed precondition")
-	ErrArgument         = status.Errorf(codes.InvalidArgument, "invalid argument")
-
-	ErrBadMove          = status.Error(codes.FailedPrecondition, "bad location move")
-	ErrLocationNotFound = status.Error(codes.NotFound, "location not found")
-	ErrProductNotFound  = status.Error(codes.NotFound, "product not found")
-	ErrAlreadyExists    = status.Error(codes.AlreadyExists, "already exists")
-	ErrNotEnough        = status.Error(codes.FailedPrecondition, "not enough quantity")
+	ErrNotUnimplemented = status.New(codes.Unimplemented, "Implement me!")
+	ErrPrecondition     = status.New(codes.FailedPrecondition, "failed precondition")
+	ErrArgument         = status.New(codes.InvalidArgument, "invalid argument")
+	ErrBadMove          = status.New(codes.FailedPrecondition, "bad location move")
+	ErrLocationNotFound = status.New(codes.NotFound, "location not found")
+	ErrProductNotFound  = status.New(codes.NotFound, "product not found")
+	ErrAlreadyExists    = status.New(codes.AlreadyExists, "already exists")
+	ErrNotEnough        = status.New(codes.FailedPrecondition, "not enough quantity")
 )
 
-func ErrInternal(err error, code fail.Code) error {
-	return status.Error(codes.Internal, fmt.Sprintf("fail-%d: %s", code, err))
+func ErrInternal(err error, code fail.Code) *status.Status {
+	return status.New(codes.Internal, fmt.Sprintf("fail-%d: %s", code, err))
 }
 
-func ErrArgNil(field string) error {
-	return status.Error(codes.InvalidArgument, fmt.Sprintf("'%s' is nil", field))
+func ErrArgNil(field string) *status.Status {
+	return status.New(codes.InvalidArgument, fmt.Sprintf("'%s' is nil", field))
 }
 
-func ErrArgInvalid(what string, value any, reason string) error {
-	return status.Errorf(codes.InvalidArgument,
+func ErrArgInvalid(what string, value any, reason string) *status.Status {
+	return status.Newf(codes.InvalidArgument,
 		"%v is not valid for %s: %s", value, what, reason)
 }
 
-func ErrInvalidOp(why string) error {
-	return status.Error(codes.FailedPrecondition, why)
+func ErrInvalidOp(why string) *status.Status {
+	return status.New(codes.FailedPrecondition, why)
 
 }

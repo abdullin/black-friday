@@ -4,9 +4,10 @@ import (
 	"black-friday/fail"
 	"black-friday/fx"
 	. "black-friday/inventory/api"
+	"google.golang.org/grpc/status"
 )
 
-func Add(ctx fx.Tx, req *AddProductsReq) (r *AddProductsResp, err error) {
+func Add(ctx fx.Tx, req *AddProductsReq) (r *AddProductsResp, status *status.Status) {
 
 	id := ctx.GetSeq("Products")
 

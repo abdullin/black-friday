@@ -4,6 +4,8 @@ import (
 	"black-friday/inventory/api"
 	"bufio"
 	"fmt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -86,7 +88,7 @@ func SpecToParseableString(s *api.Spec) (string, error) {
 		}
 	}
 	if s.ThenError != nil {
-		ln("ERROR: %s", s.ThenError.Error())
+		ln("ERROR:\n%s", statusToString(s.ThenError))
 	}
 
 	return b.String(), nil
@@ -94,6 +96,7 @@ func SpecToParseableString(s *api.Spec) (string, error) {
 }
 
 var lookups = make(map[string]protoreflect.MessageType)
+var strToCode = make(map[string]codes.Code)
 
 func init() {
 	msgs := api.File_inventory_api_api_proto.Messages()
@@ -107,6 +110,11 @@ func init() {
 		}
 
 		lookups[string(m.Name())] = mt
+	}
+
+	for i := codes.OK; i <= codes.Unauthenticated; i++ {
+		strToCode[i.String()] = i
+
 	}
 }
 
@@ -202,7 +210,31 @@ func SpecFromParseableString(s string) (*api.Spec, error) {
 		if len(lines) > 1 {
 			return nil, fmt.Errorf("must be only one message in %s. Got %v", ERROR, lines)
 		}
+
+		if spec.ThenError, err = parseStatus(lines[0]); err != nil {
+			return nil, fmt.Errorf("can't parse error: %w", err)
+		}
 	}
 
 	return spec, nil
+}
+
+func statusToString(st *status.Status) string {
+	return fmt.Sprintf("%s %s", st.Code().String(), st.Message())
+}
+
+func parseStatus(s string) (*status.Status, error) {
+	segments := strings.SplitN(s, " ", 2)
+
+	if code, ok := strToCode[segments[0]]; ok {
+		// got a match
+		errStr := ""
+		if len(segments) > 1 {
+			errStr = segments[1]
+
+		}
+		return status.New(code, errStr), nil
+	} else {
+		return nil, fmt.Errorf("error code must be a valid gRPC status. Got %s", segments[0])
+	}
 }

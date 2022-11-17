@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
 	"strings"
@@ -13,7 +14,7 @@ type Spec struct {
 	Given        []proto.Message
 	When         proto.Message
 	ThenResponse proto.Message
-	ThenError    error
+	ThenError    *status.Status
 	ThenEvents   []proto.Message
 }
 
@@ -52,7 +53,7 @@ func (s *Spec) ToTestString() string {
 		}
 	}
 	if s.ThenError != nil {
-		ln("ERROR: %s", s.ThenError.Error())
+		ln("ERROR: %s", s.ThenError)
 	}
 
 	return b.String()

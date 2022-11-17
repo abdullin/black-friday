@@ -3,9 +3,10 @@ package stock
 import (
 	"black-friday/fx"
 	"black-friday/inventory/api"
+	"google.golang.org/grpc/status"
 )
 
-func Query(ctx fx.Tx, req *api.GetLocInventoryReq) (r *api.GetLocInventoryResp, err error) {
+func Query(ctx fx.Tx, req *api.GetLocInventoryReq) (*api.GetLocInventoryResp, *status.Status) {
 
 	rows, err := ctx.QueryHack(`
 WITH RECURSIVE cte_Locations(Id, Parent, Name) AS (
@@ -25,7 +26,7 @@ JOIN Inventory AS I ON I.Location=C.Id
 LEFT JOIN Reserves AS R ON R.Product=I.Product AND R.Location=I.Location
 GROUP BY I.Product`, req.Location)
 	if err != nil {
-		return nil, err
+		return nil, status.Convert(err)
 	}
 
 	defer rows.Close()
@@ -38,7 +39,7 @@ GROUP BY I.Product`, req.Location)
 
 		err := rows.Scan(&product, &onHand, &reserved)
 		if err != nil {
-			return nil, err
+			return nil, status.Convert(err)
 		}
 
 		items = append(items, &api.GetLocInventoryResp_Item{

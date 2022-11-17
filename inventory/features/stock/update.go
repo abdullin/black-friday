@@ -4,9 +4,10 @@ import (
 	"black-friday/fail"
 	"black-friday/fx"
 	. "black-friday/inventory/api"
+	"google.golang.org/grpc/status"
 )
 
-func Update(ctx fx.Tx, req *UpdateInventoryReq) (r *UpdateInventoryResp, err error) {
+func Update(ctx fx.Tx, req *UpdateInventoryReq) (*UpdateInventoryResp, *status.Status) {
 
 	var onHand int64
 

@@ -6,11 +6,12 @@ import (
 	. "black-friday/inventory/api"
 	lua "github.com/yuin/gopher-lua"
 	"github.com/yuin/gopher-lua/parse"
+	"google.golang.org/grpc/status"
 	"strings"
 	"sync"
 )
 
-func Reserve(a fx.Tx, r *ReserveReq) (*ReserveResp, error) {
+func Reserve(a fx.Tx, r *ReserveReq) (*ReserveResp, *status.Status) {
 
 	// by default, we reserve against the root.
 
@@ -90,7 +91,7 @@ func Reserve(a fx.Tx, r *ReserveReq) (*ReserveResp, error) {
 		err := DoLua(code, vm)
 
 		if err != nil {
-			return nil, err
+			return nil, status.Convert(err)
 		}
 
 	} else {

@@ -6,12 +6,13 @@ import (
 	"black-friday/inventory/features/locations"
 	"black-friday/inventory/features/products"
 	"black-friday/inventory/features/stock"
-	"fmt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"reflect"
 )
 
-func Dispatch(ctx fx.Tx, m proto.Message) (r proto.Message, err error) {
+func Dispatch(ctx fx.Tx, m proto.Message) (r proto.Message, err *status.Status) {
 
 	switch t := m.(type) {
 	case *api.AddLocationsReq:
@@ -29,7 +30,7 @@ func Dispatch(ctx fx.Tx, m proto.Message) (r proto.Message, err error) {
 	case *api.MoveLocationReq:
 		r, err = locations.Move(ctx, t)
 	default:
-		return nil, fmt.Errorf("missing Dispatch for %v", reflect.TypeOf(m))
+		return nil, status.Newf(codes.Unimplemented, "missing Dispatch for %v", reflect.TypeOf(m))
 	}
 
 	if r != nil && reflect.ValueOf(r).IsNil() {

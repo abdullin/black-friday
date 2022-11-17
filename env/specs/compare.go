@@ -4,18 +4,19 @@ import (
 	"black-friday/inventory/api"
 	"fmt"
 	"github.com/abdullin/go-seq"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 )
 
-func errToStr(e error) string {
+func errToStr(e *status.Status) string {
 	if e == nil {
 		return ""
 	}
-	return e.Error()
+	return e.String()
 
 }
 
-func Compare(spec *api.Spec, resp proto.Message, actualErr error, events []proto.Message) seq.Issues {
+func Compare(spec *api.Spec, resp proto.Message, actualErr *status.Status, events []proto.Message) seq.Issues {
 
 	issues := seq.Diff(spec.ThenResponse, resp, "response")
 

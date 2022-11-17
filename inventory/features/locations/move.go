@@ -4,9 +4,10 @@ import (
 	"black-friday/fail"
 	"black-friday/fx"
 	. "black-friday/inventory/api"
+	"google.golang.org/grpc/status"
 )
 
-func Move(a fx.Tx, r *MoveLocationReq) (*MoveLocationResp, error) {
+func Move(a fx.Tx, r *MoveLocationReq) (*MoveLocationResp, *status.Status) {
 	// root is not touchable
 	if r.Id == 0 {
 		return nil, ErrBadMove

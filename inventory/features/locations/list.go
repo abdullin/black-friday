@@ -4,9 +4,10 @@ import (
 	"black-friday/fx"
 	"black-friday/inventory/api"
 	"database/sql"
+	"google.golang.org/grpc/status"
 )
 
-func List(ctx fx.Tx, req *api.ListLocationsReq) (*api.ListLocationsResp, error) {
+func List(ctx fx.Tx, req *api.ListLocationsReq) (*api.ListLocationsResp, *status.Status) {
 
 	var (
 		err  error
@@ -44,7 +45,7 @@ SELECT * FROM cte_Locations
 `, req.Location)
 	}
 	if err != nil {
-		return nil, err
+		return nil, status.Convert(err)
 	}
 	defer rows.Close()
 
@@ -58,7 +59,7 @@ SELECT * FROM cte_Locations
 		var name string
 		err := rows.Scan(&id, &parent, &name)
 		if err != nil {
-			return nil, err
+			return nil, status.Convert(err)
 		}
 
 		loc := &api.ListLocationsResp_Loc{

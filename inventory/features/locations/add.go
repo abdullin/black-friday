@@ -4,14 +4,15 @@ import (
 	"black-friday/fail"
 	"black-friday/fx"
 	. "black-friday/inventory/api"
+	"google.golang.org/grpc/status"
 )
 
-func Add(c fx.Tx, req *AddLocationsReq) (*AddLocationsResp, error) {
+func Add(c fx.Tx, req *AddLocationsReq) (*AddLocationsResp, *status.Status) {
 	id := c.GetSeq("Locations")
 
-	var addLoc func(parent int64, ls []*AddLocationsReq_Loc) ([]*AddLocationsResp_Loc, error)
+	var addLoc func(parent int64, ls []*AddLocationsReq_Loc) ([]*AddLocationsResp_Loc, *status.Status)
 
-	addLoc = func(parent int64, ls []*AddLocationsReq_Loc) ([]*AddLocationsResp_Loc, error) {
+	addLoc = func(parent int64, ls []*AddLocationsReq_Loc) ([]*AddLocationsResp_Loc, *status.Status) {
 
 		var r []*AddLocationsResp_Loc
 
@@ -36,9 +37,9 @@ func Add(c fx.Tx, req *AddLocationsReq) (*AddLocationsResp, error) {
 				return nil, ErrInternal(err, f)
 			}
 
-			children, err := addLoc(id, l.Locs)
+			children, st := addLoc(id, l.Locs)
 			if err != nil {
-				return nil, err
+				return nil, st
 			}
 			node.Locs = children
 		}
