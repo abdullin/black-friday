@@ -67,6 +67,7 @@ func IssueToString(d seq.Issue) string {
 
 func Print(s *api.Spec) {
 	//println(s.Name)
+
 	if len(s.Given) > 0 {
 		println(yellow("GIVEN:"))
 		for i, e := range s.Given {
