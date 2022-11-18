@@ -2,6 +2,9 @@ package specs
 
 import (
 	"black-friday/inventory/api"
+	"bufio"
+	"bytes"
+	"fmt"
 	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/testing/protocmp"
@@ -59,6 +62,39 @@ func TestRoundtrip(t *testing.T) {
 
 		})
 
+	}
+}
+
+func TestFullRoundTrip(t *testing.T) {
+	var b bytes.Buffer
+	foo := bufio.NewWriter(&b)
+
+	err := WriteSpecs(api.Specs, foo)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_ = foo.Flush()
+
+	actual, err := ReadSpecs(&b)
+	if err != nil {
+		t.Log(b.String())
+		t.Fatal(err)
+	}
+
+	if len(api.Specs) != len(actual) {
+		t.Fatalf("Length mismatch: %d, %d", len(api.Specs), len(actual))
+	}
+
+	for i, s := range api.Specs {
+
+		t.Run(fmt.Sprintf("#%d: %s", i, s.Name), func(t *testing.T) {
+
+			delta := cmp.Diff(s.ToTestString(), actual[i].ToTestString())
+			if len(delta) > 0 {
+				t.Fatal(delta)
+			}
+		})
 	}
 
 }

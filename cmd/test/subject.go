@@ -5,7 +5,6 @@ import (
 	"black-friday/inventory/api"
 	"context"
 	"fmt"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
 	"reflect"
@@ -46,15 +45,14 @@ func (s *subject) Spec(ctx context.Context, request *api.SpecRequest) (*api.Spec
 	}
 
 	tx.Events = nil
-	resp, err := specs.Dispatch(tx, actualReq)
+	resp, st := specs.Dispatch(tx, actualReq)
 
 	if err := tx.Rollback(); err != nil {
 		return nil, fmt.Errorf("fail to rollback: %w", err)
 	}
 	specResponse := &api.SpecResponse{}
 
-	if err != nil {
-		st, _ := status.FromError(err)
+	if st != nil {
 		specResponse.Status = st.Proto().Code
 		specResponse.Error = st.Message()
 

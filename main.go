@@ -2,6 +2,7 @@ package main
 
 import (
 	"black-friday/cmd/explore"
+	"black-friday/cmd/export"
 	"black-friday/cmd/perf"
 	"black-friday/cmd/stress"
 	"black-friday/cmd/test"
@@ -19,6 +20,7 @@ func main() {
 		"perf":    perf.Factory,
 		"explore": explore.Factory,
 		"stress":  stress.Factory,
+		"export":  export.Factory,
 	}
 
 	exitStatus, err := c.Run()

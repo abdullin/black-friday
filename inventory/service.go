@@ -8,6 +8,7 @@ import (
 	"black-friday/inventory/features/stock"
 	"context"
 	"database/sql"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"log"
 )
@@ -23,7 +24,7 @@ func New(a fx.Transactor) api.InventoryServiceServer {
 	return &server{app: a}
 }
 
-func apiDispatch[A proto.Message, B proto.Message](a fx.Transactor, c context.Context, req A, x func(c fx.Tx, a A) (b B, err error)) (B, error) {
+func apiDispatch[A proto.Message, B proto.Message](a fx.Transactor, c context.Context, req A, x func(c fx.Tx, a A) (b B, st *status.Status)) (B, error) {
 
 	ctx, err := a.Begin(c)
 
@@ -42,9 +43,9 @@ func apiDispatch[A proto.Message, B proto.Message](a fx.Transactor, c context.Co
 		}
 	}()
 
-	response, handleErr := x(ctx, req)
-	if handleErr != nil {
-		return nilB, handleErr
+	response, st := x(ctx, req)
+	if st != nil {
+		return nilB, st.Err()
 	}
 	commitErr := ctx.Commit()
 	if commitErr != nil {

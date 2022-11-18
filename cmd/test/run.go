@@ -111,7 +111,7 @@ func test_specs(db, addr string) {
 
 		st := status.New(codes.Code(resp.Status), resp.Error)
 
-		issues := specs.Compare(s, mustMsg(resp.Response), st.Err(), events)
+		issues := specs.Compare(s, mustMsg(resp.Response), st, events)
 
 		fmt.Print(ERASE, "\r")
 		if len(issues) == 0 && err == nil {

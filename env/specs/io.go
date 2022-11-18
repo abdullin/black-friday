@@ -10,6 +10,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/reflect/protoregistry"
+	"io"
 	"log"
 	"strings"
 )
@@ -43,7 +44,7 @@ func stringToMsg(s string) (proto.Message, error) {
 
 	mt, found := lookups[name]
 	if !found {
-		return nil, fmt.Errorf("Unknown type: %s", name)
+		return nil, fmt.Errorf("Unknown type %s in line %s", name, s)
 	}
 
 	instance := mt.New().Interface()
@@ -60,6 +61,74 @@ func stringToMsg(s string) (proto.Message, error) {
 
 }
 
+const NAME_SEPARATOR = "------------------------------------------"
+const BODY_SEPARATOR = "=========================================="
+
+func WriteSpecs(specs []*api.Spec, w io.Writer) error {
+
+	for i, s := range specs {
+		if i > 0 {
+			if _, err := fmt.Fprintln(w, BODY_SEPARATOR); err != nil {
+				return err
+			}
+		}
+		if str, err := SpecToParseableString(s); err != nil {
+			return err
+		} else {
+			if _, err := fmt.Fprintln(w, str); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func ReadSpecs(r io.Reader) ([]*api.Spec, error) {
+	scanner := bufio.NewScanner(r)
+
+	var specs []*api.Spec
+	var lines []string
+	var line int
+	for scanner.Scan() {
+		line += 1
+		s := strings.TrimSpace(scanner.Text())
+		if len(s) == 0 {
+			continue
+		}
+
+		// minimal separator
+		if strings.HasPrefix(s, "===") {
+			if len(lines) > 0 {
+
+				// hacky for now
+				joined := strings.Join(lines, "\n")
+				parsed, err := SpecFromParseableString(joined)
+				if err != nil {
+					return nil, fmt.Errorf("failed to parse spec from line %d: %w", line, err)
+				}
+				lines = nil
+				specs = append(specs, parsed)
+			}
+		} else {
+			lines = append(lines, s)
+
+		}
+
+	}
+
+	if len(lines) > 0 {
+
+		// hacky for now
+		joined := strings.Join(lines, "\n")
+		parsed, err := SpecFromParseableString(joined)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse spec from line %d: %w", line, err)
+		}
+		specs = append(specs, parsed)
+	}
+	return specs, nil
+}
+
 func SpecToParseableString(s *api.Spec) (string, error) {
 
 	var b strings.Builder
@@ -71,14 +140,15 @@ func SpecToParseableString(s *api.Spec) (string, error) {
 	}
 
 	ln(s.Name)
+	ln(NAME_SEPARATOR)
 	ln("GIVEN:")
 
 	for _, e := range s.Given {
 		ln("  %s", msgToString(e))
 	}
-	ln("WHEN:\n%s", msgToString(s.When))
+	ln("WHEN:\n  %s", msgToString(s.When))
 	if s.ThenResponse != nil {
-		ln("THEN:\n%s", msgToString(s.ThenResponse))
+		ln("THEN:\n  %s", msgToString(s.ThenResponse))
 	}
 
 	if len(s.ThenEvents) > 0 {
@@ -88,7 +158,7 @@ func SpecToParseableString(s *api.Spec) (string, error) {
 		}
 	}
 	if s.ThenError != nil {
-		ln("ERROR:\n%s", statusToString(s.ThenError))
+		ln("ERROR:\n  %s", statusToString(s.ThenError))
 	}
 
 	return b.String(), nil
@@ -114,7 +184,6 @@ func init() {
 
 	for i := codes.OK; i <= codes.Unauthenticated; i++ {
 		strToCode[i.String()] = i
-
 	}
 }
 
@@ -170,7 +239,11 @@ func SpecFromParseableString(s string) (*api.Spec, error) {
 
 	spec.Name = lines[0]
 
-	groups, err := groupLines(lines[1:])
+	if !strings.HasPrefix(lines[1], "---") {
+		return nil, fmt.Errorf("expected ----- bot got: %s", lines[1])
+	}
+
+	groups, err := groupLines(lines[2:])
 	if err != nil {
 		return nil, err
 	}
