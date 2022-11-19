@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -63,29 +64,38 @@ func test_specs(db, addr string) {
 
 	fmt.Printf("Found %d specs to run\n", len(api.Specs))
 
-	env := specs.NewEnv(db)
-	defer env.Close()
-
-	env.EnsureSchema()
+	var conn *grpc.ClientConn
+	var err error
 
 	// setup subject
-
+	ctx := context.Background()
 	if addr != "" {
-		log.Panicln("Remote connection not implemented, yet!")
+
+		conn, err = grpc.DialContext(ctx, addr,
+			grpc.WithTransportCredentials(insecure.NewCredentials()),
+		)
+		if err != nil {
+			log.Panicln(err)
+		}
+	} else {
+		env := specs.NewEnv(db)
+		defer env.Close()
+
+		env.EnsureSchema()
+
+		subj := &subject{env: env}
+
+		s := grpc.NewServer()
+		api.RegisterSpecServiceServer(s, subj)
+
+		fmt.Println("Setup simulated network")
+		var cancel func()
+		conn, cancel = pipe.ConnectToServer(ctx, s)
+		defer cancel()
 	}
 
-	subj := &subject{env: env}
-
-	s := grpc.NewServer()
-	api.RegisterSpecServiceServer(s, subj)
-
-	ctx := context.Background()
-	fmt.Println("Setup simulated network")
-	channel, cancel := pipe.ConnectToServer(ctx, s)
-	defer cancel()
-
 	// setup client
-	client := api.NewSpecServiceClient(channel)
+	client := api.NewSpecServiceClient(conn)
 
 	// speed test
 

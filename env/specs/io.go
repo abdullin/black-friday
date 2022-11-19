@@ -293,17 +293,19 @@ func SpecFromParseableString(s string) (*api.Spec, error) {
 }
 
 func statusToString(st *status.Status) string {
-	return fmt.Sprintf("%s %s", st.Code().String(), st.Message())
+	return fmt.Sprintf("%s: %s", st.Code().String(), st.Message())
 }
 
 func parseStatus(s string) (*status.Status, error) {
-	segments := strings.SplitN(s, " ", 2)
+	segments := strings.SplitN(s, ":", 2)
 
-	if code, ok := strToCode[segments[0]]; ok {
+	first := strings.TrimSpace(segments[0])
+
+	if code, ok := strToCode[first]; ok {
 		// got a match
 		errStr := ""
 		if len(segments) > 1 {
-			errStr = segments[1]
+			errStr = strings.TrimSpace(segments[1])
 
 		}
 		return status.New(code, errStr), nil

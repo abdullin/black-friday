@@ -5,6 +5,7 @@ import (
 	"black-friday/cmd/export"
 	"black-friday/cmd/perf"
 	"black-friday/cmd/stress"
+	"black-friday/cmd/subject"
 	"black-friday/cmd/test"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/mitchellh/cli"
@@ -21,6 +22,7 @@ func main() {
 		"explore": explore.Factory,
 		"stress":  stress.Factory,
 		"export":  export.Factory,
+		"subject": subject.Factory,
 	}
 
 	exitStatus, err := c.Run()
