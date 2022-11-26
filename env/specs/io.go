@@ -126,6 +126,11 @@ func ReadSpecs(r io.Reader) ([]*api.Spec, error) {
 		}
 		specs = append(specs, parsed)
 	}
+
+	for i, s := range specs {
+		s.Seq = i + 1
+	}
+
 	return specs, nil
 }
 

@@ -15,7 +15,6 @@ type cmd struct {
 
 func (c cmd) Help() string {
 	return "Run performance tests"
-	//TODO implement me
 }
 
 var (

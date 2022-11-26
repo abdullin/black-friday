@@ -15,6 +15,14 @@ type subject struct {
 	api.UnimplementedSpecServiceServer
 }
 
+func (s *subject) About(ctx context.Context, r *api.AboutRequest) (*api.AboutResponse, error) {
+	return &api.AboutResponse{
+		Author:  "Rinat Abdullin",
+		Detail:  "golang",
+		Contact: "@abdullin on twitter and mastodon.social",
+	}, nil
+}
+
 func (s *subject) Spec(ctx context.Context, request *api.SpecRequest) (*api.SpecResponse, error) {
 
 	tx, err := s.env.BeginTx(ctx)

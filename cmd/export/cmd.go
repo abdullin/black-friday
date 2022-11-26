@@ -45,8 +45,7 @@ func (c cmd) Run(args []string) int {
 }
 
 func (c cmd) Synopsis() string {
-	//TODO implement me
-	panic("implement me")
+	return "Export specs outside"
 }
 
 func Factory() (cli.Command, error) {

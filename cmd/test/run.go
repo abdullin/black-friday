@@ -70,7 +70,6 @@ func test_specs(db, addr string) {
 	// setup subject
 	ctx := context.Background()
 	if addr != "" {
-
 		conn, err = grpc.DialContext(ctx, addr,
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
 		)
@@ -99,7 +98,7 @@ func test_specs(db, addr string) {
 
 	// speed test
 
-	oks, fails := 0, 0
+	oks, fails, issues := 0, 0, 0
 
 	for i, s := range api.Specs {
 
@@ -121,20 +120,21 @@ func test_specs(db, addr string) {
 
 		st := status.New(codes.Code(resp.Status), resp.Error)
 
-		issues := specs.Compare(s, mustMsg(resp.Response), st, events)
+		deltas := specs.Compare(s, mustMsg(resp.Response), st, events)
+		issues += len(deltas)
 
 		fmt.Print(ERASE, "\r")
-		if len(issues) == 0 && err == nil {
+		if len(deltas) == 0 && err == nil {
 			//fmt.Printf(" ✔\n")
 			oks += 1
 		} else {
 			fails += 1
-			specs.PrintFull(s, issues)
+			specs.PrintFull(s, deltas)
 			println()
 		}
 
 	}
 
-	fmt.Printf("Total: ✔%d X%d\n", oks, fails)
+	fmt.Printf("PASS:%d FAIL:%d ISSUES:%d\n", oks, fails, issues)
 
 }

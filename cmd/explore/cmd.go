@@ -60,7 +60,6 @@ func (c cmd) Run(args []string) int {
 }
 
 func (c cmd) Synopsis() string {
-	//TODO implement me
 	return "Explore "
 }
 
