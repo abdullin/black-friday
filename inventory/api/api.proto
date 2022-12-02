@@ -201,6 +201,7 @@ message ReserveReq {
 
   repeated Item items = 2;
   map<string,string> tags = 3;
+  int64 location = 4;
 }
 
 
