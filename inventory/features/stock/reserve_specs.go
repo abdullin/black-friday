@@ -25,7 +25,7 @@ func init() {
 				Reservation: 1,
 				Code:        "sale",
 				Items: []*Reserved_Item{
-					{Product: 1, Quantity: 10},
+					{Product: 1, Quantity: 10, Location: 1},
 				},
 			},
 		},
