@@ -44,10 +44,7 @@ CREATE TABLE Reserves (
     FOREIGN KEY(Location) REFERENCES Locations(Id)
 );
 
-CREATE TABLE Lambdas (
-    Type TEXT PRIMARY KEY,
-    Code TEXT NOT NULL
-);
+;
 
 INSERT INTO sqlite_sequence (name, seq) VALUES
     ('Locations', 0),

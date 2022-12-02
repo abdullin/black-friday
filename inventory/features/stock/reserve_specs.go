@@ -78,53 +78,5 @@ func init() {
 		},
 		ThenError: ErrNotEnough,
 	})
-	lamdaChannelSwitch := []proto.Message{
-		&LocationAdded{Id: 1, Name: "WHS1"},
-		&LocationAdded{Id: 2, Name: "WHS2"},
-		&ProductAdded{Id: 1, Sku: "GPU"},
-		&InventoryUpdated{Location: 1, Product: 1, OnHandChange: 5, OnHand: 5},
-		&InventoryUpdated{Location: 2, Product: 1, OnHandChange: 5, OnHand: 5},
-		&LambdaInstalled{
-			Type: Lambda_RESERVE,
-			Code: `
-	channel = order.tags.channel
-	if channel == 'store' then
-		reserveAll("WHS1")
-	else
-		reserveAll("WHS2")
-	end`,
-		},
-	}
 
-	Define(&Spec{
-		Name:  "lambda switch on tags",
-		Given: lamdaChannelSwitch,
-		When: &ReserveReq{
-			Reservation: "sale1",
-			Items:       []*ReserveReq_Item{{Sku: "GPU", Quantity: 1}},
-			Tags:        map[string]string{"channel": "online"},
-		},
-		ThenResponse: &ReserveResp{Reservation: 1},
-		ThenEvents: []proto.Message{&Reserved{
-			Reservation: 1,
-			Code:        "sale1",
-			Items:       []*Reserved_Item{{Product: 1, Quantity: 1, Location: 2}},
-		}},
-	})
-
-	Define(&Spec{
-		Name:  "lambda switch on tags - reverse",
-		Given: lamdaChannelSwitch,
-		When: &ReserveReq{
-			Reservation: "sale1",
-			Items:       []*ReserveReq_Item{{Sku: "GPU", Quantity: 1}},
-			Tags:        map[string]string{"channel": "store"},
-		},
-		ThenResponse: &ReserveResp{Reservation: 1},
-		ThenEvents: []proto.Message{&Reserved{
-			Reservation: 1,
-			Code:        "sale1",
-			Items:       []*Reserved_Item{{Product: 1, Quantity: 1, Location: 1}},
-		}},
-	})
 }

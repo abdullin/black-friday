@@ -51,9 +51,6 @@ UPDATE sqlite_sequence SET seq=? WHERE name=?
 			}
 		}
 		return nil
-	case *LambdaInstalled:
-		return tx.Exec(`INSERT INTO Lambdas(Type, Code) VALUES(?,?)`,
-			t.Type.String(), t.Code)
 	default:
 		return fmt.Errorf("Unhandled event: %s", e.ProtoReflect().Descriptor().Name())
 	}
