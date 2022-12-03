@@ -3,22 +3,20 @@ package locations
 import (
 	"black-friday/fx"
 	"black-friday/inventory/api"
-	"database/sql"
 	"google.golang.org/grpc/status"
 )
 
 func List(ctx fx.Tx, req *api.ListLocationsReq) (*api.ListLocationsResp, *status.Status) {
 
-	var (
-		err  error
-		rows *sql.Rows
-	)
-	if req.Location == 0 {
-		rows, err = ctx.QueryHack(`
+	rows, err := ctx.QueryHack(`
 WITH RECURSIVE cte_Locations(Id, Parent, Name) AS (
 	SELECT l.Id, l.Parent, l.Name
 	FROM Locations l
-	WHERE l.Parent = 0 and l.Id != 0
+	WHERE CASE
+		WHEN ? = 0
+		THEN l.Parent = 0 and l.Id != 0
+		ELSE l.Id = ?
+	END 
 
 	UNION ALL
 
@@ -27,23 +25,7 @@ WITH RECURSIVE cte_Locations(Id, Parent, Name) AS (
 	JOIN cte_Locations c ON c.Id = l.Parent
 )
 SELECT * FROM cte_Locations
-`)
-	} else {
-		rows, err = ctx.QueryHack(`
-WITH RECURSIVE cte_Locations(Id, Parent, Name) AS (
-	SELECT l.Id, l.Parent, l.Name
-	FROM Locations l
-	WHERE l.Id = ?
-
-	UNION ALL
-
-	SELECT l.Id, l.Parent, l.Name
-	FROM Locations l
-	JOIN cte_Locations c ON c.Id = l.Parent
-)
-SELECT * FROM cte_Locations
-`, req.Location)
-	}
+`, req.Location, req.Location)
 	if err != nil {
 		return nil, status.Convert(err)
 	}
