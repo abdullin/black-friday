@@ -69,6 +69,8 @@ func Reserve(a fx.Tx, r *ReserveReq) (*ReserveResp, *status.Status) {
 		return nil, ErrInternal(err, f)
 	}
 
+	// here is the tricky part. We need to walk the hierarchy to see if things are still good
+
 	return &ReserveResp{Reservation: id}, nil
 
 }

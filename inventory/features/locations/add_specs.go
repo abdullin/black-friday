@@ -8,7 +8,24 @@ import (
 func init() {
 
 	Define(&Spec{
-		Name: "add locations to an existing one",
+		Level: 0,
+		Name:  "add location",
+		When: &AddLocationsReq{
+			Locs: []*AddLocationsReq_Loc{
+				{Name: "Shelf"},
+			},
+		},
+		ThenResponse: &AddLocationsResp{Locs: []*AddLocationsResp_Loc{
+			{Id: 1, Name: "Shelf"},
+		}},
+		ThenEvents: []proto.Message{
+			&LocationAdded{Id: 1, Name: "Shelf"},
+		},
+	})
+
+	Define(&Spec{
+		Level: 1,
+		Name:  "add locations to an existing one",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "WH"},
 		},
@@ -31,7 +48,8 @@ func init() {
 		},
 	})
 	Define(&Spec{
-		Name: "add nested locations to an existing one",
+		Level: 1,
+		Name:  "add nested locations to an existing one",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "Warehouse"},
 		},
@@ -57,6 +75,7 @@ func init() {
 	})
 
 	Define(&Spec{
+		Level: 1,
 		Name:  "add location with wrong parent",
 		Given: []proto.Message{},
 		When: &AddLocationsReq{
@@ -69,13 +88,15 @@ func init() {
 	})
 
 	Define(&Spec{
-		Name:      "add location with nill name",
+		Level:     0,
+		Name:      "add location with nil name",
 		Given:     []proto.Message{},
 		When:      &AddLocationsReq{Locs: []*AddLocationsReq_Loc{{}}},
 		ThenError: ErrArgNil("name"),
 	})
 	Define(&Spec{
-		Name: "insert duplicate location name in a batch",
+		Level: 2,
+		Name:  "insert duplicate location name in a batch",
 		When: &AddLocationsReq{Locs: []*AddLocationsReq_Loc{
 			{Name: "W"},
 			{Name: "W"},
@@ -84,7 +105,8 @@ func init() {
 	})
 
 	Define(&Spec{
-		Name: "add location with duplicate name",
+		Level: 2,
+		Name:  "add location with duplicate name",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "W"},
 		},
@@ -94,7 +116,8 @@ func init() {
 		ThenError: ErrAlreadyExists,
 	})
 	Define(&Spec{
-		Name: "duplicates are OK, if they don't share a parent",
+		Level: 2,
+		Name:  "duplicates are OK, if they don't share a parent",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "WHS1"},
 			&LocationAdded{Id: 2, Name: "Inbox", Parent: 1},

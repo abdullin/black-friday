@@ -7,7 +7,8 @@ import (
 
 func init() {
 	Define(&Spec{
-		Name: "query inventory at a specific location",
+		Level: 3,
+		Name:  "query inventory at a specific location",
 		Given: []proto.Message{
 			&ProductAdded{Id: 1, Sku: "Cola"},
 			&ProductAdded{Id: 2, Sku: "Fanta"},
@@ -20,7 +21,8 @@ func init() {
 	})
 
 	Define(&Spec{
-		Name: "query inventory at root",
+		Level: 2,
+		Name:  "query inventory at root",
 		Given: []proto.Message{
 			&ProductAdded{Id: 1, Sku: "Cola"},
 			&ProductAdded{Id: 2, Sku: "Fanta"},
@@ -48,6 +50,7 @@ func init() {
 		&LocationMoved{Id: 4, NewParent: 2},
 	}
 	Define(&Spec{
+		Level: 4,
 		Name:  "moving container to warehouse increases total quantity",
 		Given: container_with_gpus_inbound,
 		// we query warehouse
@@ -59,6 +62,7 @@ func init() {
 	})
 
 	Define(&Spec{
+		Level: 4,
 		Name:  "moving container to warehouse increases unloading quantity",
 		Given: container_with_gpus_inbound,
 		// we query unloading
@@ -69,7 +73,8 @@ func init() {
 	})
 
 	Define(&Spec{
-		Name: "reservation reduces availability",
+		Level: 5,
+		Name:  "reservation reduces availability",
 		Given: []proto.Message{
 			&ProductAdded{Id: 1, Sku: "pixel"},
 			&LocationAdded{Id: 1, Name: "Warehouse"},
@@ -87,7 +92,8 @@ func init() {
 	})
 
 	Define(&Spec{
-		Name: "moving container with a reservation",
+		Level: 4,
+		Name:  "moving container with a reservation",
 		Given: []proto.Message{
 			&ProductAdded{Id: 1, Sku: "NVidia 4080"},
 			// we have a warehouse with unloading zone and a shelf

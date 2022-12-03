@@ -8,7 +8,8 @@ import (
 func init() {
 
 	Define(&Spec{
-		Name: "query locations after removal",
+		Level: 2,
+		Name:  "query locations after removal",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "Shelf"},
 			&ProductAdded{Id: 1, Sku: "NVidia"},
@@ -20,7 +21,8 @@ func init() {
 	})
 
 	Define(&Spec{
-		Name: "query one specific location",
+		Level: 2,
+		Name:  "query one specific location",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "Shelf1"},
 		},
@@ -31,7 +33,8 @@ func init() {
 	})
 
 	Define(&Spec{
-		Name: "query all locations in a tree",
+		Level: 3,
+		Name:  "query all locations in a tree",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "WH"},
 			&LocationAdded{Id: 2, Name: "Shelf1", Parent: 1},
@@ -47,7 +50,8 @@ func init() {
 	})
 
 	Define(&Spec{
-		Name: "query locations from another root",
+		Level: 3,
+		Name:  "query locations from another root",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "WH1"},
 			&LocationAdded{Id: 2, Name: "WH2"},
@@ -60,13 +64,15 @@ func init() {
 		}}},
 	})
 	Define(&Spec{
+		Level:     3,
 		Name:      "query locations from non-existent location",
 		When:      &ListLocationsReq{Location: 1},
 		ThenError: ErrLocationNotFound,
 	})
 
 	Define(&Spec{
-		Name: "query all locations",
+		Level: 2,
+		Name:  "query all locations",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "WH1"},
 			&LocationAdded{Id: 2, Name: "WH2"},

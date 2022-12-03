@@ -7,7 +7,8 @@ import (
 
 func init() {
 	Define(&Spec{
-		Name: "reserve sale with one item",
+		Level: 3,
+		Name:  "reserve sale with one item",
 		Given: []proto.Message{
 			&ProductAdded{Id: 1, Sku: "GPU"},
 			&LocationAdded{Id: 1, Name: "Shelf"},
@@ -32,7 +33,8 @@ func init() {
 	})
 
 	Define(&Spec{
-		Name: "reserve sale in a specific location",
+		Level: 3,
+		Name:  "reserve sale in a specific location",
 		Given: []proto.Message{
 			&ProductAdded{Id: 1, Sku: "GPU"},
 			&LocationAdded{Id: 1, Name: "Shelf"},
@@ -54,7 +56,8 @@ func init() {
 	})
 
 	Define(&Spec{
-		Name: "reservation codes must be unique",
+		Level: 3,
+		Name:  "reservation codes must be unique",
 		Given: []proto.Message{
 			&ProductAdded{Id: 1, Sku: "GPU"},
 			&LocationAdded{Id: 1, Name: "Shelf"},
@@ -74,7 +77,8 @@ func init() {
 	})
 
 	Define(&Spec{
-		Name: "reserve sale in a specific location that doesn't have quantity",
+		Level: 5,
+		Name:  "reserve sale in a specific location that doesn't have quantity",
 		Given: []proto.Message{
 			&ProductAdded{Id: 1, Sku: "GPU"},
 			&LocationAdded{Id: 1, Name: "Shelf"},
@@ -92,7 +96,8 @@ func init() {
 	})
 
 	Define(&Spec{
-		Name: "reserve in a location that contains enough inside",
+		Level: 4,
+		Name:  "reserve in a location that contains enough inside",
 		Given: []proto.Message{
 			&ProductAdded{Id: 1, Sku: "GPU"},
 			&LocationAdded{Id: 1, Name: "Container"},
@@ -119,7 +124,8 @@ func init() {
 	})
 
 	Define(&Spec{
-		Name: "reserve in a location that doesn't have enough inside",
+		Level: 5,
+		Name:  "reserve in a location that doesn't have enough inside",
 		Given: []proto.Message{
 			&ProductAdded{Id: 1, Sku: "GPU"},
 			&LocationAdded{Id: 1, Name: "Container"},
@@ -137,7 +143,8 @@ func init() {
 	})
 
 	Define(&Spec{
-		Name: "reserve box while container has a reservation on top of it (enough)",
+		Level: 5,
+		Name:  "reserve box while container has a reservation on top of it (enough)",
 		Given: []proto.Message{
 			&ProductAdded{Id: 1, Sku: "GPU"},
 			&LocationAdded{Id: 1, Name: "Container"},
@@ -167,7 +174,7 @@ func init() {
 		},
 		ThenEvents: []proto.Message{
 			&Reserved{
-				Reservation: 1,
+				Reservation: 2,
 				Code:        "sale2",
 				Items: []*Reserved_Item{
 					{
@@ -181,19 +188,20 @@ func init() {
 	})
 
 	Define(&Spec{
-		Name: "reserve box while container has a reservation on top of it (not enough)",
+		Level: 5,
+		Name:  "reserve box while container has a reservation on top of it (not enough)",
 		Given: []proto.Message{
 			&ProductAdded{Id: 1, Sku: "GPU"},
 			&LocationAdded{Id: 1, Name: "Container"},
 			&LocationAdded{Id: 2, Name: "Box", Parent: 1},
-			&InventoryUpdated{Location: 2, Product: 1, OnHandChange: 10, OnHand: 10},
+			&InventoryUpdated{Location: 2, Product: 1, OnHandChange: 3, OnHand: 3},
 			&Reserved{
 				Reservation: 1,
 				Code:        "sale0",
 				Items: []*Reserved_Item{
 					{
 						Product:  1,
-						Quantity: 5,
+						Quantity: 2,
 						Location: 1,
 					},
 				},
@@ -203,14 +211,15 @@ func init() {
 			Reservation: "sale2",
 			Location:    2,
 			Items: []*ReserveReq_Item{
-				{Sku: "GPU", Quantity: 6},
+				{Sku: "GPU", Quantity: 2},
 			},
 		},
 		ThenError: ErrNotEnough,
 	})
 
 	Define(&Spec{
-		Name: "reserve non-existent sku",
+		Level: 1,
+		Name:  "reserve non-existent sku",
 		When: &ReserveReq{
 			Reservation: "test",
 			Items: []*ReserveReq_Item{
@@ -221,7 +230,8 @@ func init() {
 	})
 
 	Define(&Spec{
-		Name: "reserve when onHand isn't enough",
+		Level: 2,
+		Name:  "reserve when onHand isn't enough",
 		Given: []proto.Message{
 			&ProductAdded{Id: 1, Sku: "cola"},
 			&LocationAdded{Id: 1, Name: "WHS1"},
@@ -237,7 +247,8 @@ func init() {
 	})
 
 	Define(&Spec{
-		Name: "over-reserve",
+		Level: 2,
+		Name:  "over-reserve",
 		Given: []proto.Message{
 			&ProductAdded{Id: 1, Sku: "cola"},
 			&LocationAdded{Id: 1, Name: "WHS1"},

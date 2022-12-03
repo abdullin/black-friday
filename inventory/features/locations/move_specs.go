@@ -8,7 +8,8 @@ import (
 func init() {
 
 	Define(&Spec{
-		Name: "move locations",
+		Level: 1,
+		Name:  "move locations",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "Warehouse"},
 			&LocationAdded{Id: 2, Name: "Container"},
@@ -24,7 +25,8 @@ func init() {
 	})
 
 	Define(&Spec{
-		Name: "recursive locations are not allowed",
+		Level: 3,
+		Name:  "recursive locations are not allowed",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "Warehouse"},
 			&LocationAdded{Id: 2, Name: "Container", Parent: 1},
@@ -36,7 +38,8 @@ func init() {
 		ThenError: ErrBadMove,
 	})
 	Define(&Spec{
-		Name: "don't move location to itself",
+		Level: 2,
+		Name:  "don't move location to itself",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "Warehouse"},
 		},
@@ -48,7 +51,8 @@ func init() {
 	})
 
 	Define(&Spec{
-		Name: "can't touch root",
+		Level: 1,
+		Name:  "can't touch root",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "Warehouse"},
 		},

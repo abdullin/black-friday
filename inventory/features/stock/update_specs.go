@@ -7,7 +7,8 @@ import (
 
 func init() {
 	Define(&Spec{
-		Name: "don't allow negative on-hand",
+		Level: 2,
+		Name:  "don't allow negative on-hand",
 		Given: []proto.Message{
 			&LocationAdded{Id: 1, Name: "Shelf"},
 			&ProductAdded{Id: 1, Sku: "NVidia"},

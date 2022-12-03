@@ -9,6 +9,8 @@ import (
 )
 
 type Spec struct {
+	// from one to 5, how hard is this?
+	Level        int
 	Seq          int
 	Name         string
 	Given        []proto.Message
