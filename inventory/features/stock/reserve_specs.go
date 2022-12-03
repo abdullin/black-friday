@@ -41,20 +41,36 @@ func init() {
 		When: &ReserveReq{
 			Reservation: "sale",
 			Location:    1,
-			Items: []*ReserveReq_Item{
-				{Sku: "GPU", Quantity: 10},
-			},
+			Items:       []*ReserveReq_Item{{Sku: "GPU", Quantity: 10}},
 		},
 		ThenResponse: &ReserveResp{Reservation: 1},
 		ThenEvents: []proto.Message{
 			&Reserved{
 				Reservation: 1,
 				Code:        "sale",
-				Items: []*Reserved_Item{
-					{Product: 1, Quantity: 10, Location: 1},
-				},
+				Items:       []*Reserved_Item{{Product: 1, Quantity: 10, Location: 1}},
 			},
 		},
+	})
+
+	Define(&Spec{
+		Name: "reservation codes must be unique",
+		Given: []proto.Message{
+			&ProductAdded{Id: 1, Sku: "GPU"},
+			&LocationAdded{Id: 1, Name: "Shelf"},
+			&InventoryUpdated{Location: 1, Product: 1, OnHandChange: 10, OnHand: 10},
+			&Reserved{
+				Reservation: 1,
+				Code:        "sale",
+				Items:       []*Reserved_Item{{Product: 1, Quantity: 10, Location: 1}},
+			},
+		},
+		When: &ReserveReq{
+			Reservation: "sale",
+			Location:    1,
+			Items:       []*ReserveReq_Item{{Sku: "GPU", Quantity: 10}},
+		},
+		ThenError: ErrAlreadyExists,
 	})
 
 	Define(&Spec{
