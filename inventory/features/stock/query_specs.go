@@ -73,25 +73,6 @@ func init() {
 	})
 
 	Define(&Spec{
-		Level: 5,
-		Name:  "reservation reduces availability",
-		Given: []proto.Message{
-			&ProductAdded{Id: 1, Sku: "pixel"},
-			&LocationAdded{Id: 1, Name: "Warehouse"},
-			&InventoryUpdated{Location: 1, Product: 1, OnHandChange: 10, OnHand: 10},
-			&Reserved{
-				Reservation: 1,
-				Code:        "sale",
-				Items:       []*Reserved_Item{{Product: 1, Quantity: 3, Location: 1}},
-			},
-		},
-		When: &GetLocInventoryReq{Location: 1},
-		ThenResponse: &GetLocInventoryResp{Items: []*GetLocInventoryResp_Item{
-			{Product: 1, OnHand: 10, Available: 7},
-		}},
-	})
-
-	Define(&Spec{
 		Level: 4,
 		Name:  "moving container with a reservation",
 		Given: []proto.Message{
@@ -123,6 +104,68 @@ func init() {
 		When: &GetLocInventoryReq{Location: 1},
 		ThenResponse: &GetLocInventoryResp{Items: []*GetLocInventoryResp_Item{
 			{Product: 1, OnHand: 15, Available: 3},
+		}},
+	})
+
+	Define(&Spec{
+		Level: 5,
+		Name:  "reservation at location reduces availability at location",
+		Given: []proto.Message{
+			&ProductAdded{Id: 1, Sku: "pixel"},
+			&LocationAdded{Id: 1, Name: "Warehouse"},
+			&InventoryUpdated{Location: 1, Product: 1, OnHandChange: 10, OnHand: 10},
+			&Reserved{
+				Reservation: 1,
+				Code:        "sale",
+				Items:       []*Reserved_Item{{Product: 1, Quantity: 3, Location: 1}},
+			},
+		},
+		When: &GetLocInventoryReq{Location: 1},
+		ThenResponse: &GetLocInventoryResp{Items: []*GetLocInventoryResp_Item{
+			{Product: 1, OnHand: 10, Available: 7},
+		}},
+	})
+
+	Define(&Spec{
+		Level: 5,
+		Name:  "reservation at location reduces availability globally",
+		Given: []proto.Message{
+			&ProductAdded{Id: 1, Sku: "pixel"},
+			&LocationAdded{Id: 1, Name: "Warehouse"},
+			&InventoryUpdated{Location: 1, Product: 1, OnHandChange: 10, OnHand: 10},
+			&Reserved{
+				Reservation: 1,
+				Code:        "sale",
+				Items:       []*Reserved_Item{{Product: 1, Quantity: 3, Location: 1}},
+			},
+		},
+		When: &GetLocInventoryReq{Location: 0},
+		ThenResponse: &GetLocInventoryResp{Items: []*GetLocInventoryResp_Item{
+			{Product: 1, OnHand: 10, Available: 7},
+		}},
+	})
+
+	Define(&Spec{
+		Level: 5,
+		Name:  "multiple reservations stack",
+		Given: []proto.Message{
+			&ProductAdded{Id: 1, Sku: "pixel"},
+			&LocationAdded{Id: 1, Name: "Warehouse"},
+			&InventoryUpdated{Location: 1, Product: 1, OnHandChange: 10, OnHand: 10},
+			&Reserved{
+				Reservation: 1,
+				Code:        "sale1",
+				Items:       []*Reserved_Item{{Product: 1, Quantity: 3, Location: 1}},
+			},
+			&Reserved{
+				Reservation: 2,
+				Code:        "sale2",
+				Items:       []*Reserved_Item{{Product: 1, Quantity: 4, Location: 1}},
+			},
+		},
+		When: &GetLocInventoryReq{Location: 0},
+		ThenResponse: &GetLocInventoryResp{Items: []*GetLocInventoryResp_Item{
+			{Product: 1, OnHand: 10, Available: 3},
 		}},
 	})
 }

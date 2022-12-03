@@ -96,6 +96,57 @@ func init() {
 	})
 
 	Define(&Spec{
+		Level: 1,
+		Name:  "reserve non-existent sku",
+		When: &ReserveReq{
+			Reservation: "test",
+			Items: []*ReserveReq_Item{
+				{Sku: "sale", Quantity: 1},
+			},
+		},
+		ThenError: ErrProductNotFound,
+	})
+
+	Define(&Spec{
+		Level: 2,
+		Name:  "reserve when onHand isn't enough",
+		Given: []proto.Message{
+			&ProductAdded{Id: 1, Sku: "cola"},
+			&LocationAdded{Id: 1, Name: "WHS1"},
+			&InventoryUpdated{Location: 1, Product: 1, OnHandChange: 2, OnHand: 2},
+		},
+		When: &ReserveReq{
+			Reservation: "test",
+			Items: []*ReserveReq_Item{
+				{Sku: "cola", Quantity: 3},
+			},
+		},
+		ThenError: ErrNotEnough,
+	})
+
+	Define(&Spec{
+		Level: 2,
+		Name:  "over-reserve",
+		Given: []proto.Message{
+			&ProductAdded{Id: 1, Sku: "cola"},
+			&LocationAdded{Id: 1, Name: "WHS1"},
+			&InventoryUpdated{Location: 1, Product: 1, OnHandChange: 2, OnHand: 2},
+			&Reserved{
+				Reservation: 1,
+				Code:        "sale",
+				Items:       []*Reserved_Item{{Product: 1, Quantity: 1, Location: 1}},
+			},
+		},
+		When: &ReserveReq{
+			Reservation: "test",
+			Items: []*ReserveReq_Item{
+				{Sku: "cola", Quantity: 2},
+			},
+		},
+		ThenError: ErrNotEnough,
+	})
+
+	Define(&Spec{
 		Level: 4,
 		Name:  "reserve in a location that contains enough inside",
 		Given: []proto.Message{
@@ -212,57 +263,6 @@ func init() {
 			Location:    2,
 			Items: []*ReserveReq_Item{
 				{Sku: "GPU", Quantity: 2},
-			},
-		},
-		ThenError: ErrNotEnough,
-	})
-
-	Define(&Spec{
-		Level: 1,
-		Name:  "reserve non-existent sku",
-		When: &ReserveReq{
-			Reservation: "test",
-			Items: []*ReserveReq_Item{
-				{Sku: "sale", Quantity: 1},
-			},
-		},
-		ThenError: ErrProductNotFound,
-	})
-
-	Define(&Spec{
-		Level: 2,
-		Name:  "reserve when onHand isn't enough",
-		Given: []proto.Message{
-			&ProductAdded{Id: 1, Sku: "cola"},
-			&LocationAdded{Id: 1, Name: "WHS1"},
-			&InventoryUpdated{Location: 1, Product: 1, OnHandChange: 2, OnHand: 2},
-		},
-		When: &ReserveReq{
-			Reservation: "test",
-			Items: []*ReserveReq_Item{
-				{Sku: "cola", Quantity: 3},
-			},
-		},
-		ThenError: ErrNotEnough,
-	})
-
-	Define(&Spec{
-		Level: 2,
-		Name:  "over-reserve",
-		Given: []proto.Message{
-			&ProductAdded{Id: 1, Sku: "cola"},
-			&LocationAdded{Id: 1, Name: "WHS1"},
-			&InventoryUpdated{Location: 1, Product: 1, OnHandChange: 2, OnHand: 2},
-			&Reserved{
-				Reservation: 1,
-				Code:        "sale",
-				Items:       []*Reserved_Item{{Product: 1, Quantity: 1, Location: 1}},
-			},
-		},
-		When: &ReserveReq{
-			Reservation: "test",
-			Items: []*ReserveReq_Item{
-				{Sku: "cola", Quantity: 2},
 			},
 		},
 		ThenError: ErrNotEnough,

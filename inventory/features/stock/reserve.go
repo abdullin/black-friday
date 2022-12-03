@@ -71,6 +71,27 @@ func Reserve(a fx.Tx, r *ReserveReq) (*ReserveResp, *status.Status) {
 
 	// here is the tricky part. We need to walk the hierarchy to see if things are still good
 
+	scope := r.Location
+	for scope != 0 {
+
+		var parent int64
+
+		a.QueryRow("SELECT Parent FROM Locations WHERE Id=?", scope)(&parent)
+		res, st := Query(a, &GetLocInventoryReq{Location: scope})
+		if st.Code() != codes.OK {
+			return nil, st
+		}
+		// checking availability
+
+		for _, i := range res.Items {
+			if i.Available < 0 {
+				// we broke some constraint!
+				return nil, ErrNotEnough
+			}
+		}
+		scope = parent
+	}
+
 	return &ReserveResp{Reservation: id}, nil
 
 }
