@@ -34,6 +34,8 @@ func (c cmd) Run(args []string) int {
 	}
 	defer f.Close()
 
+	api.Sort()
+
 	err = specs.WriteSpecs(api.Specs, f)
 	if err != nil {
 		fmt.Printf("Failed to write specs: %s\n", err)

@@ -22,6 +22,44 @@ type Spec struct {
 
 var Specs []*Spec
 
+func Sort() {
+
+	source := Specs
+	var target []*Spec
+
+	order := []proto.Message{
+
+		&AddProductsReq{},
+		&AddLocationsReq{},
+		&ListLocationsReq{},
+		&MoveLocationReq{},
+		&GetLocInventoryReq{},
+		&UpdateInventoryReq{},
+		&ReserveReq{},
+	}
+
+	for _, o := range order {
+
+		match := o.ProtoReflect().Descriptor().Name()
+		for i, s := range source {
+			if s == nil {
+				continue
+			}
+			if s.When.ProtoReflect().Descriptor().Name() == match {
+				target = append(target, s)
+				source[i] = nil
+			}
+		}
+	}
+
+	for _, s := range source {
+		if s != nil {
+			target = append(target, s)
+		}
+	}
+	Specs = target
+}
+
 func (s *Spec) ToTestString() string {
 
 	var b strings.Builder
