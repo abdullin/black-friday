@@ -34,6 +34,20 @@ func init() {
 		ThenResponse: &GetLocInventoryResp{
 			Items: []*GetLocInventoryResp_Item{{Product: 1, OnHand: 5, Available: 5}}},
 	})
+	Define(&Spec{
+		Level: 3,
+		Name:  "boxes sums up quantity with parent container",
+		Given: []proto.Message{
+			&ProductAdded{Id: 1, Sku: "Epyc"},
+			&LocationAdded{Id: 1, Name: "Shelf"},
+			&LocationAdded{Id: 2, Name: "Bin", Parent: 1},
+			&InventoryUpdated{Location: 1, Product: 1, OnHandChange: 2, OnHand: 2},
+			&InventoryUpdated{Location: 2, Product: 1, OnHandChange: 3, OnHand: 3},
+		},
+		When: &GetLocInventoryReq{Location: 1},
+		ThenResponse: &GetLocInventoryResp{
+			Items: []*GetLocInventoryResp_Item{{Product: 1, OnHand: 5, Available: 5}}},
+	})
 
 	Define(&Spec{
 		Level: 2,
