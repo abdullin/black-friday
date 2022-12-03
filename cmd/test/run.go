@@ -113,6 +113,11 @@ func test_specs(db, addr string) {
 		}
 
 		resp, err := client.Spec(ctx, request)
+
+		if err != nil {
+			fails += 1
+			fmt.Printf("%s%s%s\n", RED, err.Error(), CLEAR)
+		}
 		var events []proto.Message
 		for _, e := range resp.Events {
 			events = append(events, mustMsg(e))
