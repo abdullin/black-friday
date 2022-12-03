@@ -7,7 +7,7 @@ import (
 
 func init() {
 	Define(&Spec{
-		Name: "query inventory",
+		Name: "query inventory at a specific location",
 		Given: []proto.Message{
 			&ProductAdded{Id: 1, Sku: "Cola"},
 			&ProductAdded{Id: 2, Sku: "Fanta"},
@@ -15,6 +15,19 @@ func init() {
 			&InventoryUpdated{Location: 1, Product: 2, OnHandChange: 2, OnHand: 2},
 		},
 		When: &GetLocInventoryReq{Location: 1},
+		ThenResponse: &GetLocInventoryResp{
+			Items: []*GetLocInventoryResp_Item{{Product: 2, OnHand: 2, Available: 2}}},
+	})
+
+	Define(&Spec{
+		Name: "query inventory at root",
+		Given: []proto.Message{
+			&ProductAdded{Id: 1, Sku: "Cola"},
+			&ProductAdded{Id: 2, Sku: "Fanta"},
+			&LocationAdded{Id: 1, Name: "Shelf"},
+			&InventoryUpdated{Location: 1, Product: 2, OnHandChange: 2, OnHand: 2},
+		},
+		When: &GetLocInventoryReq{Location: 0},
 		ThenResponse: &GetLocInventoryResp{
 			Items: []*GetLocInventoryResp_Item{{Product: 2, OnHand: 2, Available: 2}}},
 	})

@@ -6,6 +6,7 @@ import (
 	. "black-friday/inventory/api"
 	lua "github.com/yuin/gopher-lua"
 	"github.com/yuin/gopher-lua/parse"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"strings"
 	"sync"
@@ -31,16 +32,39 @@ func Reserve(a fx.Tx, r *ReserveReq) (*ReserveResp, *status.Status) {
 		skus[r.Sku] = pid
 	}
 
+	// this is a slow route for now
+
+	res, st := Query(a, &GetLocInventoryReq{Location: r.Location})
+	if st.Code() != codes.OK {
+		return nil, st
+	}
+
+	available := make(map[int64]int64)
+
+	for _, prod := range res.Items {
+		available[prod.Product] = prod.Available
+	}
+
 	for _, i := range r.Items {
+		productId := skus[i.Sku]
+
+		available, _ := available[productId]
+		if available < i.Quantity {
+			return nil, ErrNotEnough
+		}
+
 		e.Items = append(e.Items, &Reserved_Item{
-			Product:  skus[i.Sku],
+			Product:  productId,
 			Quantity: i.Quantity,
+			Location: r.Location,
 		})
 	}
 
 	err, f := a.Apply(e)
 	switch f {
 	case fail.None:
+	case fail.ConstraintUnique:
+		return nil, ErrAlreadyExists
 	default:
 		return nil, ErrInternal(err, f)
 	}

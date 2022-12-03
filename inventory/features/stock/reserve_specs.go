@@ -25,7 +25,7 @@ func init() {
 				Reservation: 1,
 				Code:        "sale",
 				Items: []*Reserved_Item{
-					{Product: 1, Quantity: 10, Location: 1},
+					{Product: 1, Quantity: 10},
 				},
 			},
 		},
@@ -62,13 +62,13 @@ func init() {
 			&Reserved{
 				Reservation: 1,
 				Code:        "sale",
-				Items:       []*Reserved_Item{{Product: 1, Quantity: 10, Location: 1}},
+				Items:       []*Reserved_Item{{Product: 1, Quantity: 1, Location: 1}},
 			},
 		},
 		When: &ReserveReq{
 			Reservation: "sale",
 			Location:    1,
-			Items:       []*ReserveReq_Item{{Sku: "GPU", Quantity: 10}},
+			Items:       []*ReserveReq_Item{{Sku: "GPU", Quantity: 1}},
 		},
 		ThenError: ErrAlreadyExists,
 	})
@@ -106,6 +106,7 @@ func init() {
 				{Sku: "GPU", Quantity: 10},
 			},
 		},
+		ThenResponse: &ReserveResp{Reservation: 1},
 		ThenEvents: []proto.Message{
 			&Reserved{
 				Reservation: 1,

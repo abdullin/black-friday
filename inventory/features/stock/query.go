@@ -3,12 +3,18 @@ package stock
 import (
 	"black-friday/fx"
 	"black-friday/inventory/api"
+	"database/sql"
 	"google.golang.org/grpc/status"
 )
 
 func Query(ctx fx.Tx, req *api.GetLocInventoryReq) (*api.GetLocInventoryResp, *status.Status) {
 
-	rows, err := ctx.QueryHack(`
+	var rows *sql.Rows
+	var err error
+
+	if req.Location != 0 {
+
+		rows, err = ctx.QueryHack(`
 WITH RECURSIVE cte_Locations(Id, Parent, Name) AS (
 	SELECT l.Id, l.Parent, l.Name
 	FROM Locations l
@@ -25,6 +31,25 @@ FROM cte_Locations AS C
 JOIN Inventory AS I ON I.Location=C.Id
 LEFT JOIN Reserves AS R ON R.Product=I.Product AND R.Location=I.Location
 GROUP BY I.Product`, req.Location)
+	} else {
+		rows, err = ctx.QueryHack(`
+WITH RECURSIVE cte_Locations(Id, Parent, Name) AS (
+	SELECT l.Id, l.Parent, l.Name
+	FROM Locations l
+	WHERE l.Parent=0 and l.Id != 0
+
+	UNION ALL
+
+	SELECT l.Id, l.Parent, l.Name
+	FROM Locations l
+	JOIN cte_Locations c ON c.Id = l.Parent
+)
+SELECT I.Product, SUM(I.OnHand), IFNULL(SUM(R.Quantity),0) 
+FROM cte_Locations AS C
+JOIN Inventory AS I ON I.Location=C.Id
+LEFT JOIN Reserves AS R ON R.Product=I.Product AND R.Location=I.Location
+GROUP BY I.Product`, req.Location)
+	}
 	if err != nil {
 		return nil, status.Convert(err)
 	}
