@@ -60,17 +60,17 @@ func init() {
 		Name:  "reservation codes must be unique",
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "GPU"},
-			&LocationAdded{Uid: u(1), Name: "Shelf"},
-			&InventoryUpdated{Location: u(1), Product: u(1), OnHandChange: 10, OnHand: 10},
+			&LocationAdded{Uid: u(2), Name: "Shelf"},
+			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 10, OnHand: 10},
 			&Reserved{
 				Reservation: u(1),
 				Code:        "sale",
-				Items:       []*Reserved_Item{{Product: u(1), Quantity: 1, Location: u(1)}},
+				Items:       []*Reserved_Item{{Product: u(1), Quantity: 1, Location: u(2)}},
 			},
 		},
 		When: &ReserveReq{
 			Reservation: "sale",
-			Location:    u(1),
+			Location:    u(2),
 			Items:       []*ReserveReq_Item{{Sku: "GPU", Quantity: 1}},
 		},
 		ThenError: ErrAlreadyExists,
@@ -80,10 +80,10 @@ func init() {
 		Level: 5,
 		Name:  "reserve sale in a specific location that doesn't have quantity",
 		Given: []proto.Message{
-			&ProductAdded{Uid: u(1), Sku: "GPU"},
 			&LocationAdded{Uid: u(1), Name: "Shelf"},
 			&LocationAdded{Uid: u(2), Name: "Empty"},
-			&InventoryUpdated{Location: u(1), Product: u(1), OnHandChange: 10, OnHand: 10},
+			&ProductAdded{Uid: u(3), Sku: "GPU"},
+			&InventoryUpdated{Location: u(1), Product: u(3), OnHandChange: 10, OnHand: 10},
 		},
 		When: &ReserveReq{
 			Reservation: "sale",
@@ -112,8 +112,8 @@ func init() {
 		Name:  "reserve when onHand isn't enough",
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "cola"},
-			&LocationAdded{Uid: u(1), Name: "WHS1"},
-			&InventoryUpdated{Location: u(1), Product: u(1), OnHandChange: 2, OnHand: 2},
+			&LocationAdded{Uid: u(2), Name: "WHS1"},
+			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 2, OnHand: 2},
 		},
 		When: &ReserveReq{
 			Reservation: "test",
@@ -129,12 +129,12 @@ func init() {
 		Name:  "over-reserve",
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "cola"},
-			&LocationAdded{Uid: u(1), Name: "WHS1"},
-			&InventoryUpdated{Location: u(1), Product: u(1), OnHandChange: 2, OnHand: 2},
+			&LocationAdded{Uid: u(2), Name: "WHS1"},
+			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 2, OnHand: 2},
 			&Reserved{
 				Reservation: u(1),
 				Code:        "sale",
-				Items:       []*Reserved_Item{{Product: u(1), Quantity: 1, Location: u(1)}},
+				Items:       []*Reserved_Item{{Product: u(1), Quantity: 1, Location: u(2)}},
 			},
 		},
 		When: &ReserveReq{
@@ -230,16 +230,16 @@ func init() {
 		Level: 5,
 		Name:  "reserve box while container has a reservation on top of it (not enough)",
 		Given: []proto.Message{
-			&ProductAdded{Uid: u(1), Sku: "GPU"},
 			&LocationAdded{Uid: u(1), Name: "Container"},
 			&LocationAdded{Uid: u(2), Name: "Box", Parent: u(1)},
-			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 3, OnHand: 3},
+			&ProductAdded{Uid: u(3), Sku: "GPU"},
+			&InventoryUpdated{Location: u(2), Product: u(3), OnHandChange: 3, OnHand: 3},
 			&Reserved{
-				Reservation: u(1),
+				Reservation: u(4),
 				Code:        "sale0",
 				Items: []*Reserved_Item{
 					{
-						Product:  u(1),
+						Product:  u(3),
 						Quantity: 2,
 						Location: u(1),
 					},
