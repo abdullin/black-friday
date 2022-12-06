@@ -24,29 +24,29 @@ func New(a fx.Transactor) api.InventoryServiceServer {
 	return &server{app: a}
 }
 
-func apiDispatch[A proto.Message, B proto.Message](a fx.Transactor, c context.Context, req A, x func(c fx.Tx, a A) (b B, st *status.Status)) (B, error) {
+func apiDispatch[A proto.Message, B proto.Message](a fx.Transactor, c context.Context, req A, inner func(c fx.Tx, a A) (b B, st *status.Status)) (B, error) {
+	var nilB B
 
 	ctx, err := a.Begin(c)
 
-	var nilB B
 	if err != nil {
 		return nilB, err
 	}
 	defer func() {
-
 		err := ctx.Rollback()
 		if err == sql.ErrTxDone {
 			return
 		}
 		if err != nil {
-			log.Println("Additional error while rolling back: %s", err)
+			log.Printf("Additional error while rolling back: %s\n", err)
 		}
 	}()
 
-	response, st := x(ctx, req)
+	response, st := inner(ctx, req)
 	if st != nil {
 		return nilB, st.Err()
 	}
+
 	commitErr := ctx.Commit()
 	if commitErr != nil {
 		return nilB, commitErr

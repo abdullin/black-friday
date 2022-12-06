@@ -44,8 +44,6 @@ CREATE TABLE Reserves (
     FOREIGN KEY(Location) REFERENCES Locations(Id)
 );
 
-;
-
 INSERT INTO sqlite_sequence (name, seq) VALUES
     ('Locations', 0),
     ('Products', 0),

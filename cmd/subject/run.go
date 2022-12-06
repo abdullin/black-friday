@@ -2,6 +2,7 @@ package subject
 
 import (
 	specs "black-friday/env/specs"
+	"black-friday/env/uid"
 	"black-friday/inventory/api"
 	"google.golang.org/grpc"
 	"log"
@@ -26,6 +27,7 @@ func serve_specs(db, addr string) {
 
 	s := grpc.NewServer()
 	api.RegisterSpecServiceServer(s, subj)
+	uid.TestMode = true
 
 	log.Println("Serving on ", lis.Addr())
 

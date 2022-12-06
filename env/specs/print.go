@@ -67,10 +67,10 @@ func IssueToString(d seq.Issue) string {
 
 }
 
-var uuid = regexp.MustCompile("\"[0]{8}-[0]{4}-[0]{4}-[0]{4}-(?P<body>[a-fA-F0-9]{12})\"")
+var toCompactUuid = regexp.MustCompile("\"[0]{8}-[0]{4}-[0]{4}-[0]{4}-(?P<body>[a-fA-F0-9]{12})\"")
 
 func shortenUuid(s string) string {
-	return uuid.ReplaceAllStringFunc(s, func(s string) string {
+	return toCompactUuid.ReplaceAllStringFunc(s, func(s string) string {
 		trimmed := strings.Trim(s, "\"")
 		num := uid.ParseTestUuid(trimmed)
 		return fmt.Sprintf("UID(%d)", num)
