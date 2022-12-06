@@ -27,8 +27,9 @@ func (c *Tx) QueryHack(q string, args ...any) (*sql.Rows, error) {
 }
 
 func (c *Tx) GetSeq(name string) int64 {
+	// this is TEST environment, so we assign globally incrementing values
 	var id int64
-	c.QueryRow("select seq from sqlite_sequence where name=?", name)(&id)
+	c.QueryRow("select SUM(seq) from sqlite_sequence")(&id)
 	return id
 
 }
