@@ -25,7 +25,7 @@ func init() {
 			&Reserved{
 				Reservation: u(3),
 				Code:        "sale",
-				Items: []*Reserved_Item{
+				Items: []*Stock{
 					{Product: u(1), Quantity: 10},
 				},
 			},
@@ -50,7 +50,7 @@ func init() {
 			&Reserved{
 				Reservation: u(3),
 				Code:        "sale",
-				Items:       []*Reserved_Item{{Product: u(1), Quantity: 10, Location: u(2)}},
+				Items:       []*Stock{{Product: u(1), Quantity: 10, Location: u(2)}},
 			},
 		},
 	})
@@ -65,7 +65,7 @@ func init() {
 			&Reserved{
 				Reservation: u(1),
 				Code:        "sale",
-				Items:       []*Reserved_Item{{Product: u(1), Quantity: 1, Location: u(2)}},
+				Items:       []*Stock{{Product: u(1), Quantity: 1, Location: u(2)}},
 			},
 		},
 		When: &ReserveReq{
@@ -134,7 +134,7 @@ func init() {
 			&Reserved{
 				Reservation: u(1),
 				Code:        "sale",
-				Items:       []*Reserved_Item{{Product: u(1), Quantity: 1, Location: u(2)}},
+				Items:       []*Stock{{Product: u(1), Quantity: 1, Location: u(2)}},
 			},
 		},
 		When: &ReserveReq{
@@ -167,7 +167,7 @@ func init() {
 			&Reserved{
 				Reservation: u(4),
 				Code:        "sale",
-				Items: []*Reserved_Item{
+				Items: []*Stock{
 					{Product: u(1), Quantity: 10, Location: u(2)},
 				},
 			},
@@ -204,7 +204,7 @@ func init() {
 			&Reserved{
 				Reservation: u(4),
 				Code:        "sale0",
-				Items:       []*Reserved_Item{{Product: u(1), Quantity: 5, Location: u(2)}},
+				Items:       []*Stock{{Product: u(1), Quantity: 5, Location: u(2)}},
 			},
 		},
 		When: &ReserveReq{
@@ -221,7 +221,7 @@ func init() {
 			&Reserved{
 				Reservation: u(5),
 				Code:        "sale2",
-				Items:       []*Reserved_Item{{Product: u(1), Quantity: 4, Location: u(3)}},
+				Items:       []*Stock{{Product: u(1), Quantity: 4, Location: u(3)}},
 			},
 		},
 	})
@@ -237,13 +237,7 @@ func init() {
 			&Reserved{
 				Reservation: u(4),
 				Code:        "sale0",
-				Items: []*Reserved_Item{
-					{
-						Product:  u(3),
-						Quantity: 2,
-						Location: u(1),
-					},
-				},
+				Items:       []*Stock{{Product: u(3), Quantity: 2, Location: u(1)}},
 			},
 		},
 		When: &ReserveReq{

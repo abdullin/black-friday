@@ -17,4 +17,45 @@ func init() {
 		ThenError: ErrNotEnough,
 	})
 
+	Define(&Spec{
+		Name: "add items to a location",
+		Given: []proto.Message{
+			&LocationAdded{Uid: u(1), Name: "Shelf"},
+			&ProductAdded{Uid: u(2), Sku: "NVidia"},
+		},
+		When:         &UpdateInventoryReq{Location: u(1), Product: u(2), OnHandChange: 7},
+		ThenResponse: &UpdateInventoryResp{OnHand: 7},
+		ThenEvents: []proto.Message{
+			&InventoryUpdated{
+				Location:     u(1),
+				Product:      u(2),
+				OnHandChange: 7,
+				OnHand:       7,
+			},
+		},
+	})
+	Define(&Spec{
+		Name: "add items to a location twice",
+		Given: []proto.Message{
+			&LocationAdded{Uid: u(1), Name: "Shelf"},
+			&ProductAdded{Uid: u(2), Sku: "NVidia"},
+			&InventoryUpdated{
+				Location:     u(1),
+				Product:      u(2),
+				OnHandChange: 7,
+				OnHand:       7,
+			},
+		},
+		When:         &UpdateInventoryReq{Location: u(1), Product: u(2), OnHandChange: 3},
+		ThenResponse: &UpdateInventoryResp{OnHand: 10},
+		ThenEvents: []proto.Message{
+			&InventoryUpdated{
+				Location:     u(1),
+				Product:      u(2),
+				OnHandChange: 3,
+				OnHand:       10,
+			},
+		},
+	})
+
 }

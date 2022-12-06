@@ -1,6 +1,7 @@
 package stock
 
 import (
+	"black-friday/env/uid"
 	"black-friday/fail"
 	"black-friday/fx"
 	. "black-friday/inventory/api"
@@ -11,8 +12,10 @@ func Update(ctx fx.Tx, req *UpdateInventoryReq) (*UpdateInventoryResp, *status.S
 
 	var onHand int64
 
-	ctx.QueryRow("SELECT OnHand FROM Inventory WHERE Location=? AND Product=?",
-		req.Location, req.Product)(&onHand)
+	lid := uid.Parse(req.Location)
+	pid := uid.Parse(req.Product)
+
+	ctx.QueryRow("SELECT OnHand FROM Inventory WHERE Location=? AND Product=?", lid, pid)(&onHand)
 
 	onHand += req.OnHandChange
 

@@ -16,8 +16,10 @@ var (
 	ErrBadMove          = status.New(codes.FailedPrecondition, "bad location move")
 	ErrLocationNotFound = status.New(codes.NotFound, "location not found")
 	ErrProductNotFound  = status.New(codes.NotFound, "product not found")
-	ErrAlreadyExists    = status.New(codes.AlreadyExists, "already exists")
-	ErrNotEnough        = status.New(codes.FailedPrecondition, "not enough quantity")
+
+	ErrReservationNotFound = status.New(codes.NotFound, "reservation not found")
+	ErrAlreadyExists       = status.New(codes.AlreadyExists, "already exists")
+	ErrNotEnough           = status.New(codes.FailedPrecondition, "not enough quantity")
 )
 
 func ErrInternal(err error, code fail.Code) *status.Status {

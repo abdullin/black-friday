@@ -2,7 +2,7 @@ package inventory
 
 import (
 	"black-friday/fx"
-	"black-friday/inventory/api"
+	. "black-friday/inventory/api"
 	"black-friday/inventory/features/locations"
 	"black-friday/inventory/features/products"
 	"black-friday/inventory/features/stock"
@@ -16,10 +16,10 @@ import (
 // server implements GRPC server. It wires together all features
 type server struct {
 	app fx.Transactor
-	api.UnimplementedInventoryServiceServer
+	UnimplementedInventoryServiceServer
 }
 
-func New(a fx.Transactor) api.InventoryServiceServer {
+func New(a fx.Transactor) InventoryServiceServer {
 
 	return &server{app: a}
 }
@@ -55,28 +55,32 @@ func apiDispatch[A proto.Message, B proto.Message](a fx.Transactor, c context.Co
 
 }
 
-func (s *server) AddLocations(ctx context.Context, req *api.AddLocationsReq) (*api.AddLocationsResp, error) {
+func (s *server) AddLocations(ctx context.Context, req *AddLocationsReq) (*AddLocationsResp, error) {
 	return apiDispatch(s.app, ctx, req, locations.Add)
 }
-func (s *server) MoveLocation(ctx context.Context, req *api.MoveLocationReq) (*api.MoveLocationResp, error) {
+func (s *server) MoveLocation(ctx context.Context, req *MoveLocationReq) (*MoveLocationResp, error) {
 	return apiDispatch(s.app, ctx, req, locations.Move)
 }
-func (s *server) ListLocations(ctx context.Context, req *api.ListLocationsReq) (*api.ListLocationsResp, error) {
+func (s *server) ListLocations(ctx context.Context, req *ListLocationsReq) (*ListLocationsResp, error) {
 	return apiDispatch(s.app, ctx, req, locations.List)
 }
 
-func (s *server) AddProducts(ctx context.Context, req *api.AddProductsReq) (*api.AddProductsResp, error) {
+func (s *server) AddProducts(ctx context.Context, req *AddProductsReq) (*AddProductsResp, error) {
 	return apiDispatch(s.app, ctx, req, products.Add)
 }
 
-func (s *server) UpdateInventory(c context.Context, r *api.UpdateInventoryReq) (*api.UpdateInventoryResp, error) {
+func (s *server) UpdateInventory(c context.Context, r *UpdateInventoryReq) (*UpdateInventoryResp, error) {
 	return apiDispatch(s.app, c, r, stock.Update)
 }
 
-func (s *server) GetLocInventory(c context.Context, r *api.GetLocInventoryReq) (*api.GetLocInventoryResp, error) {
+func (s *server) GetLocInventory(c context.Context, r *GetLocInventoryReq) (*GetLocInventoryResp, error) {
 	return apiDispatch(s.app, c, r, stock.Query)
 }
 
-func (s *server) Reserve(c context.Context, r *api.ReserveReq) (*api.ReserveResp, error) {
+func (s *server) Reserve(c context.Context, r *ReserveReq) (*ReserveResp, error) {
 	return apiDispatch(s.app, c, r, stock.Reserve)
+}
+
+func (s *server) Fulfill(c context.Context, r *FulfillReq) (*FulfillResp, error) {
+	return apiDispatch(s.app, c, r, stock.Fulfill)
 }
