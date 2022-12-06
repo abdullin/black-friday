@@ -12,9 +12,9 @@ func init() {
 		Name:  "query locations after removal",
 		Given: []proto.Message{
 			&LocationAdded{Uid: u(1), Name: "Shelf"},
-			&ProductAdded{Uid: u(1), Sku: "NVidia"},
-			&InventoryUpdated{Product: u(1), Location: u(1), OnHandChange: 3, OnHand: 3},
-			&InventoryUpdated{Product: u(1), Location: u(1), OnHandChange: -3, OnHand: 0},
+			&ProductAdded{Uid: u(2), Sku: "NVidia"},
+			&InventoryUpdated{Product: u(2), Location: u(1), OnHandChange: 3, OnHand: 3},
+			&InventoryUpdated{Product: u(2), Location: u(1), OnHandChange: -3, OnHand: 0},
 		},
 		When:         &GetLocInventoryReq{Location: u(1)},
 		ThenResponse: &GetLocInventoryResp{Items: []*GetLocInventoryResp_Item{}},
