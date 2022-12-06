@@ -50,7 +50,7 @@ func Reserve(a fx.Tx, r *ReserveReq) (*ReserveResp, *status.Status) {
 			return nil, ErrNotEnough
 		}
 
-		e.Items = append(e.Items, &Stock{
+		e.Items = append(e.Items, &Reserved_Item{
 			Product:  uid.Str(productId),
 			Quantity: i.Quantity,
 			Location: r.Location,

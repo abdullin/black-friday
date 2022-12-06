@@ -2,6 +2,7 @@ package explore
 
 import (
 	"black-friday/env/specs"
+	"black-friday/env/uid"
 	"black-friday/inventory/api"
 	"context"
 	"flag"
@@ -18,19 +19,21 @@ func (c cmd) Help() string {
 	return "preserve database state for exploration"
 }
 
+const DEFAULT_DB = "/tmp/debug.sqlite"
+
 func (c cmd) Run(args []string) int {
 
 	var specNum int
+	var file string
 
 	flags := flag.NewFlagSet("explore", flag.ExitOnError)
 	flags.IntVar(&specNum, "spec", 1, "Spec id to explore")
+	flags.StringVar(&file, "db", DEFAULT_DB, "Location to save db tp")
 
 	if err := flags.Parse(args); err != nil {
 		flags.Usage()
 		return 1
 	}
-
-	file := "/tmp/debug.sqlite"
 
 	_ = os.Remove(file)
 	ctx := context.Background()
@@ -39,6 +42,7 @@ func (c cmd) Run(args []string) int {
 	defer env.Close()
 
 	spec := api.Specs[specNum-1]
+	uid.TestMode = true
 
 	env.EnsureSchema()
 

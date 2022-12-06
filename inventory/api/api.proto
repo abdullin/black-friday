@@ -74,7 +74,7 @@ service SpecService {
 // UpdateInventory - method used to put things and remove things
 // GetLocInventory - grab aggregate inventory for a location
 // Reserve - place a reservation for some products at a location
-// Fulfill - complete a reservation by picking matching products
+
 
 
 
@@ -210,34 +210,52 @@ message ReserveResp {
   string reservation = 1;
 }
 
-// Stock specifies a specific quantity of product at a location
-message Stock {
-  string product = 1;
-  int64 quantity = 2;
-  string location = 3;
-}
-
 message Reserved {
   string reservation = 1;
   string code = 2;
-  repeated Stock items = 4;
+
+  message Item {
+    string product = 1;
+    int64 quantity = 2;
+    string location = 3;
+  }
+
+  repeated Item items = 4;
 }
 
 message FulfillReq{
   string reservation = 1;
-  repeated Stock items = 2;
+
+  message Item {
+    string product = 1;
+    string location = 2;
+    int64 quantity = 3;
+  }
+  repeated Item items = 2;
 }
 
 message FulfillResp {}
 
 message Fulfilled {
   string reservation = 1;
-  repeated Stock items = 2;
+
+  message Item {
+    string product = 1;
+    string location = 2;
+    int64 removed = 3;
+    int64 onHand = 4;
+  }
+  repeated Item items = 2;
 }
 
 message Cancelled {
   string reservation = 1;
-  repeated Stock items = 2;
+  message Item {
+    string product = 1;
+    string location = 2;
+    int64 released = 3;
+  }
+  repeated Item items = 2;
 }
 
 

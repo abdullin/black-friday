@@ -121,7 +121,7 @@ func init() {
 			&Reserved{
 				Reservation: u(1),
 				Code:        "sale1",
-				Items:       []*Stock{{Product: u(1), Quantity: 3, Location: u(3)}},
+				Items:       []*Reserved_Item{{Product: u(1), Quantity: 3, Location: u(3)}},
 			},
 			// we have a standalone container with some GPUs
 			&LocationAdded{Uid: u(4), Name: "Container"},
@@ -130,7 +130,7 @@ func init() {
 			&Reserved{
 				Reservation: u(2),
 				Code:        "sale3",
-				Items:       []*Stock{{Product: u(1), Quantity: 9, Location: u(4)}},
+				Items:       []*Reserved_Item{{Product: u(1), Quantity: 9, Location: u(4)}},
 			},
 			// container was moved to the unloading zone in warehouse
 			&LocationMoved{Uid: u(4), NewParent: u(2)},
@@ -151,7 +151,7 @@ func init() {
 			&Reserved{
 				Reservation: u(3),
 				Code:        "sale",
-				Items:       []*Stock{{Product: u(1), Quantity: 3, Location: u(2)}},
+				Items:       []*Reserved_Item{{Product: u(1), Quantity: 3, Location: u(2)}},
 			},
 		},
 		When: &GetLocInventoryReq{Location: u(2)},
@@ -170,11 +170,11 @@ func init() {
 			&Reserved{
 				Reservation: u(3),
 				Code:        "sale",
-				Items:       []*Stock{{Product: u(1), Quantity: 3, Location: u(2)}},
+				Items:       []*Reserved_Item{{Product: u(1), Quantity: 3, Location: u(2)}},
 			},
 			&Cancelled{
 				Reservation: u(3),
-				Items:       []*Stock{{Product: u(1), Quantity: 3, Location: u(2)}},
+				Items:       []*Cancelled_Item{{Product: u(1), Released: 3, Location: u(2)}},
 			},
 		},
 		When: &GetLocInventoryReq{Location: u(2)},
@@ -193,7 +193,7 @@ func init() {
 			&Reserved{
 				Reservation: u(3),
 				Code:        "sale",
-				Items:       []*Stock{{Product: u(1), Quantity: 3, Location: u(2)}},
+				Items:       []*Reserved_Item{{Product: u(1), Quantity: 3, Location: u(2)}},
 			},
 		},
 		When: &GetLocInventoryReq{Location: u(0)},
@@ -212,12 +212,12 @@ func init() {
 			&Reserved{
 				Reservation: u(1),
 				Code:        "sale1",
-				Items:       []*Stock{{Product: u(1), Quantity: 3, Location: u(1)}},
+				Items:       []*Reserved_Item{{Product: u(1), Quantity: 3, Location: u(1)}},
 			},
 			&Reserved{
 				Reservation: u(2),
 				Code:        "sale2",
-				Items:       []*Stock{{Product: u(1), Quantity: 4, Location: u(1)}},
+				Items:       []*Reserved_Item{{Product: u(1), Quantity: 4, Location: u(1)}},
 			},
 		},
 		When: &GetLocInventoryReq{Location: u(0)},

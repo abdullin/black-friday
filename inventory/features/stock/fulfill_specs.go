@@ -24,17 +24,17 @@ func init() {
 			&Reserved{
 				Reservation: u(4),
 				Code:        "sale",
-				Items:       []*Stock{{Product: u(1), Quantity: 7, Location: u(2)}},
+				Items:       []*Reserved_Item{{Product: u(1), Quantity: 7, Location: u(2)}},
 			},
 		},
 		When: &FulfillReq{
 			Reservation: u(4),
-			Items:       []*Stock{{Product: u(1), Quantity: 7, Location: u(3)}},
+			Items:       []*FulfillReq_Item{{Product: u(1), Quantity: 7, Location: u(3)}},
 		},
 		ThenResponse: &FulfillResp{},
 		ThenEvents: []proto.Message{&Fulfilled{
 			Reservation: u(4),
-			Items:       []*Stock{{Product: u(1), Quantity: 7, Location: u(3)}},
+			Items:       []*Fulfilled_Item{{Product: u(1), Location: u(3), Removed: 7, OnHand: 3}},
 		}},
 	})
 }
