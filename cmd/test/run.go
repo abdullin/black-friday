@@ -103,6 +103,8 @@ func test_specs(db, addr string) {
 
 	oks, fails, issues := 0, 0, 0
 
+	api.Sort()
+
 	for i, s := range api.Specs {
 
 		fmt.Printf("#%d. %s - taking too much time...", i+1, yellow(s.Name))
