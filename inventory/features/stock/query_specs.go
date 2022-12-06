@@ -146,17 +146,40 @@ func init() {
 		Name:  "reservation at location reduces availability at location",
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "pixel"},
-			&LocationAdded{Uid: u(1), Name: "Warehouse"},
-			&InventoryUpdated{Location: u(1), Product: u(1), OnHandChange: 10, OnHand: 10},
+			&LocationAdded{Uid: u(2), Name: "Warehouse"},
+			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 10, OnHand: 10},
 			&Reserved{
-				Reservation: u(1),
+				Reservation: u(3),
 				Code:        "sale",
-				Items:       []*Stock{{Product: u(1), Quantity: 3, Location: u(1)}},
+				Items:       []*Stock{{Product: u(1), Quantity: 3, Location: u(2)}},
 			},
 		},
-		When: &GetLocInventoryReq{Location: u(1)},
+		When: &GetLocInventoryReq{Location: u(2)},
 		ThenResponse: &GetLocInventoryResp{Items: []*GetLocInventoryResp_Item{
 			{Product: u(1), OnHand: 10, Available: 7},
+		}},
+	})
+
+	Define(&Spec{
+		Level: 5,
+		Name:  "cancelled reservation returns availability",
+		Given: []proto.Message{
+			&ProductAdded{Uid: u(1), Sku: "pixel"},
+			&LocationAdded{Uid: u(2), Name: "Warehouse"},
+			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 10, OnHand: 10},
+			&Reserved{
+				Reservation: u(3),
+				Code:        "sale",
+				Items:       []*Stock{{Product: u(1), Quantity: 3, Location: u(2)}},
+			},
+			&Cancelled{
+				Reservation: u(3),
+				Items:       []*Stock{{Product: u(1), Quantity: 3, Location: u(2)}},
+			},
+		},
+		When: &GetLocInventoryReq{Location: u(2)},
+		ThenResponse: &GetLocInventoryResp{Items: []*GetLocInventoryResp_Item{
+			{Product: u(1), OnHand: 10, Available: 10},
 		}},
 	})
 
@@ -165,12 +188,12 @@ func init() {
 		Name:  "reservation at location reduces availability globally",
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "pixel"},
-			&LocationAdded{Uid: u(1), Name: "Warehouse"},
-			&InventoryUpdated{Location: u(1), Product: u(1), OnHandChange: 10, OnHand: 10},
+			&LocationAdded{Uid: u(2), Name: "Warehouse"},
+			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 10, OnHand: 10},
 			&Reserved{
-				Reservation: u(1),
+				Reservation: u(3),
 				Code:        "sale",
-				Items:       []*Stock{{Product: u(1), Quantity: 3, Location: u(1)}},
+				Items:       []*Stock{{Product: u(1), Quantity: 3, Location: u(2)}},
 			},
 		},
 		When: &GetLocInventoryReq{Location: u(0)},

@@ -59,6 +59,12 @@ UPDATE sqlite_sequence SET seq=? WHERE name=?
 			}
 		}
 		return nil
+	case *Cancelled:
+		id := uid.Parse(t.Reservation)
+		return tx.Exec(`
+DELETE FROM Reserves WHERE Reservation=?; 
+DELETE FROM Reservations WHERE Id=?;
+`, id, id)
 	default:
 		return fmt.Errorf("Unhandled event: %s", e.ProtoReflect().Descriptor().Name())
 	}
