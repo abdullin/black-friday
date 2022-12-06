@@ -1,6 +1,7 @@
 package stock
 
 import (
+	"black-friday/env/uid"
 	"black-friday/fx"
 	"black-friday/inventory/api"
 	"google.golang.org/grpc/status"
@@ -106,11 +107,13 @@ GROUP BY R.Product`, location, location)
 
 func Query(ctx fx.Tx, req *api.GetLocInventoryReq) (*api.GetLocInventoryResp, *status.Status) {
 
-	quantities, err := walkQuantitiesDown(ctx, req.Location)
+	loc := uid.Parse(req.Location)
+
+	quantities, err := walkQuantitiesDown(ctx, loc)
 	if err != nil {
 		return nil, status.Convert(err)
 	}
-	reserves, err := walkReservationsDown(ctx, req.Location)
+	reserves, err := walkReservationsDown(ctx, loc)
 	if err != nil {
 		return nil, status.Convert(err)
 	}
@@ -122,7 +125,7 @@ func Query(ctx fx.Tx, req *api.GetLocInventoryReq) (*api.GetLocInventoryResp, *s
 		totalReserved, _ := reserves[q.Product]
 
 		items = append(items, &api.GetLocInventoryResp_Item{
-			Product:   q.Product,
+			Product:   uid.Str(q.Product),
 			OnHand:    onHand,
 			Available: onHand - totalReserved,
 		})

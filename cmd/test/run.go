@@ -3,6 +3,7 @@ package test
 import (
 	"black-friday/env/pipe"
 	specs "black-friday/env/specs"
+	"black-friday/env/uid"
 	"black-friday/inventory/api"
 	"context"
 	"fmt"
@@ -96,6 +97,8 @@ func test_specs(db, addr string) {
 	// setup client
 	client := api.NewSpecServiceClient(conn)
 
+	uid.TestMode = true
+
 	// speed test
 
 	oks, fails, issues := 0, 0, 0
@@ -134,6 +137,7 @@ func test_specs(db, addr string) {
 			oks += 1
 		} else {
 			fails += 1
+
 			specs.PrintFull(s, deltas)
 			println()
 		}

@@ -1,6 +1,7 @@
 package products
 
 import (
+	"black-friday/env/uid"
 	"black-friday/fail"
 	"black-friday/fx"
 	. "black-friday/inventory/api"
@@ -11,14 +12,12 @@ func Add(ctx fx.Tx, req *AddProductsReq) (r *AddProductsResp, status *status.Sta
 
 	id := ctx.GetSeq("Products")
 
-	results := make([]int64, len(req.Skus))
+	results := make([]string, len(req.Skus))
 	for i, sku := range req.Skus {
 
 		id += 1
-		e := &ProductAdded{
-			Id:  id,
-			Sku: sku,
-		}
+		uuid := uid.Str(id)
+		e := &ProductAdded{Uid: uuid, Sku: sku}
 
 		err, f := ctx.Apply(e)
 		switch f {
@@ -29,8 +28,8 @@ func Add(ctx fx.Tx, req *AddProductsReq) (r *AddProductsResp, status *status.Sta
 			return nil, ErrInternal(err, f)
 		}
 
-		results[i] = id
+		results[i] = uuid
 	}
 
-	return &AddProductsResp{Ids: results}, nil
+	return &AddProductsResp{Uids: results}, nil
 }

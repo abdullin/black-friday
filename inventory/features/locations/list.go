@@ -1,6 +1,7 @@
 package locations
 
 import (
+	"black-friday/env/uid"
 	"black-friday/fx"
 	"black-friday/inventory/api"
 	"google.golang.org/grpc/status"
@@ -8,6 +9,7 @@ import (
 
 func List(ctx fx.Tx, req *api.ListLocationsReq) (*api.ListLocationsResp, *status.Status) {
 
+	id := uid.Parse(req.Location)
 	rows, err := ctx.QueryHack(`
 WITH RECURSIVE cte_Locations(Id, Parent, Name) AS (
 	SELECT l.Id, l.Parent, l.Name
@@ -25,7 +27,7 @@ WITH RECURSIVE cte_Locations(Id, Parent, Name) AS (
 	JOIN cte_Locations c ON c.Id = l.Parent
 )
 SELECT * FROM cte_Locations
-`, req.Location, req.Location)
+`, id, id)
 	if err != nil {
 		return nil, status.Convert(err)
 	}
@@ -46,12 +48,12 @@ SELECT * FROM cte_Locations
 
 		loc := &api.ListLocationsResp_Loc{
 			Name:    name,
-			Id:      id,
-			Parent:  parent,
+			Uid:     uid.Str(id),
+			Parent:  uid.Str(parent),
 			Chidren: nil,
 		}
 		lookup[id] = loc
-		if parent, found := lookup[loc.Parent]; found {
+		if parent, found := lookup[parent]; found {
 			parent.Chidren = append(parent.Chidren, loc)
 		} else {
 			results = append(results, loc)

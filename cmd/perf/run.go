@@ -93,9 +93,9 @@ func speed_test(cores int, specs []*api.Spec, seconds int) {
 	}
 
 	data := [][]string{
-		hz("run spec", global.specs, duration),
-		hz("apply event", global.given, time.Duration(global.givenTime)),
-		hz("request", global.specs, time.Duration(global.dispatchTime)),
+		hz("run spec (multi-threaded)", global.specs, duration),
+		hz("apply event (single-threaded)", global.given, time.Duration(global.givenTime)),
+		hz("request (single-threaded)", global.specs, time.Duration(global.dispatchTime)),
 	}
 
 	fmt.Println()

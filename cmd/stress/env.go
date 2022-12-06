@@ -2,6 +2,7 @@ package stress
 
 import (
 	"black-friday/env/rnd"
+	"black-friday/env/uid"
 	"black-friday/inventory/api"
 	"context"
 	"fmt"
@@ -63,8 +64,8 @@ func (e *env) AddInventory(ctx context.Context, count int) {
 		quantity := e.r.Int63n(100)
 
 		_, err := e.client.UpdateInventory(ctx, &api.UpdateInventoryReq{
-			Location:     locations,
-			Product:      product,
+			Location:     uid.Str(locations),
+			Product:      uid.Str(product),
 			OnHandChange: quantity,
 		})
 
@@ -142,6 +143,6 @@ func (e *env) AddWarehouse(ctx context.Context) (*api.AddLocationsResp, error) {
 
 	return e.client.AddLocations(ctx, &api.AddLocationsReq{
 		Locs:   []*api.AddLocationsReq_Loc{whs},
-		Parent: 0,
+		Parent: uid.Str(0),
 	})
 }

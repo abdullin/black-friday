@@ -11,12 +11,12 @@ func init() {
 		Level: 2,
 		Name:  "query locations after removal",
 		Given: []proto.Message{
-			&LocationAdded{Id: 1, Name: "Shelf"},
-			&ProductAdded{Id: 1, Sku: "NVidia"},
-			&InventoryUpdated{Product: 1, Location: 1, OnHandChange: 3, OnHand: 3},
-			&InventoryUpdated{Product: 1, Location: 1, OnHandChange: -3, OnHand: 0},
+			&LocationAdded{Uid: u(1), Name: "Shelf"},
+			&ProductAdded{Uid: u(1), Sku: "NVidia"},
+			&InventoryUpdated{Product: u(1), Location: u(1), OnHandChange: 3, OnHand: 3},
+			&InventoryUpdated{Product: u(1), Location: u(1), OnHandChange: -3, OnHand: 0},
 		},
-		When:         &GetLocInventoryReq{Location: 1},
+		When:         &GetLocInventoryReq{Location: u(1)},
 		ThenResponse: &GetLocInventoryResp{Items: []*GetLocInventoryResp_Item{}},
 	})
 
@@ -24,11 +24,11 @@ func init() {
 		Level: 2,
 		Name:  "query one specific location",
 		Given: []proto.Message{
-			&LocationAdded{Id: 1, Name: "Shelf1"},
+			&LocationAdded{Uid: u(1), Name: "Shelf1"},
 		},
-		When: &ListLocationsReq{Location: 1},
+		When: &ListLocationsReq{Location: u(1)},
 		ThenResponse: &ListLocationsResp{Locs: []*ListLocationsResp_Loc{
-			{Id: 1, Name: "Shelf1"},
+			{Uid: u(1), Name: "Shelf1", Parent: u(0)},
 		}},
 	})
 
@@ -36,15 +36,15 @@ func init() {
 		Level: 3,
 		Name:  "query all locations in a tree",
 		Given: []proto.Message{
-			&LocationAdded{Id: 1, Name: "WH"},
-			&LocationAdded{Id: 2, Name: "Shelf1", Parent: 1},
-			&LocationAdded{Id: 3, Name: "Shelf2", Parent: 1},
+			&LocationAdded{Uid: u(1), Name: "WH"},
+			&LocationAdded{Uid: u(2), Name: "Shelf1", Parent: u(1)},
+			&LocationAdded{Uid: u(3), Name: "Shelf2", Parent: u(1)},
 		},
-		When: &ListLocationsReq{Location: 1},
+		When: &ListLocationsReq{Location: u(1)},
 		ThenResponse: &ListLocationsResp{Locs: []*ListLocationsResp_Loc{
-			{Id: 1, Name: "WH", Chidren: []*ListLocationsResp_Loc{
-				{Id: 2, Name: "Shelf1", Parent: 1},
-				{Id: 3, Name: "Shelf2", Parent: 1},
+			{Uid: u(1), Name: "WH", Parent: u(0), Chidren: []*ListLocationsResp_Loc{
+				{Uid: u(2), Name: "Shelf1", Parent: u(1)},
+				{Uid: u(3), Name: "Shelf2", Parent: u(1)},
 			}},
 		}},
 	})
@@ -53,20 +53,21 @@ func init() {
 		Level: 3,
 		Name:  "query locations from another root",
 		Given: []proto.Message{
-			&LocationAdded{Id: 1, Name: "WH1"},
-			&LocationAdded{Id: 2, Name: "WH2"},
-			&LocationAdded{Id: 3, Name: "Shelf", Parent: 1},
+			&LocationAdded{Uid: u(1), Name: "WH1"},
+			&LocationAdded{Uid: u(2), Name: "WH2"},
+			&LocationAdded{Uid: u(3), Name: "Shelf", Parent: u(1)},
 		},
-		When: &ListLocationsReq{Location: 2},
+		When: &ListLocationsReq{Location: u(2)},
 		ThenResponse: &ListLocationsResp{Locs: []*ListLocationsResp_Loc{{
-			Name: "WH2",
-			Id:   2,
+			Name:   "WH2",
+			Uid:    u(2),
+			Parent: u(0),
 		}}},
 	})
 	Define(&Spec{
 		Level:     3,
 		Name:      "query locations from non-existent location",
-		When:      &ListLocationsReq{Location: 1},
+		When:      &ListLocationsReq{Location: u(1)},
 		ThenError: ErrLocationNotFound,
 	})
 
@@ -74,16 +75,16 @@ func init() {
 		Level: 2,
 		Name:  "query all locations",
 		Given: []proto.Message{
-			&LocationAdded{Id: 1, Name: "WH1"},
-			&LocationAdded{Id: 2, Name: "WH2"},
-			&LocationAdded{Id: 3, Name: "Shelf", Parent: 1},
+			&LocationAdded{Uid: u(1), Name: "WH1"},
+			&LocationAdded{Uid: u(2), Name: "WH2"},
+			&LocationAdded{Uid: u(3), Name: "Shelf", Parent: u(1)},
 		},
 		When: &ListLocationsReq{},
 		ThenResponse: &ListLocationsResp{Locs: []*ListLocationsResp_Loc{
-			{Name: "WH1", Id: 1, Chidren: []*ListLocationsResp_Loc{
-				{Name: "Shelf", Id: 3, Parent: 1},
+			{Name: "WH1", Uid: u(1), Parent: u(0), Chidren: []*ListLocationsResp_Loc{
+				{Name: "Shelf", Uid: u(3), Parent: u(1)},
 			}},
-			{Name: "WH2", Id: 2},
+			{Name: "WH2", Uid: u(2), Parent: u(0)},
 		}},
 	})
 

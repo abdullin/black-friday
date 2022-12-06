@@ -1,6 +1,7 @@
 package locations
 
 import (
+	"black-friday/env/uid"
 	"black-friday/fail"
 	"black-friday/fx"
 	. "black-friday/inventory/api"
@@ -9,18 +10,22 @@ import (
 
 func Move(a fx.Tx, r *MoveLocationReq) (*MoveLocationResp, *status.Status) {
 	// root is not touchable
-	if r.Id == 0 {
+
+	id := uid.Parse(r.Uid)
+	newParent := uid.Parse(r.NewParent)
+
+	if id == 0 {
 		return nil, ErrBadMove
 	}
 	// need to check if the new parent is not the child of the current node
 	// OR the current node itself
-	ancestor := r.NewParent
+	ancestor := newParent
 	for {
 		if ancestor == 0 {
 			break
 		}
 
-		if ancestor == r.Id {
+		if ancestor == id {
 			return nil, ErrBadMove
 		}
 
@@ -31,11 +36,11 @@ func Move(a fx.Tx, r *MoveLocationReq) (*MoveLocationResp, *status.Status) {
 	}
 	// this will be the old parent
 	var parent int64
-	a.QueryRow("SELECT Parent FROM Locations WHERE Id=?", r.Id)(&parent)
+	a.QueryRow("SELECT Parent FROM Locations WHERE Id=?", id)(&parent)
 
 	err, f := a.Apply(&LocationMoved{
-		Id:        r.Id,
-		OldParent: parent,
+		Uid:       r.Uid,
+		OldParent: uid.Str(parent),
 		NewParent: r.NewParent,
 	})
 	switch f {

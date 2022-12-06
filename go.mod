@@ -3,12 +3,11 @@ module black-friday
 go 1.19
 
 require (
-	github.com/abdullin/go-seq v1.0.0
+	github.com/abdullin/go-seq v1.0.6
 	github.com/google/go-cmp v0.5.9
 	github.com/mattn/go-sqlite3 v1.14.15
 	github.com/mitchellh/cli v1.1.4
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/yuin/gopher-lua v0.0.0-20220504180219-658193537a64
 	google.golang.org/grpc v1.50.1
 	google.golang.org/protobuf v1.28.1
 )

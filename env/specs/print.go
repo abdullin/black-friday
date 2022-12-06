@@ -1,12 +1,14 @@
 package specs
 
 import (
+	"black-friday/env/uid"
 	"black-friday/inventory/api"
 	"fmt"
 	"github.com/abdullin/go-seq"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
+	"regexp"
 	"strings"
 )
 
@@ -59,10 +61,21 @@ func PrintFull(s *api.Spec, issues seq.Issues) {
 }
 func IssueToString(d seq.Issue) string {
 	return fmt.Sprintf("Expected %v to be %v but got %v",
-		strings.Replace(seq.JoinPath(d.Path), ".[", "[", -1),
+		d.Path.String(),
 		Format(d.Expected),
 		Format(d.Actual))
 
+}
+
+var uuid = regexp.MustCompile("\"[0]{8}-[0]{4}-[0]{4}-[0]{4}-(?P<body>[a-fA-F0-9]{12})\"")
+
+func shortenUuid(s string) string {
+	return uuid.ReplaceAllStringFunc(s, func(s string) string {
+		trimmed := strings.Trim(s, "\"")
+		num := uid.ParseTestUuid(trimmed)
+		return fmt.Sprintf("UID(%d)", num)
+
+	})
 }
 
 func Print(s *api.Spec) {
@@ -99,7 +112,9 @@ func Format(val any) string {
 	case proto.Message:
 
 		repr := prototext.MarshalOptions{Multiline: false}.Format(v)
-		return string(v.ProtoReflect().Descriptor().Name()) + " " + repr + ""
+		short := shortenUuid(repr)
+
+		return string(v.ProtoReflect().Descriptor().Name()) + " " + short + ""
 	case []proto.Message:
 		names := []string{}
 		for _, m := range v {
@@ -113,10 +128,9 @@ func Format(val any) string {
 		if ok {
 			return fmt.Sprintf("\"%s\" (%v)", st.Message(), st.Code().String())
 		} else {
-
 			return fmt.Sprintf("Error '%v'", v.Error())
 		}
 	default:
-		return fmt.Sprintf("'%v'", v)
+		return shortenUuid(fmt.Sprintf("\"%v\"", v))
 	}
 }

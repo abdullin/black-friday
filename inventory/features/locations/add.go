@@ -1,6 +1,7 @@
 package locations
 
 import (
+	"black-friday/env/uid"
 	"black-friday/fail"
 	"black-friday/fx"
 	. "black-friday/inventory/api"
@@ -10,9 +11,9 @@ import (
 func Add(c fx.Tx, req *AddLocationsReq) (*AddLocationsResp, *status.Status) {
 	id := c.GetSeq("Locations")
 
-	var addLoc func(parent int64, ls []*AddLocationsReq_Loc) ([]*AddLocationsResp_Loc, *status.Status)
+	var addLoc func(parent string, ls []*AddLocationsReq_Loc) ([]*AddLocationsResp_Loc, *status.Status)
 
-	addLoc = func(parent int64, ls []*AddLocationsReq_Loc) ([]*AddLocationsResp_Loc, *status.Status) {
+	addLoc = func(parent string, ls []*AddLocationsReq_Loc) ([]*AddLocationsResp_Loc, *status.Status) {
 
 		var r []*AddLocationsResp_Loc
 
@@ -22,8 +23,10 @@ func Add(c fx.Tx, req *AddLocationsReq) (*AddLocationsResp, *status.Status) {
 			}
 			id += 1
 
-			e := &LocationAdded{Name: l.Name, Id: id, Parent: parent}
-			node := &AddLocationsResp_Loc{Name: l.Name, Id: id, Parent: parent}
+			u := uid.Str(id)
+
+			e := &LocationAdded{Name: l.Name, Uid: u, Parent: parent}
+			node := &AddLocationsResp_Loc{Name: l.Name, Uid: u, Parent: parent}
 			r = append(r, node)
 
 			err, f := c.Apply(e)
@@ -37,7 +40,7 @@ func Add(c fx.Tx, req *AddLocationsReq) (*AddLocationsResp, *status.Status) {
 				return nil, ErrInternal(err, f)
 			}
 
-			children, st := addLoc(id, l.Locs)
+			children, st := addLoc(u, l.Locs)
 			if err != nil {
 				return nil, st
 			}

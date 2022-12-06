@@ -10,10 +10,10 @@ func init() {
 		Level: 2,
 		Name:  "don't allow negative on-hand",
 		Given: []proto.Message{
-			&LocationAdded{Id: 1, Name: "Shelf"},
-			&ProductAdded{Id: 1, Sku: "NVidia"},
+			&LocationAdded{Uid: u(1), Name: "Shelf"},
+			&ProductAdded{Uid: u(1), Sku: "NVidia"},
 		},
-		When:      &UpdateInventoryReq{Product: 1, Location: 1, OnHandChange: -1},
+		When:      &UpdateInventoryReq{Product: u(1), Location: u(1), OnHandChange: -1},
 		ThenError: ErrNotEnough,
 	})
 
