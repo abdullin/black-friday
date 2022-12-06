@@ -11,8 +11,8 @@ func init() {
 		Name:  "reserve sale with one item",
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "GPU"},
-			&LocationAdded{Uid: u(1), Name: "Shelf"},
-			&InventoryUpdated{Location: u(1), Product: u(1), OnHandChange: 10, OnHand: 10},
+			&LocationAdded{Uid: u(2), Name: "Shelf"},
+			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 10, OnHand: 10},
 		},
 		When: &ReserveReq{
 			Reservation: "sale",
@@ -20,10 +20,10 @@ func init() {
 				{Sku: "GPU", Quantity: 10},
 			},
 		},
-		ThenResponse: &ReserveResp{Reservation: u(1)},
+		ThenResponse: &ReserveResp{Reservation: u(3)},
 		ThenEvents: []proto.Message{
 			&Reserved{
-				Reservation: u(1),
+				Reservation: u(3),
 				Code:        "sale",
 				Items: []*Reserved_Item{
 					{Product: u(1), Quantity: 10},
@@ -37,20 +37,20 @@ func init() {
 		Name:  "reserve sale in a specific location",
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "GPU"},
-			&LocationAdded{Uid: u(1), Name: "Shelf"},
-			&InventoryUpdated{Location: u(1), Product: u(1), OnHandChange: 10, OnHand: 10},
+			&LocationAdded{Uid: u(2), Name: "Shelf"},
+			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 10, OnHand: 10},
 		},
 		When: &ReserveReq{
 			Reservation: "sale",
-			Location:    u(1),
+			Location:    u(2),
 			Items:       []*ReserveReq_Item{{Sku: "GPU", Quantity: 10}},
 		},
-		ThenResponse: &ReserveResp{Reservation: u(1)},
+		ThenResponse: &ReserveResp{Reservation: u(3)},
 		ThenEvents: []proto.Message{
 			&Reserved{
-				Reservation: u(1),
+				Reservation: u(3),
 				Code:        "sale",
-				Items:       []*Reserved_Item{{Product: u(1), Quantity: 10, Location: u(1)}},
+				Items:       []*Reserved_Item{{Product: u(1), Quantity: 10, Location: u(2)}},
 			},
 		},
 	})
@@ -151,24 +151,24 @@ func init() {
 		Name:  "reserve in a location that contains enough inside",
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "GPU"},
-			&LocationAdded{Uid: u(1), Name: "Container"},
-			&LocationAdded{Uid: u(2), Name: "Box", Parent: u(1)},
-			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 10, OnHand: 10},
+			&LocationAdded{Uid: u(2), Name: "Container"},
+			&LocationAdded{Uid: u(3), Name: "Box", Parent: u(2)},
+			&InventoryUpdated{Location: u(3), Product: u(1), OnHandChange: 10, OnHand: 10},
 		},
 		When: &ReserveReq{
 			Reservation: "sale",
-			Location:    u(1),
+			Location:    u(2),
 			Items: []*ReserveReq_Item{
 				{Sku: "GPU", Quantity: 10},
 			},
 		},
-		ThenResponse: &ReserveResp{Reservation: u(1)},
+		ThenResponse: &ReserveResp{Reservation: u(4)},
 		ThenEvents: []proto.Message{
 			&Reserved{
-				Reservation: u(1),
+				Reservation: u(4),
 				Code:        "sale",
 				Items: []*Reserved_Item{
-					{Product: u(1), Quantity: 10, Location: u(1)},
+					{Product: u(1), Quantity: 10, Location: u(2)},
 				},
 			},
 		},
@@ -198,30 +198,30 @@ func init() {
 		Name:  "reserve box while container has a reservation on top of it (enough)",
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "GPU"},
-			&LocationAdded{Uid: u(1), Name: "Container"},
-			&LocationAdded{Uid: u(2), Name: "Box", Parent: u(1)},
-			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 10, OnHand: 10},
+			&LocationAdded{Uid: u(2), Name: "Container"},
+			&LocationAdded{Uid: u(3), Name: "Box", Parent: u(2)},
+			&InventoryUpdated{Location: u(3), Product: u(1), OnHandChange: 10, OnHand: 10},
 			&Reserved{
-				Reservation: u(1),
+				Reservation: u(4),
 				Code:        "sale0",
-				Items:       []*Reserved_Item{{Product: u(1), Quantity: 5, Location: u(1)}},
+				Items:       []*Reserved_Item{{Product: u(1), Quantity: 5, Location: u(2)}},
 			},
 		},
 		When: &ReserveReq{
 			Reservation: "sale2",
-			Location:    u(2),
+			Location:    u(3),
 			Items: []*ReserveReq_Item{
 				{Sku: "GPU", Quantity: 4},
 			},
 		},
 		ThenResponse: &ReserveResp{
-			Reservation: u(2),
+			Reservation: u(5),
 		},
 		ThenEvents: []proto.Message{
 			&Reserved{
-				Reservation: u(2),
+				Reservation: u(5),
 				Code:        "sale2",
-				Items:       []*Reserved_Item{{Product: u(1), Quantity: 4, Location: u(2)}},
+				Items:       []*Reserved_Item{{Product: u(1), Quantity: 4, Location: u(3)}},
 			},
 		},
 	})
