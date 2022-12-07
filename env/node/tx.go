@@ -11,8 +11,9 @@ import (
 )
 
 type tx struct {
-	ctx context.Context
-	tx  *sql.Tx
+	ctx    context.Context
+	tx     *sql.Tx
+	events int64
 }
 
 func (c *tx) GetSeq(name string) int64 {
@@ -23,8 +24,12 @@ func (c *tx) GetSeq(name string) int64 {
 
 }
 
+var EventCount int64
+
 func (c *tx) Apply(e proto.Message) (error, fail.Code) {
 	err := apply.Event(c, e)
+
+	c.events += 1
 
 	if err != nil {
 		extracted, failCode := fail.Extract(err)
@@ -77,5 +82,6 @@ func (c *tx) Rollback() error {
 }
 
 func (t *tx) Commit() error {
+	EventCount += t.events
 	return t.tx.Commit()
 }

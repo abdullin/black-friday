@@ -50,7 +50,7 @@ func (c cmd) Run(args []string) int {
 
 	e := NewEnv(client)
 
-	fmt.Println("DURATION    DB SIZE  LOCATIONS   PRODUCTS     ON-HAND    RESERVED")
+	fmt.Println("DURATION    DB SIZE  LOCATIONS   PRODUCTS     ON-HAND   RESERVE     SALES   PENDING FULFILLED ENTITIES   EVENTS")
 	for i := 0; i < 20; i++ {
 		started := time.Now()
 
@@ -58,9 +58,10 @@ func (c cmd) Run(args []string) int {
 			log.Panicln(err)
 		}
 
-		e.AddProducts(ctx, 1000)
+		e.AddProducts(ctx, 100)
 		e.AddInventory(ctx, 100)
-		e.ReserveInventory(ctx, 1000)
+		e.TrySell(ctx, 1000)
+		e.TryFulfull(ctx, e.reservations.Len()*3/4)
 
 		funcName(ctx, file, started, e, a)
 
@@ -74,15 +75,28 @@ func funcName(ctx context.Context, file string, started time.Time, e *env, a *no
 	if err != nil {
 		log.Panicln(err)
 	}
-	var onHand, reserved int64
+	var onHand, reserved, reservations, entities int64
 	tx.QueryRow("SELECT SUM(OnHand) FROM Inventory")(&onHand)
 	tx.QueryRow("SELECT SUM(Quantity) FROM Reserves")(&reserved)
+	tx.QueryRow("SELECT COUNT(*) FROM Reservations")(&reservations)
+	tx.QueryRow("SELECT SUM(seq) FROM sqlite_sequence")(&entities)
 
 	defer tx.Rollback()
 
 	bytes := Size(file, file+"-wal")
-	fmt.Printf("%5d ms %10s %10d %10d  %10d  %10d\n",
-		time.Since(started).Milliseconds(), ByteCountDecimal(bytes), e.locations, e.products, onHand, reserved)
+	fmt.Printf("%5d ms %10s %10d %10d  %10d  %8d  %8d  %8d %8d  %8d %8d\n",
+		time.Since(started).Milliseconds(),
+		ByteCountDecimal(bytes),
+		e.locations,
+		e.products,
+		onHand,
+		reserved,
+		e.sales,
+		reservations,
+		e.fulfilled,
+		entities,
+		node.EventCount,
+	)
 }
 
 func Size(names ...string) int64 {

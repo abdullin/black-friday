@@ -4,18 +4,22 @@ import (
 	"black-friday/env/rnd"
 	"black-friday/env/uid"
 	"black-friday/inventory/api"
+	"container/list"
 	"context"
 	"fmt"
 	"log"
 )
 
 type env struct {
-	products     int64
-	locations    int64
-	warehouses   int64
-	reservations int64
+	products   int64
+	locations  int64
+	warehouses int64
 
-	bins int64
+	sales        int64
+	reservations list.List
+
+	bins      int64
+	fulfilled int64
 
 	r *rnd.Rand
 
@@ -26,12 +30,36 @@ func NewEnv(client api.InventoryServiceClient) *env {
 	return &env{client: client, r: rnd.New()}
 }
 
-func (e *env) ReserveInventory(ctx context.Context, count int) {
+func (e *env) TryFulfull(ctx context.Context, count int) {
+	for j := 0; j < count; j++ {
+		if e.reservations.Len() == 0 {
+			return
+		}
+		loc := int(e.r.Int63n(int64(e.reservations.Len())))
+		n := e.reservations.Front()
+		for i := 0; i < loc; i++ {
+			n = n.Next()
+		}
+		id := n.Value.(string)
+		_, err := e.client.Fulfill(ctx, &api.FulfillReq{
+			Reservation: id,
+		})
+		if err != nil {
+			log.Panicln(err)
+		} else {
+			e.fulfilled += 1
+		}
+
+	}
+
+}
+
+func (e *env) TrySell(ctx context.Context, count int) {
 
 	for j := 0; j < count; j++ {
 
-		e.reservations += 1
-		name := fmt.Sprintf("sale-%d", e.reservations)
+		e.sales += 1
+		name := fmt.Sprintf("sale-%d", e.sales)
 
 		c := int(e.r.Int63n(10) + 1)
 
@@ -46,10 +74,18 @@ func (e *env) ReserveInventory(ctx context.Context, count int) {
 
 		}
 
-		_, _ = e.client.Reserve(ctx, &api.ReserveReq{
+		r, err := e.client.Reserve(ctx, &api.ReserveReq{
 			Reservation: name,
 			Items:       items,
 		})
+
+		if err == nil {
+			e.reservations.PushBack(r.Reservation)
+
+		} else {
+			e.sales -= 1
+		}
+
 	}
 
 }
@@ -113,7 +149,7 @@ func (e *env) AddWarehouse(ctx context.Context) (*api.AddLocationsResp, error) {
 	e.locations += 1
 
 	// add rows
-	for r := 0; r < 10; r++ {
+	for r := 0; r < 3; r++ {
 		rowName := fmt.Sprintf("%s/ROW-%d", whsName, r+1)
 		row := &api.AddLocationsReq_Loc{
 			Name: rowName}
@@ -121,14 +157,14 @@ func (e *env) AddWarehouse(ctx context.Context) (*api.AddLocationsResp, error) {
 
 		e.locations += 1
 
-		for s := 0; s < 5; s++ {
+		for s := 0; s < 4; s++ {
 			shelfName := fmt.Sprintf("%s/SHELF-%d", rowName, s+1)
 			shelf := &api.AddLocationsReq_Loc{Name: shelfName}
 			row.Locs = append(row.Locs, shelf)
 
 			e.locations += 1
 
-			for b := 0; b < 9; b++ {
+			for b := 0; b < 5; b++ {
 				e.bins += 1
 				binName := fmt.Sprintf("BIN-%d", e.bins)
 				bin := &api.AddLocationsReq_Loc{Name: binName}
