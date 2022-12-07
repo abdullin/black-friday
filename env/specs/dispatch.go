@@ -29,8 +29,10 @@ func Dispatch(ctx fx.Tx, m proto.Message) (r proto.Message, err *status.Status) 
 		r, err = stock.Reserve(ctx, t)
 	case *api.MoveLocationReq:
 		r, err = locations.Move(ctx, t)
+	case *api.FulfillReq:
+		r, err = stock.Fulfill(ctx, t)
 	default:
-		return nil, status.Newf(codes.Unimplemented, "missing Dispatch for %v", reflect.TypeOf(m))
+		return nil, status.Newf(codes.Internal, "missing Dispatch for %v", reflect.TypeOf(m))
 	}
 
 	if r != nil && reflect.ValueOf(r).IsNil() {
