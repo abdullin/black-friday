@@ -99,5 +99,6 @@ func init() {
 				{Product: u(1), Location: u(4), Removed: 1, OnHand: 0},
 			},
 		}},
+		ThenResponse: &FulfillResp{},
 	})
 }

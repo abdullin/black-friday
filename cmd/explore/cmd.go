@@ -3,6 +3,7 @@ package explore
 import (
 	"black-friday/env/specs"
 	"black-friday/env/uid"
+	"black-friday/fx"
 	"black-friday/inventory/api"
 	"context"
 	"flag"
@@ -34,6 +35,8 @@ func (c cmd) Run(args []string) int {
 		flags.Usage()
 		return 1
 	}
+
+	fx.Explore = true
 
 	_ = os.Remove(file)
 	ctx := context.Background()

@@ -6,6 +6,7 @@ import (
 	"black-friday/fx"
 	. "black-friday/inventory/api"
 	"black-friday/inventory/features/graphs"
+	"fmt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -23,7 +24,7 @@ func Fulfill(ctx fx.Tx, req *FulfillReq) (*FulfillResp, *status.Status) {
 
 	defer rows.Close()
 
-	lookup := make(map[int64]struct {
+	reservation := make(map[int64][]struct {
 		location int64
 		quantity int64
 	})
@@ -34,13 +35,14 @@ func Fulfill(ctx fx.Tx, req *FulfillReq) (*FulfillResp, *status.Status) {
 		if err != nil {
 			return nil, status.Convert(err)
 		}
-		lookup[product] = struct {
+		res, _ := reservation[product]
+		reservation[product] = append(res, struct {
 			location int64
 			quantity int64
-		}{location: location, quantity: quantity}
+		}{location: location, quantity: quantity})
 	}
 
-	if len(lookup) == 0 {
+	if len(reservation) == 0 {
 		return nil, ErrReservationNotFound
 	}
 
@@ -52,26 +54,65 @@ func Fulfill(ctx fx.Tx, req *FulfillReq) (*FulfillResp, *status.Status) {
 		Reservation: req.Reservation,
 	}
 
+	// need to group products. product to location to onhand
+
+	fill := make(map[int64][]struct {
+		location, quantity int64
+	})
+
 	for _, i := range req.Items {
-		n, err := graphs.LoadProductTree(ctx, uid.Parse(i.Product))
+		pid := uid.Parse(i.Product)
+		lid := uid.Parse(i.Location)
+		s, _ := fill[pid]
+		fill[pid] = append(s, struct{ location, quantity int64 }{location: lid, quantity: i.Quantity})
+	}
+
+	for pid, is := range fill {
+		n, err := graphs.LoadProductTree(ctx, pid)
 		if err != nil {
 			return nil, status.Convert(err)
 		}
 
-		on, _, found := graphs.Modify(n, uid.Parse(i.Location), -i.Quantity, -i.Quantity)
-		if !found {
-			return nil, status.Newf(codes.FailedPrecondition, "inventory not found")
+		if fx.Explore {
+			fmt.Printf("\nProduct tree at start: \n")
+			graphs.Print(n, 2)
 		}
+
+		// remove all items
+		for _, i := range is {
+
+			on, _, found := graphs.Modify(n, i.location, -i.quantity, 0)
+			if !found {
+				return nil, status.Newf(codes.FailedPrecondition, "inventory not found")
+			}
+			e.Items = append(e.Items, &Fulfilled_Item{
+				Product:  uid.Str(pid),
+				Location: uid.Str(i.location),
+				Removed:  i.quantity,
+				OnHand:   on,
+			})
+		}
+		// remove allocation
+
+		for _, res := range reservation[pid] {
+			_, _, found := graphs.Modify(n, res.location, 0, -res.quantity)
+			if !found {
+				return nil, status.Newf(codes.FailedPrecondition, "inventory not found")
+			}
+		}
+
+		if fx.Explore {
+			if fx.Explore {
+				fmt.Printf("\nProduct tree at the end: \n")
+				graphs.Print(n, 2)
+			}
+
+		}
+
 		_, _, good := graphs.Walk(n)
 		if !good {
 			return nil, status.Newf(codes.FailedPrecondition, "broken availability")
 		}
-		e.Items = append(e.Items, &Fulfilled_Item{
-			Product:  i.Product,
-			Location: i.Location,
-			Removed:  i.Quantity,
-			OnHand:   on,
-		})
 
 	}
 

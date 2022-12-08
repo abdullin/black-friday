@@ -63,7 +63,14 @@ func Walk(root *Node) (onHand, reserved int64, ok bool) {
 // a product quantity or a reservation. Empty Nodes are pruned
 func LoadProductTree(ctx fx.Tx, product int64) (*Node, error) {
 	query := `
-WITH RECURSIVE TREE (Location) AS (
+
+
+SELECT 
+	T.Location AS Location, 
+	LL.Parent AS Parent, 
+	ifnull(SUM(I.OnHand),0) AS OnHand, 
+	ifnull(SUM(R.Quantity),0) AS  Reserved	
+FROM (WITH RECURSIVE TREE (Location) AS (
 	-- SEED
 	SELECT DISTINCT Location FROM INVENTORY
 	WHERE PRODUCT=?
@@ -76,19 +83,12 @@ WITH RECURSIVE TREE (Location) AS (
 	WHERE T.Location != 0
 	
 )
---SELECT * FROM TREE
-
-SELECT
-	T.Location AS Location, 
-	LL.Parent AS Parent, 
-	ifnull(SUM(I.OnHand),0) AS OnHand, 
-	ifnull(SUM(R.Quantity),0) AS  Reserved	
-FROM TREE AS T
-LEFT JOIN INVENTORY I ON I.Location=T.Location and I.Product=?
+SELECT DISTINCT Location FROM TREE) AS T
+LEFT JOIN INVENTORY I ON T.Location=I.Location AND I.Product=?
+LEFT JOIN Reserves R ON T.Location=R.Location AND R.Product=?
 LEFT JOIN Locations LL on T.Location=LL.Id
-LEFT JOIN Reserves R ON R.Location=T.Location AND R.Product=?
 
-GROUP BY T.Location 
+GROUP BY T.Location
 `
 
 	rows, err := ctx.QueryHack(query, product, product, product)
