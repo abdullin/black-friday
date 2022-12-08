@@ -18,6 +18,15 @@ func init() {
 	})
 
 	Define(&Spec{
+		Name: "can't store things in root",
+		Given: []proto.Message{
+			&ProductAdded{Uid: u(1), Sku: "NVidia"},
+		},
+		When:      &UpdateInventoryReq{Product: u(1), Location: u(0), OnHandChange: 1},
+		ThenError: ErrArgument,
+	})
+
+	Define(&Spec{
 		Name: "add items to a location",
 		Given: []proto.Message{
 			&LocationAdded{Uid: u(1), Name: "Shelf"},

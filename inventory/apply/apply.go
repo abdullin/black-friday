@@ -8,6 +8,18 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+func setInventory(tx fx.Tx, product, location, onHand, delta int64) error {
+
+	before := onHand - delta
+	if onHand == 0 {
+		return tx.Exec("DELETE FROM Inventory WHERE Product=? AND Location=?", product, location)
+	} else if before == 0 {
+		return tx.Exec("INSERT INTO Inventory(Product, Location, OnHand) VALUES(?,?,?)", product, location, onHand)
+	} else {
+		return tx.Exec("UPDATE Inventory SET OnHand=? WHERE Product=? AND Location=?", onHand, product, location)
+	}
+}
+
 func Event(tx fx.Tx, e proto.Message) error {
 	switch t := e.(type) {
 	case *LocationAdded:
@@ -31,15 +43,7 @@ INSERT INTO Products(Id, Sku) VALUES (?,?);
 UPDATE sqlite_sequence SET seq=? WHERE name=?
 `, id, t.Sku, id, "Products")
 	case *InventoryUpdated:
-
-		before := t.OnHand - t.OnHandChange
-		if t.OnHand == 0 {
-			return tx.Exec("DELETE FROM Inventory WHERE Product=? AND Location=?", uid.Parse(t.Product), uid.Parse(t.Location))
-		} else if before == 0 {
-			return tx.Exec("INSERT INTO Inventory(Product, Location, OnHand) VALUES(?,?,?)", uid.Parse(t.Product), uid.Parse(t.Location), t.OnHand)
-		} else {
-			return tx.Exec("UPDATE Inventory SET OnHand=? WHERE Product=? AND Location=?", t.OnHand, uid.Parse(t.Product), uid.Parse(t.Location))
-		}
+		return setInventory(tx, uid.Parse(t.Product), uid.Parse(t.Location), t.OnHand, t.OnHandChange)
 	case *Reserved:
 
 		id := uid.Parse(t.Reservation)
@@ -67,6 +71,17 @@ DELETE FROM Reservations WHERE Id=?;
 `, rid, rid)
 	case *Fulfilled:
 		rid := uid.Parse(t.Reservation)
+
+		for _, i := range t.Items {
+			err := setInventory(tx,
+				uid.Parse(i.Product),
+				uid.Parse(i.Location),
+				i.OnHand,
+				-i.Removed)
+			if err != nil {
+				return nil
+			}
+		}
 
 		return tx.Exec(`
 DELETE FROM Reserves WHERE Reservation=?; 

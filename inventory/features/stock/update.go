@@ -15,6 +15,10 @@ func Update(ctx fx.Tx, req *UpdateInventoryReq) (*UpdateInventoryResp, *status.S
 	lid := uid.Parse(req.Location)
 	pid := uid.Parse(req.Product)
 
+	if lid == 0 {
+		return nil, ErrArgument
+	}
+
 	ctx.QueryRow("SELECT OnHand FROM Inventory WHERE Location=? AND Product=?", lid, pid)(&onHand)
 
 	onHand += req.OnHandChange

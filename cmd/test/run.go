@@ -141,7 +141,11 @@ func test_specs(db, addr string) {
 			fails += 1
 
 			specs.PrintFull(s, deltas)
-			println()
+
+			if resp.Error != "" {
+				fmt.Printf("  %sERR: %s%s\n", ANOTHER, resp.Error, CLEAR)
+			}
+
 		}
 
 	}

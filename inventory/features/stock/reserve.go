@@ -5,6 +5,7 @@ import (
 	"black-friday/fail"
 	"black-friday/fx"
 	. "black-friday/inventory/api"
+	"black-friday/inventory/features/graphs"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -19,39 +20,33 @@ func Reserve(a fx.Tx, r *ReserveReq) (*ReserveResp, *status.Status) {
 		Code:        r.Reservation,
 	}
 
+	loc := uid.Parse(r.Location)
+
 	skus := make(map[string]int64)
 
-	for _, r := range r.Items {
+	for _, i := range r.Items {
 		var pid int64
-		if !a.QueryRow("SELECT Id FROM Products WHERE Sku=?", r.Sku)(&pid) {
+		if !a.QueryRow("SELECT Id FROM Products WHERE Sku=?", i.Sku)(&pid) {
 			return nil, ErrProductNotFound
 		}
-		skus[r.Sku] = pid
-	}
+		skus[i.Sku] = pid
 
-	// this is a slow route for now
+		tree, err := graphs.LoadProductTree(a, pid)
+		if err != nil {
+			return nil, status.Convert(err)
+		}
 
-	res, st := Query(a, &GetLocInventoryReq{Location: r.Location})
-	if st.Code() != codes.OK {
-		return nil, st
-	}
-
-	available := make(map[int64]int64)
-
-	for _, prod := range res.Items {
-		available[uid.Parse(prod.Product)] = prod.Available
-	}
-
-	for _, i := range r.Items {
-		productId := skus[i.Sku]
-
-		available, _ := available[productId]
-		if available < i.Quantity {
-			return nil, ErrNotEnough
+		_, _, found := graphs.Modify(tree, loc, 0, i.Quantity)
+		if !found {
+			return nil, status.Newf(codes.FailedPrecondition, "no inventory for product %d", pid)
+		}
+		_, _, ok := graphs.Walk(tree)
+		if !ok {
+			return nil, status.Newf(codes.FailedPrecondition, "availability broken for product %d", pid)
 		}
 
 		e.Items = append(e.Items, &Reserved_Item{
-			Product:  uid.Str(productId),
+			Product:  uid.Str(pid),
 			Quantity: i.Quantity,
 			Location: r.Location,
 		})
@@ -64,29 +59,6 @@ func Reserve(a fx.Tx, r *ReserveReq) (*ReserveResp, *status.Status) {
 		return nil, ErrAlreadyExists
 	default:
 		return nil, ErrInternal(err, f)
-	}
-
-	// here is the tricky part. We need to walk the hierarchy to see if things are still good
-
-	scope := uid.Parse(r.Location)
-	for scope != 0 {
-
-		var parent int64
-
-		a.QueryRow("SELECT Parent FROM Locations WHERE Id=?", scope)(&parent)
-		res, st := Query(a, &GetLocInventoryReq{Location: uid.Str(scope)})
-		if st.Code() != codes.OK {
-			return nil, st
-		}
-		// checking availability
-
-		for _, i := range res.Items {
-			if i.Available < 0 {
-				// we broke some constraint!
-				return nil, ErrNotEnough
-			}
-		}
-		scope = parent
 	}
 
 	return &ReserveResp{Reservation: uid.Str(id)}, nil
