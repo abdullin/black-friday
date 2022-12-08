@@ -14,6 +14,10 @@ func Reserve(a fx.Tx, r *ReserveReq) (*ReserveResp, *status.Status) {
 
 	// by default, we reserve against the root.
 
+	if len(r.Items) == 0 {
+		return nil, ErrArgument
+	}
+
 	id := a.GetSeq("Reservations") + 1
 	e := &Reserved{
 		Reservation: uid.Str(id),
@@ -32,6 +36,7 @@ func Reserve(a fx.Tx, r *ReserveReq) (*ReserveResp, *status.Status) {
 		skus[i.Sku] = pid
 
 		tree, err := graphs.LoadProductTree(a, pid)
+
 		if err != nil {
 			return nil, status.Convert(err)
 		}

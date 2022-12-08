@@ -109,6 +109,22 @@ func init() {
 	})
 
 	Define(&Spec{
+		Level: 1,
+		Name:  "reserve product without inventory",
+		Given: []proto.Message{
+			&ProductAdded{Uid: u(1), Sku: "cola"},
+			&LocationAdded{Uid: u(2), Name: "WHS1"},
+		},
+		When: &ReserveReq{
+			Reservation: "test",
+			Items: []*ReserveReq_Item{
+				{Sku: "cola", Quantity: 1},
+			},
+		},
+		ThenError: ErrNotEnough,
+	})
+
+	Define(&Spec{
 		Level: 2,
 		Name:  "reserve when onHand isn't enough",
 		Given: []proto.Message{

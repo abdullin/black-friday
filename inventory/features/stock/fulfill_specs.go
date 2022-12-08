@@ -15,6 +15,29 @@ func init() {
 	})
 
 	Define(&Spec{
+		Name: "simple fulfillment",
+		Given: []proto.Message{
+			&ProductAdded{Uid: u(1), Sku: "GPU"},
+			&LocationAdded{Uid: u(2), Name: "Warehouse"},
+			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 10, OnHand: 10},
+			&Reserved{
+				Reservation: u(3),
+				Code:        "sale",
+				Items:       []*Reserved_Item{{Product: u(1), Quantity: 7, Location: u(2)}},
+			},
+		},
+		When: &FulfillReq{
+			Reservation: u(3),
+			Items:       []*FulfillReq_Item{{Product: u(1), Quantity: 7, Location: u(2)}},
+		},
+		ThenResponse: &FulfillResp{},
+		ThenEvents: []proto.Message{&Fulfilled{
+			Reservation: u(3),
+			Items:       []*Fulfilled_Item{{Product: u(1), Location: u(2), Removed: 7, OnHand: 3}},
+		}},
+	})
+
+	Define(&Spec{
 		Name: "fulfill reservation in a shipment box",
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "GPU"},

@@ -44,6 +44,7 @@ func (e *env) TryFulfull(ctx context.Context, count int) {
 		_, err := e.client.Fulfill(ctx, &api.FulfillReq{
 			Reservation: id,
 		})
+		e.reservations.Remove(n)
 		if err != nil {
 			log.Panicln(err)
 		} else {

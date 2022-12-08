@@ -116,5 +116,10 @@ GROUP BY T.Location
 			parent.Children = append(parent.Children, node)
 		}
 	}
+	if nil == root {
+		// no inventory at all
+		return &Node{}, nil
+	}
+
 	return root, nil
 }

@@ -43,7 +43,7 @@ func Fulfill(ctx fx.Tx, req *FulfillReq) (*FulfillResp, *status.Status) {
 	}
 
 	if len(reservation) == 0 {
-		return nil, ErrReservationNotFound
+		return nil, status.Newf(codes.NotFound, "Reservation %d not found", rid)
 	}
 
 	// we need to ensure that we are:
