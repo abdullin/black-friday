@@ -73,7 +73,7 @@ func shortenUuid(s string) string {
 	return toCompactUuid.ReplaceAllStringFunc(s, func(s string) string {
 		trimmed := strings.Trim(s, "\"")
 		num := uid.ParseTestUuid(trimmed)
-		return fmt.Sprintf("UID(%d)", num)
+		return fmt.Sprintf("%sUID(%d)%s", GREEN, num, CLEAR)
 
 	})
 }
