@@ -51,7 +51,7 @@ func (c cmd) Run(args []string) int {
 	e := NewEnv(client)
 
 	fmt.Println("DURATION    DB SIZE  LOCATIONS   PRODUCTS     ON-HAND   RESERVE     SALES   PENDING FULFILLED ENTITIES   EVENTS")
-	for i := 0; i < 20; i++ {
+	for i := 0; i < 30; i++ {
 		started := time.Now()
 
 		if _, err := e.AddWarehouse(ctx); err != nil {
@@ -60,7 +60,7 @@ func (c cmd) Run(args []string) int {
 
 		e.AddProducts(ctx, 100)
 		e.AddInventory(ctx, 100)
-		e.TrySell(ctx, 1000)
+		e.TrySell(ctx, i*200+100)
 		e.TryFulfull(ctx, e.reservations.Len()*3/4)
 
 		funcName(ctx, file, started, e, a)

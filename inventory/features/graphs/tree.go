@@ -69,8 +69,9 @@ SELECT
 	T.Location AS Location, 
 	LL.Parent AS Parent, 
 	ifnull(SUM(I.OnHand),0) AS OnHand, 
-	ifnull(SUM(R.Quantity),0) AS  Reserved	
-FROM (WITH RECURSIVE TREE (Location) AS (
+	ifnull(SUM(R.Quantity),0) AS Reserved	
+FROM (
+	WITH RECURSIVE TREE (Location) AS (
 	-- SEED
 	SELECT DISTINCT Location FROM INVENTORY
 	WHERE PRODUCT=?
@@ -81,7 +82,6 @@ FROM (WITH RECURSIVE TREE (Location) AS (
 	FROM Locations l
 	JOIN TREE T ON T.Location = l.Id
 	WHERE T.Location != 0
-	
 )
 SELECT DISTINCT Location FROM TREE) AS T
 LEFT JOIN INVENTORY I ON T.Location=I.Location AND I.Product=?

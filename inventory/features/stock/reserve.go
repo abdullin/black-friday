@@ -34,7 +34,7 @@ func Reserve(a fx.Tx, r *ReserveReq) (*ReserveResp, *status.Status) {
 			return nil, ErrProductNotFound
 		}
 		skus[i.Sku] = pid
-
+		// load products
 		tree, err := graphs.LoadProductTree(a, pid)
 
 		if err != nil {

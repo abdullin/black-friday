@@ -13,6 +13,9 @@ CREATE TABLE Locations (
     UNIQUE (Name, Parent)
 );
 
+CREATE INDEX IDX_LOCATIONS_PARENT
+    ON Locations (Parent, Id);
+
 
 CREATE TABLE Products (
     Id INTEGER PRIMARY KEY,
@@ -26,6 +29,15 @@ CREATE TABLE Inventory (
     FOREIGN KEY(Location) REFERENCES Locations(Id),
     FOREIGN KEY(Product) REFERENCES Products(Id)
 );
+
+CREATE INDEX IDX_INVENTORY_PRODUCT
+    ON Inventory (Product);
+
+CREATE INDEX IDX_INVENTORY_LOCATION
+    ON Inventory (Location);
+
+CREATE INDEX IDX_INVENTORY_PRODUCT_LOCATION
+    ON Inventory (Location, Product);
 
 CREATE TABLE Reservations (
     Id INTEGER PRIMARY KEY,
@@ -43,6 +55,13 @@ CREATE TABLE Reserves (
     FOREIGN KEY(Product) REFERENCES Products(Id),
     FOREIGN KEY(Location) REFERENCES Locations(Id)
 );
+
+
+CREATE INDEX IDX_RESERVES_PRODUCT_LOCATION
+    ON Reserves (Location, Product);
+
+CREATE INDEX IDX_RESERVES_RESERVATION
+    ON Reserves (Reservation);
 
 INSERT INTO sqlite_sequence (name, seq) VALUES
     ('Locations', 0),
