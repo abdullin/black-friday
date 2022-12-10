@@ -14,7 +14,9 @@ type env struct {
 	products   int64
 	locations  int64
 	warehouses int64
+	inventory  []int64
 
+	reject       int64
 	sales        int64
 	reservations list.List
 
@@ -27,7 +29,7 @@ type env struct {
 }
 
 func NewEnv(client api.InventoryServiceClient) *env {
-	return &env{client: client, r: rnd.New()}
+	return &env{client: client, r: rnd.New(), inventory: make([]int64, 10000, 10000)}
 }
 
 func (e *env) TryFulfull(ctx context.Context, count int) {
@@ -59,21 +61,42 @@ func (e *env) TrySell(ctx context.Context, count int) {
 
 	for j := 0; j < count; j++ {
 
-		e.sales += 1
 		name := fmt.Sprintf("sale-%d", e.sales)
 
 		c := int(e.r.Int63n(10) + 1)
 
 		var items []*api.ReserveReq_Item
 
+		prods := make(map[int64]struct{})
+
 		for i := 0; i < c; i++ {
+
 			product := e.r.Int63n(e.products-1) + 1
+			// try selling something that is in store
+			for j := product; j < product+200; j++ {
+				if e.inventory[j] > 0 {
+					product = j
+					break
+				}
+			}
+
+			if _, found := prods[product]; found {
+				continue
+			}
+			prods[product] = struct{}{}
+
 			items = append(items, &api.ReserveReq_Item{
 				Sku:      SKU(product),
 				Quantity: e.r.Int63n(5) + 1,
 			})
 
 		}
+
+		if len(items) == 0 {
+			continue
+		}
+
+		e.sales += 1
 
 		r, err := e.client.Reserve(ctx, &api.ReserveReq{
 			Reservation: name,
@@ -85,6 +108,7 @@ func (e *env) TrySell(ctx context.Context, count int) {
 
 		} else {
 			e.sales -= 1
+			e.reject += 1
 		}
 
 	}
@@ -96,15 +120,18 @@ func (e *env) AddInventory(ctx context.Context, count int) {
 	for i := 0; i < count; i++ {
 
 		product := e.r.Int63n(e.products-1) + 1
+
 		locations := e.r.Int63n(e.locations-1) + 1
 
-		quantity := e.r.Int63n(100)
+		quantity := e.r.Int63n(200) + 20
 
 		_, err := e.client.UpdateInventory(ctx, &api.UpdateInventoryReq{
 			Location:     uid.Str(locations),
 			Product:      uid.Str(product),
 			OnHandChange: quantity,
 		})
+
+		e.inventory[product] += quantity
 
 		if err != nil {
 			log.Fatalln(err)
@@ -117,20 +144,23 @@ func (e *env) AddInventory(ctx context.Context, count int) {
 }
 
 func (e *env) AddProducts(ctx context.Context, count int) {
-	var skus []string
 	for p := 0; p < count; p++ {
 
 		e.products += 1
+
+		var skus []string
+
 		skus = append(skus, SKU(e.products))
 
+		prod := &api.AddProductsReq{Skus: skus}
+
+		_, err := e.client.AddProducts(ctx, prod)
+		if err != nil {
+			log.Panicln(err)
+		}
+
 	}
 
-	prod := &api.AddProductsReq{Skus: skus}
-
-	_, err := e.client.AddProducts(ctx, prod)
-	if err != nil {
-		log.Panicln(err)
-	}
 }
 
 func SKU(e int64) string {

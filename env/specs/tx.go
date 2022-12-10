@@ -1,6 +1,7 @@
 package specs
 
 import (
+	"black-friday/env/tracer"
 	"black-friday/fail"
 	"black-friday/inventory/apply"
 	"context"
@@ -72,6 +73,10 @@ func (c *Tx) Apply(e proto.Message) (error, fail.Code) {
 	c.Events = append(c.Events, e)
 	return nil, fail.None
 
+}
+
+func (c *Tx) Trace() *tracer.Tracer {
+	return tracer.Disabled
 }
 
 func (c *Tx) Exec(query string, args ...any) error {

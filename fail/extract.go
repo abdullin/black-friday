@@ -23,13 +23,17 @@ func Extract(err error) (error, Code) {
 			return err, ConstraintForeign
 		case sqlite3.ErrConstraintUnique:
 			return err, ConstraintUnique
+
 		}
 		switch sqlErr.Code {
 		case sqlite3.ErrError:
 			return err, SqlLogicError
+		//case sqlite3.ErrConstraint:
+		//	return err, ConstraintUnique
 		default:
-			panic(fmt.Errorf("Unexpected sql extended code %d (%v) : %w",
+			panic(fmt.Errorf("Unexpected sql extended code %d base %d (%v) : %w",
 				int(sqlErr.ExtendedCode),
+				sqlErr.Code,
 				sqlErr.ExtendedCode, err))
 		}
 	}

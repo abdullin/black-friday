@@ -22,13 +22,18 @@ CREATE TABLE Products (
     Sku TEXT NOT NULL UNIQUE
 );
 
+CREATE UNIQUE INDEX IDX_PRODUCTS_SKU
+    ON Products(Sku);
+
+
 CREATE TABLE Inventory (
     Location INTEGER NOT NULL,
     Product INTEGER NOT NULL,
     OnHand INTEGER NOT NULL,
     FOREIGN KEY(Location) REFERENCES Locations(Id),
-    FOREIGN KEY(Product) REFERENCES Products(Id)
-);
+    FOREIGN KEY(Product) REFERENCES Products(Id),
+    primary key (Product, Location)
+) WITHOUT ROWID;
 
 CREATE INDEX IDX_INVENTORY_PRODUCT
     ON Inventory (Product);
@@ -36,7 +41,7 @@ CREATE INDEX IDX_INVENTORY_PRODUCT
 CREATE INDEX IDX_INVENTORY_LOCATION
     ON Inventory (Location);
 
-CREATE INDEX IDX_INVENTORY_PRODUCT_LOCATION
+CREATE UNIQUE INDEX IDX_INVENTORY_PRODUCT_LOCATION
     ON Inventory (Location, Product);
 
 CREATE TABLE Reservations (
@@ -47,14 +52,15 @@ CREATE TABLE Reservations (
 CREATE TABLE Reserves (
     Reservation INTEGER NOT NULL,
     Product INTEGER NOT NULL,
+    Location INTEGER NOT NULL,
     Quantity INTEGER NOT NULL,
     -- CAN be null for ROOT
     -- TODO: Introduce root location of zero?
-    Location INTEGER NOT NULL,
     FOREIGN KEY(Reservation) REFERENCES Reservations(Id),
     FOREIGN KEY(Product) REFERENCES Products(Id),
-    FOREIGN KEY(Location) REFERENCES Locations(Id)
-);
+    FOREIGN KEY(Location) REFERENCES Locations(Id),
+    primary key (Reservation, Product, Location)
+) WITHOUT ROWID ;
 
 
 CREATE INDEX IDX_RESERVES_PRODUCT_LOCATION
@@ -68,6 +74,7 @@ INSERT INTO sqlite_sequence (name, seq) VALUES
     ('Products', 0),
     ('Reservations', 0),
     ('Global', 0);
+
 
 INSERT INTO Locations(Id, Parent, Name) VALUES(0,0, "Root");
 

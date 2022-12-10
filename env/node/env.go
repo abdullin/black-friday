@@ -1,6 +1,7 @@
 package node
 
 import (
+	"black-friday/env/tracer"
 	"black-friday/fx"
 	"black-friday/inventory/db"
 	"context"
@@ -14,6 +15,7 @@ type Env struct {
 	db  *sql.DB
 
 	schemaReady bool
+	Bank        *tracer.Bank
 }
 
 func NewEnv(ctx context.Context, file string) *Env {
@@ -27,6 +29,7 @@ func NewEnv(ctx context.Context, file string) *Env {
 		ctx:         ctx,
 		db:          dbs,
 		schemaReady: false,
+		Bank:        &tracer.Bank{},
 	}
 }
 
@@ -60,14 +63,16 @@ func (env *Env) DB() *sql.DB {
 
 func (env *Env) Begin(ctx context.Context) (fx.Tx, error) {
 
+	trace := env.Bank.Open()
 	dbtx, err := env.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, fmt.Errorf("begin tx: %w", err)
 	}
 
 	ttx := &tx{
-		ctx: env.ctx,
-		tx:  dbtx,
+		ctx:   env.ctx,
+		tx:    dbtx,
+		trace: trace,
 	}
 
 	return ttx, nil

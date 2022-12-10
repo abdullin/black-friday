@@ -26,7 +26,7 @@ func (c cmd) Synopsis() string {
 
 func (c cmd) Run(args []string) int {
 
-	fmt.Println("Start simulation")
+	fmt.Println("Open simulation")
 
 	ctx, stop := node.Cancel()
 	defer stop()
@@ -39,6 +39,7 @@ func (c cmd) Run(args []string) int {
 
 	// create server
 	s := grpc.NewServer()
+
 	server := inventory.New(a)
 	api.RegisterInventoryServiceServer(s, server)
 
@@ -50,8 +51,9 @@ func (c cmd) Run(args []string) int {
 
 	e := NewEnv(client)
 
-	fmt.Println("DURATION    DB SIZE  LOCATIONS   PRODUCTS     ON-HAND   RESERVE     SALES   PENDING FULFILLED ENTITIES   EVENTS")
-	for i := 0; i < 30; i++ {
+	global := time.Now()
+	fmt.Println("DUR        DB      LOCs   SKUs  ON-HAND  RESERVE    SALES    REJECT   PENDING FULFILLED ENTITIES   EVENTS")
+	for i := 0; i < 60; i++ {
 		started := time.Now()
 
 		if _, err := e.AddWarehouse(ctx); err != nil {
@@ -64,6 +66,13 @@ func (c cmd) Run(args []string) int {
 		e.TryFulfull(ctx, e.reservations.Len()*3/4)
 
 		funcName(ctx, file, started, e, a)
+
+		a.Bank.SaveSample(fmt.Sprintf("/tmp/trace_%02d.jsonl", i))
+		a.Bank.Clear()
+
+		if time.Since(global) > time.Second*60 {
+			break
+		}
 
 	}
 	return 0
@@ -84,7 +93,7 @@ func funcName(ctx context.Context, file string, started time.Time, e *env, a *no
 	defer tx.Rollback()
 
 	bytes := Size(file, file+"-wal")
-	fmt.Printf("%5d ms %10s %10d %10d  %10d  %8d  %8d  %8d %8d  %8d %8d\n",
+	fmt.Printf("%5dms %8s %6d %6d %8d %8d %8d  %8d  %8d %8d  %8d %8d\n",
 		time.Since(started).Milliseconds(),
 		ByteCountDecimal(bytes),
 		e.locations,
@@ -92,6 +101,7 @@ func funcName(ctx context.Context, file string, started time.Time, e *env, a *no
 		onHand,
 		reserved,
 		e.sales,
+		e.reject,
 		reservations,
 		e.fulfilled,
 		entities,

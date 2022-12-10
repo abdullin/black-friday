@@ -91,6 +91,8 @@ LEFT JOIN Locations LL on T.Location=LL.Id
 GROUP BY T.Location
 `
 
+	ctx.Trace().Begin("Load Product")
+	defer ctx.Trace().End()
 	rows, err := ctx.QueryHack(query, product, product, product)
 	if err != nil {
 		return nil, err

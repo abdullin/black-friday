@@ -1,6 +1,7 @@
 package fx
 
 import (
+	"black-friday/env/tracer"
 	"black-friday/fail"
 	"context"
 	"database/sql"
@@ -15,6 +16,7 @@ type Tx interface {
 	Exec(sql string, args ...any) error
 	Rollback() error
 	Commit() error
+	Trace() *tracer.Tracer
 }
 
 type Transactor interface {
