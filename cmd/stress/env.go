@@ -57,85 +57,77 @@ func (e *env) TryFulfull(ctx context.Context, count int) {
 
 }
 
-func (e *env) TrySell(ctx context.Context, count int) {
+func (e *env) TrySell(ctx context.Context) {
+	name := fmt.Sprintf("sale-%d", e.sales)
 
-	for j := 0; j < count; j++ {
+	c := int(e.r.Int63n(10) + 1)
 
-		name := fmt.Sprintf("sale-%d", e.sales)
+	var items []*api.ReserveReq_Item
 
-		c := int(e.r.Int63n(10) + 1)
+	prods := make(map[int64]struct{})
 
-		var items []*api.ReserveReq_Item
+	for i := 0; i < c; i++ {
 
-		prods := make(map[int64]struct{})
-
-		for i := 0; i < c; i++ {
-
-			product := e.r.Int63n(e.products-1) + 1
-			// try selling something that is in store
-			for j := product; j < product+200; j++ {
-				if e.inventory[j] > 0 {
-					product = j
-					break
-				}
+		product := e.r.Int63n(e.products) + 1
+		// try selling something that is in store
+		for j := product; j < product+200; j++ {
+			if e.inventory[j] > 0 {
+				product = j
+				break
 			}
-
-			if _, found := prods[product]; found {
-				continue
-			}
-			prods[product] = struct{}{}
-
-			items = append(items, &api.ReserveReq_Item{
-				Sku:      SKU(product),
-				Quantity: e.r.Int63n(5) + 1,
-			})
-
 		}
 
-		if len(items) == 0 {
+		if _, found := prods[product]; found {
 			continue
 		}
+		prods[product] = struct{}{}
 
-		e.sales += 1
-
-		r, err := e.client.Reserve(ctx, &api.ReserveReq{
-			Reservation: name,
-			Items:       items,
+		items = append(items, &api.ReserveReq_Item{
+			Sku:      SKU(product),
+			Quantity: e.r.Int63n(5) + 1,
 		})
 
-		if err == nil {
-			e.reservations.PushBack(r.Reservation)
+	}
 
-		} else {
-			e.sales -= 1
-			e.reject += 1
-		}
+	if len(items) == 0 {
+		return
+	}
 
+	e.sales += 1
+
+	r, err := e.client.Reserve(ctx, &api.ReserveReq{
+		Reservation: name,
+		Items:       items,
+	})
+
+	if err == nil {
+		e.reservations.PushBack(r.Reservation)
+
+	} else {
+		e.sales -= 1
+		e.reject += 1
 	}
 
 }
 
-func (e *env) AddInventory(ctx context.Context, count int) {
+func (e *env) AddInventory(ctx context.Context) {
 
-	for i := 0; i < count; i++ {
+	product := e.r.Int63n(e.products) + 1
 
-		product := e.r.Int63n(e.products-1) + 1
+	locations := e.r.Int63n(e.locations) + 1
 
-		locations := e.r.Int63n(e.locations-1) + 1
+	quantity := e.r.Int63n(200) + 20
 
-		quantity := e.r.Int63n(200) + 20
+	_, err := e.client.UpdateInventory(ctx, &api.UpdateInventoryReq{
+		Location:     uid.Str(locations),
+		Product:      uid.Str(product),
+		OnHandChange: quantity,
+	})
 
-		_, err := e.client.UpdateInventory(ctx, &api.UpdateInventoryReq{
-			Location:     uid.Str(locations),
-			Product:      uid.Str(product),
-			OnHandChange: quantity,
-		})
+	e.inventory[product] += quantity
 
-		e.inventory[product] += quantity
-
-		if err != nil {
-			log.Fatalln(err)
-		}
+	if err != nil {
+		log.Fatalln(err)
 	}
 
 	// which product?
@@ -143,22 +135,18 @@ func (e *env) AddInventory(ctx context.Context, count int) {
 	//
 }
 
-func (e *env) AddProducts(ctx context.Context, count int) {
-	for p := 0; p < count; p++ {
+func (e *env) AddProducts(ctx context.Context) {
+	e.products += 1
 
-		e.products += 1
+	var skus []string
 
-		var skus []string
+	skus = append(skus, SKU(e.products))
 
-		skus = append(skus, SKU(e.products))
+	prod := &api.AddProductsReq{Skus: skus}
 
-		prod := &api.AddProductsReq{Skus: skus}
-
-		_, err := e.client.AddProducts(ctx, prod)
-		if err != nil {
-			log.Panicln(err)
-		}
-
+	_, err := e.client.AddProducts(ctx, prod)
+	if err != nil {
+		log.Panicln(err)
 	}
 
 }

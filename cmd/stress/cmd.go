@@ -60,9 +60,17 @@ func (c cmd) Run(args []string) int {
 			log.Panicln(err)
 		}
 
-		e.AddProducts(ctx, 100)
-		e.AddInventory(ctx, 100)
-		e.TrySell(ctx, i*200+100)
+		for k := 0; k < 100; k++ {
+
+			e.AddProducts(ctx)
+			e.AddInventory(ctx)
+
+			for s := 0; s < i*2+1; s++ {
+
+				e.TrySell(ctx)
+			}
+		}
+
 		e.TryFulfull(ctx, e.reservations.Len()*3/4)
 
 		funcName(ctx, file, started, e, a)
