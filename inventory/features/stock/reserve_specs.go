@@ -35,6 +35,34 @@ func init() {
 
 	Define(&Spec{
 		Level: 3,
+		Name:  "reservation with repeating product",
+		Given: []proto.Message{
+			&ProductAdded{Uid: u(1), Sku: "GPU"},
+			&LocationAdded{Uid: u(2), Name: "Shelf"},
+			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 10, OnHand: 10},
+		},
+		When: &ReserveReq{
+			Reservation: "sale",
+			Items: []*ReserveReq_Item{
+				{Sku: "GPU", Quantity: 7},
+				{Sku: "GPU", Quantity: 3},
+			},
+			Location: u(0),
+		},
+		ThenResponse: &ReserveResp{Reservation: u(3)},
+		ThenEvents: []proto.Message{
+			&Reserved{
+				Reservation: u(3),
+				Code:        "sale",
+				Items: []*Reserved_Item{
+					{Product: u(1), Quantity: 10, Location: u(0)},
+				},
+			},
+		},
+	})
+
+	Define(&Spec{
+		Level: 3,
 		Name:  "reserve sale in a specific location",
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "GPU"},

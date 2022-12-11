@@ -71,7 +71,7 @@ func (c cmd) Run(args []string) int {
 		a.Bank.Clear()
 
 		if time.Since(global) > time.Second*60 {
-			break
+			//break
 		}
 
 	}

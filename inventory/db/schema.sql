@@ -54,8 +54,6 @@ CREATE TABLE Reserves (
     Product INTEGER NOT NULL,
     Location INTEGER NOT NULL,
     Quantity INTEGER NOT NULL,
-    -- CAN be null for ROOT
-    -- TODO: Introduce root location of zero?
     FOREIGN KEY(Reservation) REFERENCES Reservations(Id),
     FOREIGN KEY(Product) REFERENCES Products(Id),
     FOREIGN KEY(Location) REFERENCES Locations(Id),

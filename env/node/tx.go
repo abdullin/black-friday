@@ -31,6 +31,7 @@ var EventCount int64
 func (c *tx) Apply(e proto.Message) (error, fail.Code) {
 
 	c.trace.Begin(string(e.ProtoReflect().Descriptor().Name()))
+
 	err := apply.Event(c, e)
 	c.trace.End()
 
