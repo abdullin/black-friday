@@ -20,7 +20,7 @@ type env struct {
 	sales        int64
 	reservations list.List
 
-	bins      int64
+	bins      []string
 	fulfilled int64
 
 	r *rnd.Rand
@@ -113,13 +113,12 @@ func (e *env) TrySell(ctx context.Context) {
 func (e *env) AddInventory(ctx context.Context) {
 
 	product := e.r.Int63n(e.products) + 1
-
-	locations := e.r.Int63n(e.locations) + 1
+	location := e.bins[product-1]
 
 	quantity := e.r.Int63n(200) + 20
 
 	_, err := e.client.UpdateInventory(ctx, &api.UpdateInventoryReq{
-		Location:     uid.Str(locations),
+		Location:     location,
 		Product:      uid.Str(product),
 		OnHandChange: quantity,
 	})
@@ -155,7 +154,7 @@ func SKU(e int64) string {
 	return fmt.Sprintf("product-%d", e)
 }
 
-func (e *env) AddWarehouse(ctx context.Context) (*api.AddLocationsResp, error) {
+func (e *env) AddWarehouse(ctx context.Context) {
 
 	e.warehouses += 1
 
@@ -184,8 +183,7 @@ func (e *env) AddWarehouse(ctx context.Context) (*api.AddLocationsResp, error) {
 			e.locations += 1
 
 			for b := 0; b < 5; b++ {
-				e.bins += 1
-				binName := fmt.Sprintf("BIN-%d", e.bins)
+				binName := fmt.Sprintf("BIN-%d", e.locations)
 				bin := &api.AddLocationsReq_Loc{Name: binName}
 				shelf.Locs = append(shelf.Locs, bin)
 
@@ -196,8 +194,23 @@ func (e *env) AddWarehouse(ctx context.Context) (*api.AddLocationsResp, error) {
 
 	}
 
-	return e.client.AddLocations(ctx, &api.AddLocationsReq{
+	resp, err := e.client.AddLocations(ctx, &api.AddLocationsReq{
 		Locs:   []*api.AddLocationsReq_Loc{whs},
 		Parent: uid.Str(0),
 	})
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	for _, w := range resp.Locs {
+
+		for _, s := range w.Locs {
+			for _, r := range s.Locs {
+				for _, b := range r.Locs {
+					e.bins = append(e.bins, b.Uid)
+				}
+			}
+		}
+	}
+
 }

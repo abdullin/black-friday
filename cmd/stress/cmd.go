@@ -56,17 +56,17 @@ func (c cmd) Run(args []string) int {
 	for i := 0; i < 60; i++ {
 		started := time.Now()
 
-		if _, err := e.AddWarehouse(ctx); err != nil {
-			log.Panicln(err)
+		e.AddWarehouse(ctx)
+
+		for k := e.products; k < int64(len(e.bins)); k++ {
+			e.AddProducts(ctx)
 		}
 
 		for k := 0; k < 100; k++ {
 
-			e.AddProducts(ctx)
 			e.AddInventory(ctx)
 
 			for s := 0; s < i*2+1; s++ {
-
 				e.TrySell(ctx)
 			}
 		}
