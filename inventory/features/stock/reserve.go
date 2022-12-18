@@ -24,16 +24,24 @@ func Reserve(a fx.Tx, r *ReserveReq) (*ReserveResp, *status.Status) {
 		Code:        r.Reservation,
 	}
 
+	// group by sku
+	groups := make(map[string]int64)
+	for _, i := range r.Items {
+		val, _ := groups[i.Sku]
+		groups[i.Sku] = val + i.Quantity
+
+	}
+
 	loc := uid.Parse(r.Location)
 
 	skus := make(map[string]int64)
 
-	for _, i := range r.Items {
+	for sku, quantity := range groups {
 		var pid int64
-		if !a.QueryRow("SELECT Id FROM Products WHERE Sku=?", i.Sku)(&pid) {
+		if !a.QueryRow("SELECT Id FROM Products WHERE Sku=?", sku)(&pid) {
 			return nil, ErrProductNotFound
 		}
-		skus[i.Sku] = pid
+		skus[sku] = pid
 		// load products
 		tree, err := graphs.LoadProductTree(a, pid)
 
@@ -41,7 +49,7 @@ func Reserve(a fx.Tx, r *ReserveReq) (*ReserveResp, *status.Status) {
 			return nil, status.Convert(err)
 		}
 
-		_, _, found := graphs.Modify(tree, loc, 0, i.Quantity)
+		_, _, found := graphs.Modify(tree, loc, 0, quantity)
 		if !found {
 			return nil, status.Newf(codes.FailedPrecondition, "no inventory for product %d", pid)
 		}
@@ -52,7 +60,7 @@ func Reserve(a fx.Tx, r *ReserveReq) (*ReserveResp, *status.Status) {
 
 		e.Items = append(e.Items, &Reserved_Item{
 			Product:  uid.Str(pid),
-			Quantity: i.Quantity,
+			Quantity: quantity,
 			Location: r.Location,
 		})
 	}
