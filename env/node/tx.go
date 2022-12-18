@@ -23,7 +23,7 @@ type tx struct {
 func (c *tx) GetSeq() int64 {
 
 	var id int64
-	c.QueryRow("select seq from sqlite_sequence where name='Global'")(&id)
+	c.QueryRow("select seq from sqlite_sequence where name='Entity'")(&id)
 	return id
 
 }
