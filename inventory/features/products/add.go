@@ -10,7 +10,7 @@ import (
 
 func Add(ctx fx.Tx, req *AddProductsReq) (r *AddProductsResp, status *status.Status) {
 
-	id := ctx.GetSeq("Products")
+	id := ctx.GetSeq()
 
 	results := make([]string, len(req.Skus))
 	for i, sku := range req.Skus {

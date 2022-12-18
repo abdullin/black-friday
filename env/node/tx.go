@@ -20,10 +20,10 @@ type tx struct {
 	env    *Env
 }
 
-func (c *tx) GetSeq(name string) int64 {
+func (c *tx) GetSeq() int64 {
 
 	var id int64
-	c.QueryRow("select seq from sqlite_sequence where name=?", name)(&id)
+	c.QueryRow("select seq from sqlite_sequence where name='Global'")(&id)
 	return id
 
 }

@@ -26,10 +26,10 @@ func Event(tx fx.Tx, e proto.Message) error {
 
 		id := uid.Parse(t.Uid)
 
-		values := []any{id, t.Name, uid.Parse(t.Parent), id, "Locations"}
+		values := []any{id, t.Name, uid.Parse(t.Parent), id}
 		return tx.Exec(`
 INSERT INTO Locations(Id, Name, Parent) VALUES (?,?,?);
-UPDATE sqlite_sequence SET seq=? WHERE name=?
+UPDATE sqlite_sequence SET seq=? WHERE name='Entity'
 `, values...)
 	case *LocationMoved:
 
@@ -40,8 +40,8 @@ UPDATE Locations SET Parent=? WHERE Id=?
 		id := uid.Parse(t.Uid)
 		return tx.Exec(`
 INSERT INTO Products(Id, Sku) VALUES (?,?);
-UPDATE sqlite_sequence SET seq=? WHERE name=?
-`, id, t.Sku, id, "Products")
+UPDATE sqlite_sequence SET seq=? WHERE name='Entity'
+`, id, t.Sku, id)
 	case *InventoryUpdated:
 		return setInventory(tx, uid.Parse(t.Product), uid.Parse(t.Location), t.OnHand, t.OnHandChange)
 	case *Reserved:
@@ -49,8 +49,8 @@ UPDATE sqlite_sequence SET seq=? WHERE name=?
 		id := uid.Parse(t.Reservation)
 		err := tx.Exec(`
 INSERT INTO Reservations(Id, Code) VALUES(?,?);
-UPDATE sqlite_sequence SET seq=? WHERE name=?
-`, id, t.Code, id, "Reservations")
+UPDATE sqlite_sequence SET seq=? WHERE name='Entity'
+`, id, t.Code, id)
 		if err != nil {
 			return err
 		}

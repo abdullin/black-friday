@@ -18,7 +18,7 @@ func Reserve(a fx.Tx, r *ReserveReq) (*ReserveResp, *status.Status) {
 		return nil, ErrArgument
 	}
 
-	id := a.GetSeq("Reservations") + 1
+	id := a.GetSeq() + 1
 	e := &Reserved{
 		Reservation: uid.Str(id),
 		Code:        r.Reservation,

@@ -9,7 +9,7 @@ import (
 )
 
 func Add(c fx.Tx, req *AddLocationsReq) (*AddLocationsResp, *status.Status) {
-	id := c.GetSeq("Locations")
+	id := c.GetSeq()
 
 	var addLoc func(parent string, ls []*AddLocationsReq_Loc) ([]*AddLocationsResp_Loc, *status.Status)
 

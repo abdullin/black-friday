@@ -27,10 +27,10 @@ func (c *Tx) QueryHack(q string, args ...any) (*sql.Rows, error) {
 
 }
 
-func (c *Tx) GetSeq(name string) int64 {
+func (c *Tx) GetSeq() int64 {
 	// this is TEST environment, so we assign globally incrementing values
 	var id int64
-	c.QueryRow("select MAX(seq) from sqlite_sequence")(&id)
+	c.QueryRow("select seq from sqlite_sequence WHERE name='Entity'")(&id)
 	return id
 
 }
@@ -84,7 +84,7 @@ func (c *Tx) Exec(query string, args ...any) error {
 	_, err := c.tx.ExecContext(c.ctx, query, args...)
 
 	if err != nil {
-		return fmt.Errorf("problem with query '%s': %w", query, err)
+		return fmt.Errorf("problem with query '%s' [%v]: %w", query, args, err)
 	}
 	return nil
 
