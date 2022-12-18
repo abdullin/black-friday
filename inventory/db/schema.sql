@@ -1,6 +1,8 @@
 PRAGMA journal_mode=WAL;
+PRAGMA synchronous=NORMAL ;
 
 PRAGMA foreign_keys = ON;
+PRAGMA cache_size = -8000;
 
 create table dummy (id integer primary key autoincrement);
 

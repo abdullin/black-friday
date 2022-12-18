@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"fmt"
 	"google.golang.org/protobuf/proto"
+	"log"
 	"reflect"
 )
 
@@ -16,6 +17,7 @@ type tx struct {
 	tx     *sql.Tx
 	events int64
 	trace  *tracer.Tracer
+	env    *Env
 }
 
 func (c *tx) GetSeq(name string) int64 {
@@ -49,7 +51,13 @@ func (c *tx) QueryHack(q string, args ...any) (*sql.Rows, error) {
 
 	c.trace.Begin(q)
 
-	rows, err := c.tx.QueryContext(c.ctx, q, args...)
+	prep := c.env.GetStmt(q)
+	if len(prep.Stmt) != 1 {
+		log.Panicln("Query expects only 1 statement")
+	}
+
+	stmt := c.tx.StmtContext(c.ctx, prep.Stmt[0])
+	rows, err := stmt.QueryContext(c.ctx, args...)
 
 	c.trace.End()
 
@@ -62,7 +70,14 @@ func (c *tx) QueryRow(query string, args ...any) func(dest ...any) bool {
 
 	return func(dest ...any) bool {
 
-		row := c.tx.QueryRowContext(c.ctx, query, args...)
+		prep := c.env.GetStmt(query)
+		if len(prep.Stmt) != 1 {
+			log.Panicln("Query expects only 1 statement")
+		}
+
+		stmt := c.tx.StmtContext(c.ctx, prep.Stmt[0])
+
+		row := stmt.QueryRowContext(c.ctx, args...)
 		err := row.Scan(dest...)
 
 		c.trace.End()
@@ -80,13 +95,28 @@ func (c *tx) QueryRow(query string, args ...any) func(dest ...any) bool {
 func (c *tx) Exec(query string, args ...any) error {
 	c.trace.Begin(query)
 
-	_, err := c.tx.ExecContext(c.ctx, query, args...)
+	prep := c.env.GetStmt(query)
+
+	pos := 0
+	for i, s := range prep.Stmt {
+
+		stmt := c.tx.StmtContext(c.ctx, s)
+
+		slice := args[pos : pos+prep.Count[i]]
+
+		_, err := stmt.ExecContext(c.ctx, slice...)
+
+		pos += prep.Count[i]
+
+		if err != nil {
+
+			c.trace.End()
+			return fmt.Errorf("problem with query '%s' (%v): %w", query, args, err)
+		}
+	}
 
 	c.trace.End()
 
-	if err != nil {
-		return fmt.Errorf("problem with query '%s' (%v): %w", query, args, err)
-	}
 	return nil
 }
 

@@ -53,7 +53,7 @@ func (c cmd) Run(args []string) int {
 
 	global := time.Now()
 	fmt.Println("DUR        DB      LOCs   SKUs  ON-HAND  RESERVE    SALES    REJECT   PENDING FULFILLED ENTITIES   EVENTS")
-	for i := 0; i < 60; i++ {
+	for i := 0; i < 90; i++ {
 		started := time.Now()
 
 		e.AddWarehouse(ctx)

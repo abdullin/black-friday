@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"strings"
 )
 
 type Env struct {
@@ -16,6 +17,45 @@ type Env struct {
 
 	schemaReady bool
 	Bank        *tracer.Bank
+	prepared    map[string]*Prepared
+}
+
+type Prepared struct {
+	Count []int
+	Stmt  []*sql.Stmt
+}
+
+func (e *Env) GetStmt(q string) *Prepared {
+	s, found := e.prepared[q]
+
+	if found {
+		return s
+
+	}
+
+	s = &Prepared{}
+
+	for _, part := range strings.Split(q, ";") {
+
+		if strings.TrimSpace(part) == "" {
+			continue
+		}
+		x, err := e.db.PrepareContext(e.ctx, part)
+
+		if err != nil {
+			log.Panicln(err)
+		}
+
+		count := strings.Count(part, "?")
+
+		s.Count = append(s.Count, count)
+		s.Stmt = append(s.Stmt, x)
+	}
+
+	e.prepared[q] = s
+
+	return s
+
 }
 
 func NewEnv(ctx context.Context, file string) *Env {
@@ -30,6 +70,7 @@ func NewEnv(ctx context.Context, file string) *Env {
 		db:          dbs,
 		schemaReady: false,
 		Bank:        &tracer.Bank{},
+		prepared:    make(map[string]*Prepared),
 	}
 }
 
@@ -73,6 +114,7 @@ func (env *Env) Begin(ctx context.Context) (fx.Tx, error) {
 		ctx:   env.ctx,
 		tx:    dbtx,
 		trace: trace,
+		env:   env,
 	}
 
 	return ttx, nil
