@@ -17,7 +17,7 @@ func init() {
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "Cola"},
 			&ProductAdded{Uid: u(2), Sku: "Fanta"},
-			&LocationAdded{Uid: u(1), Name: "Shelf"},
+			&LocationAdded{Uid: u(1), Name: "Shelf", Parent: u(0)},
 			&InventoryUpdated{Location: u(1), Product: u(2), OnHandChange: 2, OnHand: 2},
 		},
 		When: &GetLocInventoryReq{Location: u(1)},
@@ -30,8 +30,8 @@ func init() {
 		Name:  "two boxes sum up their quantity at root",
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "Epyc"},
-			&LocationAdded{Uid: u(1), Name: "Shelf1"},
-			&LocationAdded{Uid: u(2), Name: "Shelf2"},
+			&LocationAdded{Uid: u(1), Name: "Shelf1", Parent: u(0)},
+			&LocationAdded{Uid: u(2), Name: "Shelf2", Parent: u(0)},
 			&InventoryUpdated{Location: u(1), Product: u(1), OnHandChange: 2, OnHand: 2},
 			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 3, OnHand: 3},
 		},
@@ -44,7 +44,7 @@ func init() {
 		Name:  "boxes sums up quantity with parent container",
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "Epyc"},
-			&LocationAdded{Uid: u(1), Name: "Shelf"},
+			&LocationAdded{Uid: u(1), Name: "Shelf", Parent: u(0)},
 			&LocationAdded{Uid: u(2), Name: "Bin", Parent: u(1)},
 			&InventoryUpdated{Location: u(1), Product: u(1), OnHandChange: 2, OnHand: 2},
 			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 3, OnHand: 3},
@@ -60,7 +60,7 @@ func init() {
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "Cola"},
 			&ProductAdded{Uid: u(2), Sku: "Fanta"},
-			&LocationAdded{Uid: u(1), Name: "Shelf"},
+			&LocationAdded{Uid: u(1), Name: "Shelf", Parent: u(0)},
 			&InventoryUpdated{Location: u(1), Product: u(2), OnHandChange: 2, OnHand: 2},
 		},
 		When: &GetLocInventoryReq{Location: u(0)},
@@ -72,13 +72,13 @@ func init() {
 
 		&ProductAdded{Uid: u(1), Sku: "NVidia 4080"},
 		// we have a warehouse with unloading zone and a shelf
-		&LocationAdded{Uid: u(1), Name: "Warehouse"},
+		&LocationAdded{Uid: u(1), Name: "Warehouse", Parent: u(0)},
 		&LocationAdded{Uid: u(2), Name: "Unloading", Parent: u(1)},
 		&LocationAdded{Uid: u(3), Name: "Shelf", Parent: u(1)},
 		// 5 GPUS on a Shelf
 		&InventoryUpdated{Location: u(3), Product: u(1), OnHandChange: 5, OnHand: 5},
 		// we have a standalone container with some GPUs
-		&LocationAdded{Uid: u(4), Name: "Container"},
+		&LocationAdded{Uid: u(4), Name: "Container", Parent: u(0)},
 		&InventoryUpdated{Location: u(4), Product: u(1), OnHandChange: 10, OnHand: 10},
 		// container was moved to the unloading zone in warehouse
 		&LocationMoved{Uid: u(4), NewParent: u(2)},
@@ -112,7 +112,7 @@ func init() {
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "NVidia 4080"},
 			// we have a warehouse with unloading zone and a shelf
-			&LocationAdded{Uid: u(1), Name: "Warehouse"},
+			&LocationAdded{Uid: u(1), Name: "Warehouse", Parent: u(0)},
 			&LocationAdded{Uid: u(2), Name: "Unloading", Parent: u(1)},
 			&LocationAdded{Uid: u(3), Name: "Shelf", Parent: u(1)},
 			// 5 GPUS on a Shelf
@@ -124,7 +124,7 @@ func init() {
 				Items:       []*Reserved_Item{{Product: u(1), Quantity: 3, Location: u(3)}},
 			},
 			// we have a standalone container with some GPUs
-			&LocationAdded{Uid: u(4), Name: "Container"},
+			&LocationAdded{Uid: u(4), Name: "Container", Parent: u(0)},
 			&InventoryUpdated{Location: u(4), Product: u(1), OnHandChange: 10, OnHand: 10},
 			// most of which was already promised to a customer
 			&Reserved{
@@ -146,7 +146,7 @@ func init() {
 		Name:  "reservation at location reduces availability at location",
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "pixel"},
-			&LocationAdded{Uid: u(2), Name: "Warehouse"},
+			&LocationAdded{Uid: u(2), Name: "Warehouse", Parent: u(0)},
 			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 10, OnHand: 10},
 			&Reserved{
 				Reservation: u(3),
@@ -165,7 +165,7 @@ func init() {
 		Name:  "cancelled reservation returns availability",
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "pixel"},
-			&LocationAdded{Uid: u(2), Name: "Warehouse"},
+			&LocationAdded{Uid: u(2), Name: "Warehouse", Parent: u(0)},
 			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 10, OnHand: 10},
 			&Reserved{
 				Reservation: u(3),
@@ -188,7 +188,7 @@ func init() {
 		Name:  "reservation at location reduces availability globally",
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "pixel"},
-			&LocationAdded{Uid: u(2), Name: "Warehouse"},
+			&LocationAdded{Uid: u(2), Name: "Warehouse", Parent: u(0)},
 			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 10, OnHand: 10},
 			&Reserved{
 				Reservation: u(3),
@@ -207,7 +207,7 @@ func init() {
 		Name:  "multiple reservations stack",
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "pixel"},
-			&LocationAdded{Uid: u(1), Name: "Warehouse"},
+			&LocationAdded{Uid: u(1), Name: "Warehouse", Parent: u(0)},
 			&InventoryUpdated{Location: u(1), Product: u(1), OnHandChange: 10, OnHand: 10},
 			&Reserved{
 				Reservation: u(1),

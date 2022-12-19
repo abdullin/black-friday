@@ -10,7 +10,7 @@ func init() {
 		Level: 2,
 		Name:  "don't allow negative on-hand",
 		Given: []proto.Message{
-			&LocationAdded{Uid: u(1), Name: "Shelf"},
+			&LocationAdded{Uid: u(1), Name: "Shelf", Parent: u(0)},
 			&ProductAdded{Uid: u(2), Sku: "NVidia"},
 		},
 		When:      &UpdateInventoryReq{Product: u(2), Location: u(1), OnHandChange: -1},
@@ -29,7 +29,7 @@ func init() {
 	Define(&Spec{
 		Name: "add items to a location",
 		Given: []proto.Message{
-			&LocationAdded{Uid: u(1), Name: "Shelf"},
+			&LocationAdded{Uid: u(1), Name: "Shelf", Parent: u(0)},
 			&ProductAdded{Uid: u(2), Sku: "NVidia"},
 		},
 		When:         &UpdateInventoryReq{Location: u(1), Product: u(2), OnHandChange: 7},
@@ -46,7 +46,7 @@ func init() {
 	Define(&Spec{
 		Name: "add items to a location twice",
 		Given: []proto.Message{
-			&LocationAdded{Uid: u(1), Name: "Shelf"},
+			&LocationAdded{Uid: u(1), Name: "Shelf", Parent: u(0)},
 			&ProductAdded{Uid: u(2), Sku: "NVidia"},
 			&InventoryUpdated{
 				Location:     u(1),

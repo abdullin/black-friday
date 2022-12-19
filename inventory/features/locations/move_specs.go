@@ -11,8 +11,8 @@ func init() {
 		Level: 1,
 		Name:  "move locations",
 		Given: []proto.Message{
-			&LocationAdded{Uid: u(1), Name: "Warehouse"},
-			&LocationAdded{Uid: u(2), Name: "Container"},
+			&LocationAdded{Uid: u(1), Name: "Warehouse", Parent: u(0)},
+			&LocationAdded{Uid: u(2), Name: "Container", Parent: u(0)},
 		},
 		When:         &MoveLocationReq{Uid: u(2), NewParent: u(1)},
 		ThenResponse: &MoveLocationResp{},
@@ -25,7 +25,7 @@ func init() {
 		Level: 3,
 		Name:  "recursive locations are not allowed",
 		Given: []proto.Message{
-			&LocationAdded{Uid: u(1), Name: "Warehouse"},
+			&LocationAdded{Uid: u(1), Name: "Warehouse", Parent: u(0)},
 			&LocationAdded{Uid: u(2), Name: "Container", Parent: u(1)},
 		},
 		When:      &MoveLocationReq{Uid: u(1), NewParent: u(2)},
@@ -35,7 +35,7 @@ func init() {
 		Level: 2,
 		Name:  "don't move location to itself",
 		Given: []proto.Message{
-			&LocationAdded{Uid: u(1), Name: "Warehouse"},
+			&LocationAdded{Uid: u(1), Name: "Warehouse", Parent: u(0)},
 		},
 		When:      &MoveLocationReq{Uid: u(1), NewParent: u(1)},
 		ThenError: ErrBadMove,
@@ -45,7 +45,7 @@ func init() {
 		Level: 1,
 		Name:  "can't touch root",
 		Given: []proto.Message{
-			&LocationAdded{Uid: u(1), Name: "Warehouse"},
+			&LocationAdded{Uid: u(1), Name: "Warehouse", Parent: u(0)},
 		},
 		When:      &MoveLocationReq{Uid: u(0), NewParent: u(1)},
 		ThenError: ErrBadMove,

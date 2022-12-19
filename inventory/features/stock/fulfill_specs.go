@@ -18,7 +18,7 @@ func init() {
 		Name: "simple fulfillment",
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "GPU"},
-			&LocationAdded{Uid: u(2), Name: "Warehouse"},
+			&LocationAdded{Uid: u(2), Name: "Warehouse", Parent: u(0)},
 			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 10, OnHand: 10},
 			&Reserved{
 				Reservation: u(3),
@@ -41,7 +41,7 @@ func init() {
 		Name: "fulfill reservation in a shipment box",
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "GPU"},
-			&LocationAdded{Uid: u(2), Name: "Warehouse"},
+			&LocationAdded{Uid: u(2), Name: "Warehouse", Parent: u(0)},
 			&LocationAdded{Uid: u(3), Name: "Shelf", Parent: u(2)},
 			&InventoryUpdated{Location: u(3), Product: u(1), OnHandChange: 10, OnHand: 10},
 			&Reserved{
@@ -65,7 +65,7 @@ func init() {
 		Name: "can't fulfill in a way that breaks availability",
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "GPU"},
-			&LocationAdded{Uid: u(2), Name: "Warehouse"},
+			&LocationAdded{Uid: u(2), Name: "Warehouse", Parent: u(0)},
 			&LocationAdded{Uid: u(3), Name: "Shelf 1", Parent: u(2)},
 			&LocationAdded{Uid: u(4), Name: "Shelf 2", Parent: u(2)},
 			&InventoryUpdated{Location: u(3), Product: u(1), OnHandChange: 2, OnHand: 2},
@@ -92,7 +92,7 @@ func init() {
 		Name: "can fulfill in a way that keeps availability",
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "GPU"},
-			&LocationAdded{Uid: u(2), Name: "Warehouse"},
+			&LocationAdded{Uid: u(2), Name: "Warehouse", Parent: u(0)},
 			&LocationAdded{Uid: u(3), Name: "Shelf 1", Parent: u(2)},
 			&LocationAdded{Uid: u(4), Name: "Shelf 2", Parent: u(2)},
 			&InventoryUpdated{Location: u(3), Product: u(1), OnHandChange: 2, OnHand: 2},
