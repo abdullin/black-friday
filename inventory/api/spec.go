@@ -101,6 +101,7 @@ func (s *Spec) ToTestString() string {
 }
 
 func Define(s *Spec) {
+
 	s.Seq = len(Specs) + 1
 	Specs = append(Specs, s)
 }

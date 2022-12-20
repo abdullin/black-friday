@@ -17,10 +17,10 @@ func TestMessageConversion(t *testing.T) {
 		txt string
 	}{
 		{
-			msg: &api.LocationAdded{Id: 1, Name: "loc", Parent: 2},
+			msg: &api.LocationAdded{Uid: "0", Name: "loc", Parent: "1"},
 			txt: `LocationAdded id:1 name:"loc" parent:2`,
 		}, {
-			msg: &api.Reserved{Reservation: 2, Code: "ASD"},
+			msg: &api.Reserved{Reservation: "0", Code: "ASD"},
 			txt: `Reserved reservation:2 code: "ASD"`,
 		},
 	}

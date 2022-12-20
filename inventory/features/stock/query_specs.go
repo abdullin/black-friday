@@ -17,10 +17,10 @@ func init() {
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "Cola"},
 			&ProductAdded{Uid: u(2), Sku: "Fanta"},
-			&LocationAdded{Uid: u(1), Name: "Shelf", Parent: u(0)},
-			&InventoryUpdated{Location: u(1), Product: u(2), OnHandChange: 2, OnHand: 2},
+			&LocationAdded{Uid: u(3), Name: "Shelf", Parent: u(0)},
+			&InventoryUpdated{Location: u(3), Product: u(2), OnHandChange: 2, OnHand: 2},
 		},
-		When: &GetLocInventoryReq{Location: u(1)},
+		When: &GetLocInventoryReq{Location: u(3)},
 		ThenResponse: &GetLocInventoryResp{
 			Items: []*GetLocInventoryResp_Item{{Product: u(2), OnHand: 2, Available: 2}}},
 	})
@@ -29,29 +29,29 @@ func init() {
 		Level: 3,
 		Name:  "two boxes sum up their quantity at root",
 		Given: []proto.Message{
-			&ProductAdded{Uid: u(1), Sku: "Epyc"},
 			&LocationAdded{Uid: u(1), Name: "Shelf1", Parent: u(0)},
 			&LocationAdded{Uid: u(2), Name: "Shelf2", Parent: u(0)},
-			&InventoryUpdated{Location: u(1), Product: u(1), OnHandChange: 2, OnHand: 2},
-			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 3, OnHand: 3},
+			&ProductAdded{Uid: u(3), Sku: "Epyc"},
+			&InventoryUpdated{Location: u(1), Product: u(3), OnHandChange: 2, OnHand: 2},
+			&InventoryUpdated{Location: u(2), Product: u(3), OnHandChange: 3, OnHand: 3},
 		},
 		When: &GetLocInventoryReq{Location: u(0)},
 		ThenResponse: &GetLocInventoryResp{
-			Items: []*GetLocInventoryResp_Item{{Product: u(1), OnHand: 5, Available: 5}}},
+			Items: []*GetLocInventoryResp_Item{{Product: u(3), OnHand: 5, Available: 5}}},
 	})
 	Define(&Spec{
 		Level: 3,
 		Name:  "boxes sums up quantity with parent container",
 		Given: []proto.Message{
-			&ProductAdded{Uid: u(1), Sku: "Epyc"},
 			&LocationAdded{Uid: u(1), Name: "Shelf", Parent: u(0)},
 			&LocationAdded{Uid: u(2), Name: "Bin", Parent: u(1)},
-			&InventoryUpdated{Location: u(1), Product: u(1), OnHandChange: 2, OnHand: 2},
-			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 3, OnHand: 3},
+			&ProductAdded{Uid: u(3), Sku: "Epyc"},
+			&InventoryUpdated{Location: u(1), Product: u(3), OnHandChange: 2, OnHand: 2},
+			&InventoryUpdated{Location: u(2), Product: u(3), OnHandChange: 3, OnHand: 3},
 		},
 		When: &GetLocInventoryReq{Location: u(1)},
 		ThenResponse: &GetLocInventoryResp{
-			Items: []*GetLocInventoryResp_Item{{Product: u(1), OnHand: 5, Available: 5}}},
+			Items: []*GetLocInventoryResp_Item{{Product: u(3), OnHand: 5, Available: 5}}},
 	})
 
 	Define(&Spec{
@@ -60,8 +60,8 @@ func init() {
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "Cola"},
 			&ProductAdded{Uid: u(2), Sku: "Fanta"},
-			&LocationAdded{Uid: u(1), Name: "Shelf", Parent: u(0)},
-			&InventoryUpdated{Location: u(1), Product: u(2), OnHandChange: 2, OnHand: 2},
+			&LocationAdded{Uid: u(3), Name: "Shelf", Parent: u(0)},
+			&InventoryUpdated{Location: u(3), Product: u(2), OnHandChange: 2, OnHand: 2},
 		},
 		When: &GetLocInventoryReq{Location: u(0)},
 		ThenResponse: &GetLocInventoryResp{
@@ -207,17 +207,17 @@ func init() {
 		Name:  "multiple reservations stack",
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "pixel"},
-			&LocationAdded{Uid: u(1), Name: "Warehouse", Parent: u(0)},
-			&InventoryUpdated{Location: u(1), Product: u(1), OnHandChange: 10, OnHand: 10},
+			&LocationAdded{Uid: u(2), Name: "Warehouse", Parent: u(0)},
+			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 10, OnHand: 10},
 			&Reserved{
-				Reservation: u(1),
+				Reservation: u(3),
 				Code:        "sale1",
-				Items:       []*Reserved_Item{{Product: u(1), Quantity: 3, Location: u(1)}},
+				Items:       []*Reserved_Item{{Product: u(1), Quantity: 3, Location: u(2)}},
 			},
 			&Reserved{
-				Reservation: u(2),
+				Reservation: u(4),
 				Code:        "sale2",
-				Items:       []*Reserved_Item{{Product: u(1), Quantity: 4, Location: u(1)}},
+				Items:       []*Reserved_Item{{Product: u(1), Quantity: 4, Location: u(2)}},
 			},
 		},
 		When: &GetLocInventoryReq{Location: u(0)},

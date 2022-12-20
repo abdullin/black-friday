@@ -92,7 +92,7 @@ func init() {
 			&LocationAdded{Uid: u(2), Name: "Shelf", Parent: u(0)},
 			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 10, OnHand: 10},
 			&Reserved{
-				Reservation: u(1),
+				Reservation: u(3),
 				Code:        "sale",
 				Items:       []*Reserved_Item{{Product: u(1), Quantity: 1, Location: u(2)}},
 			},
@@ -180,7 +180,7 @@ func init() {
 			&LocationAdded{Uid: u(2), Name: "WHS1", Parent: u(0)},
 			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 2, OnHand: 2},
 			&Reserved{
-				Reservation: u(1),
+				Reservation: u(3),
 				Code:        "sale",
 				Items:       []*Reserved_Item{{Product: u(1), Quantity: 1, Location: u(2)}},
 			},
@@ -227,10 +227,11 @@ func init() {
 		Level: 5,
 		Name:  "reserve in a location that doesn't have enough inside",
 		Given: []proto.Message{
-			&ProductAdded{Uid: u(1), Sku: "GPU"},
 			&LocationAdded{Uid: u(1), Name: "Container", Parent: u(0)},
 			&LocationAdded{Uid: u(2), Name: "Box", Parent: u(1)},
-			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 10, OnHand: 10},
+
+			&ProductAdded{Uid: u(3), Sku: "GPU"},
+			&InventoryUpdated{Location: u(2), Product: u(3), OnHandChange: 10, OnHand: 10},
 		},
 		When: &ReserveReq{
 			Reservation: "sale",
