@@ -70,18 +70,19 @@ func init() {
 
 	container_with_gpus_inbound := []proto.Message{
 
-		&ProductAdded{Uid: u(1), Sku: "NVidia 4080"},
 		// we have a warehouse with unloading zone and a shelf
 		&LocationAdded{Uid: u(1), Name: "Warehouse", Parent: u(0)},
 		&LocationAdded{Uid: u(2), Name: "Unloading", Parent: u(1)},
 		&LocationAdded{Uid: u(3), Name: "Shelf", Parent: u(1)},
+
+		&ProductAdded{Uid: u(4), Sku: "NVidia 4080"},
 		// 5 GPUS on a Shelf
-		&InventoryUpdated{Location: u(3), Product: u(1), OnHandChange: 5, OnHand: 5},
+		&InventoryUpdated{Location: u(3), Product: u(4), OnHandChange: 5, OnHand: 5},
 		// we have a standalone container with some GPUs
-		&LocationAdded{Uid: u(4), Name: "Container", Parent: u(0)},
-		&InventoryUpdated{Location: u(4), Product: u(1), OnHandChange: 10, OnHand: 10},
+		&LocationAdded{Uid: u(5), Name: "Container", Parent: u(0)},
+		&InventoryUpdated{Location: u(5), Product: u(4), OnHandChange: 10, OnHand: 10},
 		// container was moved to the unloading zone in warehouse
-		&LocationMoved{Uid: u(4), NewParent: u(2)},
+		&LocationMoved{Uid: u(5), NewParent: u(2)},
 	}
 	Define(&Spec{
 		Level: 4,
@@ -91,7 +92,7 @@ func init() {
 		When: &GetLocInventoryReq{Location: u(1)},
 		// warehouse should show 15 cards as being onHand
 		ThenResponse: &GetLocInventoryResp{Items: []*GetLocInventoryResp_Item{
-			{Product: u(1), OnHand: 15, Available: 15},
+			{Product: u(4), OnHand: 15, Available: 15},
 		}},
 	})
 
@@ -102,7 +103,7 @@ func init() {
 		// we query unloading
 		When: &GetLocInventoryReq{Location: u(2)},
 		ThenResponse: &GetLocInventoryResp{Items: []*GetLocInventoryResp_Item{
-			{Product: u(1), OnHand: 10, Available: 10},
+			{Product: u(4), OnHand: 10, Available: 10},
 		}},
 	})
 
