@@ -10,6 +10,10 @@ func init() {
 		Level: 3,
 		Name:  "reserve sale with one item on the root",
 		Comments: `
+When reserving globally we say: "please put these items aside for me". 
+Items could be located anywhere. When somebody attempts to do any operation
+that violates the reservation, they will know about that right away.
+
 Note that we can have stock in a specific location, while reservation
 would happen globally (against the root or warehouse).
 
@@ -50,7 +54,29 @@ from any location within the scope.
 
 	Define(&Spec{
 		Level: 3,
-		Name:  "reservation with repeating product",
+		Name:  "reservation codes must be unique",
+		Given: []proto.Message{
+			&ProductAdded{Uid: u(1), Sku: "GPU"},
+			&LocationAdded{Uid: u(2), Name: "Shelf", Parent: u(0)},
+			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 10, OnHand: 10},
+			&Reserved{
+				Reservation: u(3),
+				Code:        "sale",
+				Items:       []*Reserved_Item{{Product: u(1), Quantity: 1, Location: u(2)}},
+			},
+		},
+		When: &ReserveReq{
+			Reservation: "sale",
+			Location:    u(2),
+			Items:       []*ReserveReq_Item{{Sku: "GPU", Quantity: 1}},
+		},
+		ThenError: ErrAlreadyExists,
+	})
+
+	Define(&Spec{
+		Level:    3,
+		Name:     "reservation with repeating product",
+		Comments: `Repeating products should be added together`,
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "GPU"},
 			&LocationAdded{Uid: u(2), Name: "Shelf", Parent: u(0)},
@@ -79,9 +105,20 @@ from any location within the scope.
 	Define(&Spec{
 		Level: 3,
 		Name:  "reserve sale in a specific location",
+		Comments: `
+We can reserve items within a specific scope. This can make sense when
+the location matters, e.g. one warehouse is closer to the customer.
+
+┌───────────────────┐
+│Warehouse West: 10 │
+│ ┌─ ── ── ── ─┐    │
+│  RESERVE: 10      │
+│ └─ ── ── ── ─┘    │
+└───────────────────┘
+`,
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "GPU"},
-			&LocationAdded{Uid: u(2), Name: "Shelf", Parent: u(0)},
+			&LocationAdded{Uid: u(2), Name: "Warehouse West", Parent: u(0)},
 			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 10, OnHand: 10},
 		},
 		When: &ReserveReq{
@@ -100,29 +137,12 @@ from any location within the scope.
 	})
 
 	Define(&Spec{
-		Level: 3,
-		Name:  "reservation codes must be unique",
-		Given: []proto.Message{
-			&ProductAdded{Uid: u(1), Sku: "GPU"},
-			&LocationAdded{Uid: u(2), Name: "Shelf", Parent: u(0)},
-			&InventoryUpdated{Location: u(2), Product: u(1), OnHandChange: 10, OnHand: 10},
-			&Reserved{
-				Reservation: u(3),
-				Code:        "sale",
-				Items:       []*Reserved_Item{{Product: u(1), Quantity: 1, Location: u(2)}},
-			},
-		},
-		When: &ReserveReq{
-			Reservation: "sale",
-			Location:    u(2),
-			Items:       []*ReserveReq_Item{{Sku: "GPU", Quantity: 1}},
-		},
-		ThenError: ErrAlreadyExists,
-	})
-
-	Define(&Spec{
 		Level: 5,
 		Name:  "reserve sale in a specific location that doesn't have quantity",
+		Comments: `
+The system should give is immediate feedback if we try to create impossible
+reservation. Human can override this later, if needed.
+`,
 		Given: []proto.Message{
 			&LocationAdded{Uid: u(1), Name: "Shelf", Parent: u(0)},
 			&LocationAdded{Uid: u(2), Name: "Empty", Parent: u(0)},
