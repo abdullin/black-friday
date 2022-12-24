@@ -58,19 +58,19 @@ between the warehouses.
 	Define(&Spec{
 		Name: "prevent moves that will break availability",
 		Comments: `
-The system should prevent moves that will break availability.
+The system should detect moves that will break availability.
 
 People will have to make a decision about what to do with that.
 
-┌─ ── ── ── ── ── ── ─┐                     
- RESERVE: 2                                 
-│ ┌─────────────────┐ │                     
-│ │    Warehouse    │ │                     
-  │ ┌─────────────┐ │   Move  ┌────────────┐
-│ │ │Container: 2 ├─┼─┼──────▶│Container: 2│
-│ │ └─────────────┘ │ │       └────────────┘
-  └─────────────────┘                       
-└─ ── ── ── ── ── ── ─┘                     
+┌─ ── ── ── ── ── ── ─┐
+ RESERVE: 2
+│ ┌─────────────────┐ │
+│ │    Warehouse    │ │
+  │ ┏━━━━━━━━━━━━━┓ │   Move! ┏━━━━━━━━━━━━┓
+│ │ ┃Container: 2 ┣─┼─┼──────▶┃Container: 2┃
+│ │ ┗━━━━━━━━━━━━━┛ │ │       ┗━━━━━━━━━━━━┛
+  └─────────────────┘
+└─ ── ── ── ── ── ── ─┘
 `,
 		Level: 5,
 		Given: []proto.Message{
