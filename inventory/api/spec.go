@@ -13,6 +13,7 @@ type Spec struct {
 	Level        int
 	Seq          int
 	Name         string
+	Comments     string
 	Given        []proto.Message
 	When         proto.Message
 	ThenResponse proto.Message
@@ -101,6 +102,8 @@ func (s *Spec) ToTestString() string {
 }
 
 func Define(s *Spec) {
+	// cleanup the comments
+	s.Comments = strings.Trim(s.Comments, "\n")
 
 	s.Seq = len(Specs) + 1
 	Specs = append(Specs, s)

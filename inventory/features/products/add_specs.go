@@ -12,6 +12,12 @@ func u(i int64) string {
 
 func init() {
 	Define(&Spec{
+		Comments: `
+Products represent things that can be stored in inventory: GPUs, Colas, iPhones, etc
+
+They are defined by their SKU - code for "Stock Keeping Unit". A collection of
+product forms a "Catalogue". All SKUs must be unique there.
+`,
 		Level:        0,
 		Name:         "add new products",
 		When:         &AddProductsReq{Skus: []string{"one"}},

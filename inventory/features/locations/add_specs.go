@@ -15,6 +15,32 @@ func init() {
 	Define(&Spec{
 		Level: 0,
 		Name:  "add location",
+		Comments: `
+Locations are places where products could be stored.
+
+We model them as a nested structure of unlimited depth. 
+
+There is a predefined "ROOT" location, while all other 
+locations are contained within.
+
+┌── ─── ─── ─── ─── ─── ─── ──┐
+│ROOT                          
+│┌────────────┐┌────────────┐ │
+ │ Warehouse1 ││ Warehouse2 │ │
+││┌──────────┐││┌──────────┐│ │
+│││ Shelf 1  ││││ Shelf 1  ││  
+││├──────────┤││├──────────┤│ │
+ ││ Shelf 2  ││││ Shelf 2  ││ │
+││└──────────┘││└──────────┘│ │
+│└────────────┘└────────────┘  
+│┌──────────┐                 │
+ │Container │                 │
+│└──────────┘                 │
+└─ ─── ─── ─── ─── ─── ─── ─── 
+
+
+Location names must be unique within their parent.
+`,
 		When: &AddLocationsReq{
 			Parent: u(0),
 			Locs: []*AddLocationsReq_Loc{

@@ -8,7 +8,22 @@ import (
 func init() {
 	Define(&Spec{
 		Level: 3,
-		Name:  "reserve sale with one item",
+		Name:  "reserve sale with one item on the root",
+		Comments: `
+Note that we can have stock in a specific location, while reservation
+would happen globally (against the root or warehouse).
+
+In this case, the reservation could be later fulfilled using inventory
+from any location within the scope.
+
+┌─ ── ── ── ── ── ── ── ── ┐
+ RESERVE     ┌───────────┐ │
+│            │SHELF      │  
+│10 GPU      │           │ │
+             │10 GPU     │ │
+│            └───────────┘  
+└ ── ── ── ── ── ── ── ── ─┘ 
+`,
 		Given: []proto.Message{
 			&ProductAdded{Uid: u(1), Sku: "GPU"},
 			&LocationAdded{Uid: u(2), Name: "Shelf", Parent: u(0)},
