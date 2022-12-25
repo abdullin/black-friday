@@ -1,10 +1,19 @@
 package graphs
 
-import "black-friday/fx"
+import (
+	"black-friday/fx"
+	"database/sql"
+)
 
 // map - loc/id -> leaf node -> chain up to root.
 
+var Cache map[int64]int64
+
 func LoadLocTree(ctx fx.Tx) (map[int64]int64, error) {
+	if Cache != nil {
+		return Cache, nil
+	}
+
 	m := make(map[int64]int64)
 
 	query := `SELECT Id, Parent from Locations`
@@ -23,6 +32,7 @@ func LoadLocTree(ctx fx.Tx) (map[int64]int64, error) {
 		}
 		m[id] = parent
 	}
+	Cache = m
 	return m, nil
 }
 
@@ -30,9 +40,40 @@ type Stock struct {
 	Qty, Loc int64
 }
 
+func LoadStocks(ctx fx.Tx, product int64) (reserves []Stock, inventory []Stock, err error) {
+
+	query := `SELECT Location, OnHand, 1 FROM Inventory WHERE Product=?
+UNION
+SELECT Location, SUM(Quantity), 0 FROM Reserves WHERE Product=?
+GROUP BY LOcation`
+	var rows *sql.Rows
+	rows, err = ctx.QueryHack(query, product, product)
+	if err != nil {
+		return
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var s Stock
+		var isInventory int
+
+		err = rows.Scan(&s.Loc, &s.Qty, &isInventory)
+		if err != nil {
+			return
+		}
+		if isInventory == 1 {
+			inventory = append(inventory, s)
+		} else {
+			reserves = append(reserves, s)
+		}
+	}
+	return
+}
+
 func LoadReserves(ctx fx.Tx, product int64) ([]Stock, error) {
 	var res []Stock
-	rows, err := ctx.QueryHack("SELECT Location, Quantity FROM Reserves WHERE Product=?", product)
+	rows, err := ctx.QueryHack("SELECT Location, Sum(Quantity) FROM Reserves WHERE Product=? GROUP BY Location", product)
 	if err != nil {
 		return nil, err
 	}

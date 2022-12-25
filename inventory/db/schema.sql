@@ -69,6 +69,9 @@ CREATE INDEX IDX_RESERVES_PRODUCT_LOCATION
 CREATE INDEX IDX_RESERVES_RESERVATION
     ON Reserves (Reservation);
 
+CREATE INDEX IDX_RESERVES_Product
+    ON Reserves (Product);
+
 INSERT INTO sqlite_sequence (name, seq) VALUES
     ('Locations', 0),
     ('Products', 0),

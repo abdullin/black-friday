@@ -4,6 +4,7 @@ import (
 	"black-friday/env/uid"
 	"black-friday/fx"
 	. "black-friday/inventory/api"
+	"black-friday/inventory/features/graphs"
 	"fmt"
 	"google.golang.org/protobuf/proto"
 )
@@ -26,6 +27,7 @@ func Event(tx fx.Tx, e proto.Message) error {
 
 		id := uid.Parse(t.Uid)
 
+		graphs.Cache = nil
 		values := []any{id, t.Name, uid.Parse(t.Parent), id, "Locations"}
 		return tx.Exec(`
 INSERT INTO Locations(Id, Name, Parent) VALUES (?,?,?);
@@ -33,6 +35,7 @@ UPDATE sqlite_sequence SET seq=? WHERE name=?
 `, values...)
 	case *LocationMoved:
 
+		graphs.Cache = nil
 		return tx.Exec(`
 UPDATE Locations SET Parent=? WHERE Id=?
 `, uid.Parse(t.NewParent), uid.Parse(t.Uid))
