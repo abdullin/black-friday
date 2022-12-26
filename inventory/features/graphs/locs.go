@@ -7,9 +7,34 @@ import (
 
 // map - loc/id -> leaf node -> chain up to root.
 
-var Cache map[int64]int64
+var Cache Tree
 
-func LoadLocTree(ctx fx.Tx) (map[int64]int64, error) {
+type Tree map[int64][]int64
+
+func DenormaliseLocTree(in map[int64]int64) Tree {
+	t := make(Tree)
+
+	for id, parent := range in {
+
+		var parents []int64
+
+		for {
+			parents = append(parents, parent)
+			if parent == 0 {
+				break
+			} else {
+				parent = in[parent]
+			}
+
+		}
+		t[id] = parents
+
+	}
+	return t
+
+}
+
+func LoadLocTree(ctx fx.Tx) (Tree, error) {
 	if Cache != nil {
 		return Cache, nil
 	}
@@ -32,8 +57,8 @@ func LoadLocTree(ctx fx.Tx) (map[int64]int64, error) {
 		}
 		m[id] = parent
 	}
-	Cache = m
-	return m, nil
+	Cache = DenormaliseLocTree(m)
+	return Cache, nil
 }
 
 type Stock struct {
@@ -117,47 +142,47 @@ func LoadInventory(ctx fx.Tx, product int64) ([]Stock, error) {
 	return res, nil
 }
 
-func Resolves(ctx fx.Tx, locs map[int64]int64, onHand, reserved []Stock) bool {
+func Resolves(ctx fx.Tx, locs Tree, onHand, reserved []Stock) bool {
 
 	ctx.Trace().Begin("Resolve")
 	defer ctx.Trace().End()
 	// cached tree
-	var stocks = make(map[int64]struct{ hand, reserved int64 })
+	var stocks = make(map[int64]struct{ hand, reserved int64 }, len(reserved)*2)
 
 	for _, a := range onHand {
-		current := a.Loc
 
-		// walk this up, summing values in stocks
-		for {
-			stock := stocks[current]
+		stock := stocks[a.Loc]
+		stock.hand += a.Qty
+		stocks[a.Loc] = stock
+
+		parents := locs[a.Loc]
+
+		for _, parent := range parents {
+			stock := stocks[parent]
 			stock.hand += a.Qty
-			stocks[current] = stock
-
-			if current == 0 {
-				break
-			}
-			current = locs[current]
+			stocks[parent] = stock
 		}
 	}
 
 	for _, a := range reserved {
+		stock := stocks[a.Loc]
+		stock.reserved += a.Qty
 
-		current := a.Loc
-		// walk this up, summing values in stocks
-		for {
-			stock := stocks[current]
+		if stock.reserved > stock.hand {
+			return false
+		}
+
+		stocks[a.Loc] = stock
+
+		for _, parent := range locs[a.Loc] {
+			stock := stocks[parent]
 			stock.reserved += a.Qty
 
 			if stock.reserved > stock.hand {
 				return false
 			}
 
-			stocks[current] = stock
-
-			if current == 0 {
-				break
-			}
-			current = locs[current]
+			stocks[parent] = stock
 		}
 	}
 

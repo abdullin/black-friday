@@ -62,7 +62,7 @@ func (b *Bank) SaveReport(file string) {
 	for _, i := range kvs {
 
 		line := strings.Replace(i.name, "\n", " ", -1)
-		f.WriteString(fmt.Sprintf("%v\t%d\t%s\n", i.dur, i.cnt, line))
+		f.WriteString(fmt.Sprintf("%12v\t%6d\t%s\n", i.dur, i.cnt, line))
 
 	}
 
