@@ -95,7 +95,7 @@ func funcName(ctx context.Context, file string, i int, global, started time.Time
 	}
 	var onHand, reserved, reservations, entities int64
 	tx.QueryRow("SELECT SUM(OnHand) FROM Inventory")(&onHand)
-	tx.QueryRow("SELECT SUM(Quantity) FROM Reserves")(&reserved)
+	tx.QueryRow("SELECT ifnull(SUM(Quantity),0) FROM Reserves")(&reserved)
 	tx.QueryRow("SELECT COUNT(*) FROM Reservations")(&reservations)
 	tx.QueryRow("SELECT SUM(seq) FROM sqlite_sequence")(&entities)
 

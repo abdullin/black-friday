@@ -84,7 +84,7 @@ func (c *tx) QueryRow(query string, args ...any) func(dest ...any) bool {
 		if err == sql.ErrNoRows {
 			return false
 		} else if err != nil {
-			panic(fmt.Errorf("sql %s: %w", query, err))
+			panic(fmt.Errorf("sql %q %v: %w", query, args, err))
 		}
 
 		return true
