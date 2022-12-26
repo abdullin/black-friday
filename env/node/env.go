@@ -69,7 +69,7 @@ func NewEnv(ctx context.Context, file string) *Env {
 		ctx:         ctx,
 		db:          dbs,
 		schemaReady: false,
-		Bank:        &tracer.Bank{},
+		Bank:        tracer.NewBank(),
 		prepared:    make(map[string]*Prepared),
 	}
 }
@@ -88,7 +88,7 @@ func (env *Env) EnsureSchema() {
 	if env.schemaReady {
 		return
 	}
-	err := db.CreateSchema(env.db)
+	err := db.CreateSchema(env.db, false)
 	if err != nil {
 		log.Panicln("can't prepare schema: ", err)
 

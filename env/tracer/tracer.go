@@ -10,6 +10,7 @@ type Tracer struct {
 	Started time.Time
 	Events  []Event
 	bank    *Bank
+	stack   []string
 }
 
 var (
@@ -62,6 +63,7 @@ func (t *Tracer) Begin(name string) {
 	if t.Disabled() {
 		return
 	}
+	t.stack = append(t.stack, name)
 	t.append(Event{
 		Timestamp: time.Since(t.Started).Microseconds(),
 		Name:      name,
@@ -75,8 +77,19 @@ func (t *Tracer) End() {
 	if t.Disabled() {
 		return
 	}
+
+	elapsed := time.Since(t.Started)
+
+	name := t.stack[len(t.stack)-1]
+
+	counter := t.bank.gross[name]
+	counter.cnt += 1
+	counter.dur += elapsed
+	t.bank.gross[name] = counter
+
+	t.stack = t.stack[0 : len(t.stack)-1]
 	t.append(Event{
-		Timestamp: time.Since(t.Started).Microseconds(),
+		Timestamp: elapsed.Microseconds(),
 		PID:       1,
 		TID:       1,
 		Phase:     "E",

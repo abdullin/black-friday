@@ -72,6 +72,9 @@ GROUP BY LOcation`
 }
 
 func LoadReserves(ctx fx.Tx, product int64) ([]Stock, error) {
+
+	ctx.Trace().Begin("Load Reserves")
+	defer ctx.Trace().End()
 	var res []Stock
 	rows, err := ctx.QueryHack("SELECT Location, Sum(Quantity) FROM Reserves WHERE Product=? GROUP BY Location", product)
 	if err != nil {
@@ -92,6 +95,9 @@ func LoadReserves(ctx fx.Tx, product int64) ([]Stock, error) {
 }
 
 func LoadInventory(ctx fx.Tx, product int64) ([]Stock, error) {
+
+	ctx.Trace().Begin("Load Inventory")
+	defer ctx.Trace().End()
 	var res []Stock
 	rows, err := ctx.QueryHack("SELECT Location, OnHand FROM Inventory WHERE Product=?", product)
 	if err != nil {
@@ -111,7 +117,10 @@ func LoadInventory(ctx fx.Tx, product int64) ([]Stock, error) {
 	return res, nil
 }
 
-func Resolves(locs map[int64]int64, onHand, reserved []Stock) bool {
+func Resolves(ctx fx.Tx, locs map[int64]int64, onHand, reserved []Stock) bool {
+
+	ctx.Trace().Begin("Resolve")
+	defer ctx.Trace().End()
 	// cached tree
 	var stocks = make(map[int64]struct{ hand, reserved int64 })
 

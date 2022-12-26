@@ -41,7 +41,7 @@ func (env *Env) EnsureSchema() {
 	if env.schemaReady {
 		return
 	}
-	err := db.CreateSchema(env.db)
+	err := db.CreateSchema(env.db, true)
 	if err != nil {
 		log.Panicln("can't prepare schema: ", err)
 

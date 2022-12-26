@@ -62,7 +62,7 @@ func Reserve(a fx.Tx, r *ReserveReq) (*ReserveResp, *status.Status) {
 			Loc: loc,
 		})
 
-		enough := graphs.Resolves(locs, inventory, reserves)
+		enough := graphs.Resolves(a, locs, inventory, reserves)
 
 		if !enough {
 			return nil, status.Newf(codes.FailedPrecondition, "availability broken for product %d", pid)
