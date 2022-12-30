@@ -248,6 +248,14 @@ message Fulfilled {
     int64 onHand = 4;
   }
   repeated Item items = 2;
+
+  message Reserve {
+    string product = 1;
+    string location = 2;
+    int64 quantity = 3;
+  }
+
+  repeated Reserve reserved = 3;
 }
 
 message Cancelled {

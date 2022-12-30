@@ -14,7 +14,9 @@ CREATE TABLE Locations (
     Id INTEGER PRIMARY KEY,
     Parent INTEGER NOT NULL,
     Name TEXT NOT NULL,
+    {{ if .Strict }}
     FOREIGN KEY(Parent) REFERENCES Locations(Id),
+    {{ end}}
     UNIQUE (Name, Parent)
 );
 
@@ -42,9 +44,6 @@ CREATE TABLE Inventory (
     primary key (Product, Location)
 ) WITHOUT ROWID;
 
-CREATE INDEX IDX_INVENTORY_PRODUCT
-    ON Inventory (Product);
-
 CREATE INDEX IDX_INVENTORY_LOCATION
     ON Inventory (Location);
 
@@ -70,14 +69,12 @@ CREATE TABLE Reserves (
 ) WITHOUT ROWID ;
 
 
-CREATE INDEX IDX_RESERVES_PRODUCT_LOCATION
-    ON Reserves (Location, Product);
+CREATE INDEX IDX_RESERVES_LOCATION
+    ON Reserves (Location);
 
 CREATE INDEX IDX_RESERVES_RESERVATION
     ON Reserves (Reservation);
 
-CREATE INDEX IDX_RESERVES_Product
-    ON Reserves (Product);
 
 INSERT INTO sqlite_sequence (name, seq) VALUES
     ('Locations', 0),

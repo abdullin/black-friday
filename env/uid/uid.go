@@ -19,6 +19,9 @@ func Str(v int64) string {
 		return strconv.FormatInt(v, 16)
 	}
 }
+func P32(s string) int32 {
+	return int32(Parse(s))
+}
 
 func Parse(s string) int64 {
 	if len(s) == 0 {

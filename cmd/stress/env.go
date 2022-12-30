@@ -28,8 +28,10 @@ type env struct {
 	client api.InventoryServiceClient
 }
 
+const MAX_INVENTORY = 200000
+
 func NewEnv(client api.InventoryServiceClient) *env {
-	return &env{client: client, r: rnd.New(), inventory: make([]int64, 10000, 10000)}
+	return &env{client: client, r: rnd.New(), inventory: make([]int64, MAX_INVENTORY, MAX_INVENTORY)}
 }
 
 func (e *env) TryFulfull(ctx context.Context, count int) {
@@ -168,7 +170,7 @@ func (e *env) AddWarehouse(ctx context.Context) {
 	e.locations += 1
 
 	// add rows
-	for r := 0; r < 3; r++ {
+	for r := 0; r < 10; r++ {
 		rowName := fmt.Sprintf("%s/ROW-%d", whsName, r+1)
 		row := &api.AddLocationsReq_Loc{
 			Name: rowName}
@@ -176,14 +178,14 @@ func (e *env) AddWarehouse(ctx context.Context) {
 
 		e.locations += 1
 
-		for s := 0; s < 4; s++ {
+		for s := 0; s < 20; s++ {
 			shelfName := fmt.Sprintf("%s/SHELF-%d", rowName, s+1)
 			shelf := &api.AddLocationsReq_Loc{Name: shelfName}
 			row.Locs = append(row.Locs, shelf)
 
 			e.locations += 1
 
-			for b := 0; b < 5; b++ {
+			for b := 0; b < 30; b++ {
 				binName := fmt.Sprintf("BIN-%d", e.locations)
 				bin := &api.AddLocationsReq_Loc{Name: binName}
 				shelf.Locs = append(shelf.Locs, bin)

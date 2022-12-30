@@ -6,7 +6,6 @@ import (
 	"black-friday/fx"
 	. "black-friday/inventory/api"
 	"black-friday/inventory/features/graphs"
-	"fmt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -24,6 +23,7 @@ func Fulfill(ctx fx.Tx, req *FulfillReq) (*FulfillResp, *status.Status) {
 
 	defer rows.Close()
 
+	// group all reservations by product
 	reservation := make(map[int64][]struct {
 		location int64
 		quantity int64
@@ -55,7 +55,6 @@ func Fulfill(ctx fx.Tx, req *FulfillReq) (*FulfillResp, *status.Status) {
 	}
 
 	// need to group products. product to location to onhand
-
 	fill := make(map[int64][]struct {
 		location, quantity int64
 	})
@@ -68,48 +67,38 @@ func Fulfill(ctx fx.Tx, req *FulfillReq) (*FulfillResp, *status.Status) {
 	}
 
 	for pid, is := range fill {
-		n, err := graphs.LoadProductTree(ctx, pid)
-		if err != nil {
-			return nil, status.Convert(err)
-		}
 
-		if fx.Explore {
-			fmt.Printf("\nProduct tree at start: \n")
-			graphs.Print(n, 2)
-		}
+		stock := graphs.World.GetStock(int32(pid)).Clone()
 
 		// remove all items
 		for _, i := range is {
 
-			on, _, found := graphs.Modify(n, i.location, -i.quantity, 0)
-			if !found {
-				return nil, status.Newf(codes.FailedPrecondition, "inventory not found")
-			}
+			qty, _ := stock.Update(int32(i.location), int32(-i.quantity), 0)
+
 			e.Items = append(e.Items, &Fulfilled_Item{
 				Product:  uid.Str(pid),
 				Location: uid.Str(i.location),
 				Removed:  i.quantity,
-				OnHand:   on,
+				OnHand:   int64(qty),
 			})
 		}
 		// remove allocation
 
 		for _, res := range reservation[pid] {
-			_, _, found := graphs.Modify(n, res.location, 0, -res.quantity)
-			if !found {
+			_, reserved := stock.Update(int32(res.location), 0, int32(-res.quantity))
+
+			e.Reserved = append(e.Reserved, &Fulfilled_Reserve{
+				Product:  uid.Str(pid),
+				Location: uid.Str(res.location),
+				Quantity: res.quantity,
+			})
+			if reserved == 0 {
 				return nil, status.Newf(codes.FailedPrecondition, "inventory not found")
 			}
 		}
 
-		if fx.Explore {
-			if fx.Explore {
-				fmt.Printf("\nProduct tree at the end: \n")
-				graphs.Print(n, 2)
-			}
+		good := stock.IsValid()
 
-		}
-
-		_, _, good := graphs.Walk(n)
 		if !good {
 			return nil, status.Newf(codes.FailedPrecondition, "broken availability")
 		}

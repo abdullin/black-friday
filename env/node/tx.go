@@ -4,6 +4,7 @@ import (
 	"black-friday/env/tracer"
 	"black-friday/fail"
 	"black-friday/inventory/apply"
+	"black-friday/inventory/features/graphs"
 	"context"
 	"database/sql"
 	"fmt"
@@ -15,7 +16,7 @@ import (
 type tx struct {
 	ctx    context.Context
 	tx     *sql.Tx
-	events int64
+	events []proto.Message
 	trace  *tracer.Tracer
 	env    *Env
 }
@@ -28,7 +29,7 @@ func (c *tx) GetSeq(name string) int64 {
 
 }
 
-var EventCount int64
+var EventCount int
 
 func (c *tx) Apply(e proto.Message) (error, fail.Code) {
 
@@ -37,7 +38,7 @@ func (c *tx) Apply(e proto.Message) (error, fail.Code) {
 	err := apply.Event(c, e)
 	c.trace.End()
 
-	c.events += 1
+	c.events = append(c.events, e)
 
 	if err != nil {
 		extracted, failCode := fail.Extract(err)
@@ -132,7 +133,13 @@ func (c *tx) Rollback() error {
 }
 
 func (t *tx) Commit() error {
-	EventCount += t.events
+	EventCount += len(t.events)
+	t.Trace().Begin("World")
+	for _, e := range t.events {
+		graphs.World.Apply(e)
+	}
+	t.Trace().End()
+
 	t.Trace().Begin("Commit")
 	err := t.tx.Commit()
 

@@ -52,8 +52,12 @@ func (c cmd) Run(args []string) int {
 	e := NewEnv(client)
 
 	global := time.Now()
-	fmt.Println("#     TIME    DUR     DB      LOCs   SKUs  ON-HAND  RESERVE    SALES    REJECT   PENDING FULFILLED ENTITIES   EVENTS")
 	for i := 0; i < 90; i++ {
+
+		if i%20 == 0 {
+			fmt.Println("#     TIME    DUR     DB      LOCs   SKUs  ON-HAND  RESERVE    SALES    REJECT   PENDING FULFILLED ENTITIES   EVENTS")
+		}
+
 		started := time.Now()
 
 		e.AddWarehouse(ctx)

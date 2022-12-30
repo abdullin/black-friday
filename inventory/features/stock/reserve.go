@@ -34,60 +34,25 @@ func Reserve(a fx.Tx, r *ReserveReq) (*ReserveResp, *status.Status) {
 
 	loc := uid.Parse(r.Location)
 
-	locs, err := graphs.LoadLocTree(a)
-	if err != nil {
-		return nil, status.Convert(err)
-	}
-
-	skus := make(map[string]int64)
-
 	for sku, quantity := range groups {
-		var pid int64
-		if !a.QueryRow("SELECT Id FROM Products WHERE Sku=?", sku)(&pid) {
+
+		pid, found := graphs.World.SKUs[sku]
+
+		if !found {
 			return nil, ErrProductNotFound
 		}
-		skus[sku] = pid
 
-		inventory, err := graphs.LoadInventory(a, pid)
-		if err != nil {
-			return nil, status.Convert(err)
-		}
-		reserves, err := graphs.LoadReserves(a, pid)
-		if err != nil {
-			return nil, status.Convert(err)
-		}
+		stock := graphs.World.GetStock(pid).Clone()
 
-		reserves = append(reserves, graphs.Stock{
-			Qty: quantity,
-			Loc: loc,
-		})
-
-		enough := graphs.Resolves(a, locs, inventory, reserves)
+		stock.Update(int32(loc), 0, int32(quantity))
+		enough := stock.IsValid()
 
 		if !enough {
 			return nil, status.Newf(codes.FailedPrecondition, "availability broken for product %d", pid)
 		}
-		/*
-			// load products
-			tree, err := graphs.LoadProductTree(a, pid)
-
-			if err != nil {
-				return nil, status.Convert(err)
-			}
-
-			_, _, found := graphs.Modify(tree, loc, 0, quantity)
-			if !found {
-				return nil, status.Newf(codes.FailedPrecondition, "no inventory for product %d", pid)
-			}
-			_, _, ok := graphs.Walk(tree)
-			if !ok {
-				return nil, status.Newf(codes.FailedPrecondition, "availability broken for product %d", pid)
-			}
-
-		*/
 
 		e.Items = append(e.Items, &Reserved_Item{
-			Product:  uid.Str(pid),
+			Product:  uid.Str(int64(pid)),
 			Quantity: quantity,
 			Location: r.Location,
 		})
