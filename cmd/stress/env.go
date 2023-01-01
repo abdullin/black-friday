@@ -14,7 +14,7 @@ type env struct {
 	products   int64
 	locations  int64
 	warehouses int64
-	inventory  []int64
+	inventory  []int32
 
 	reject       int64
 	sales        int64
@@ -28,10 +28,10 @@ type env struct {
 	client api.InventoryServiceClient
 }
 
-const MAX_INVENTORY = 200000
+const MAX_INVENTORY = 500000
 
 func NewEnv(client api.InventoryServiceClient) *env {
-	return &env{client: client, r: rnd.New(), inventory: make([]int64, MAX_INVENTORY, MAX_INVENTORY)}
+	return &env{client: client, r: rnd.New(), inventory: make([]int32, MAX_INVENTORY, MAX_INVENTORY)}
 }
 
 func (e *env) TryFulfull(ctx context.Context, count int) {
@@ -126,7 +126,7 @@ func (e *env) AddInventory(ctx context.Context) {
 		OnHandChange: quantity,
 	})
 
-	e.inventory[product] += quantity
+	e.inventory[product] += int32(quantity)
 
 	if err != nil {
 		log.Fatalln(err)

@@ -19,7 +19,9 @@ func Add(ctx fx.Tx, req *AddProductsReq) (r *AddProductsResp, status *status.Sta
 		uuid := uid.Str(id)
 		e := &ProductAdded{Uid: uuid, Sku: sku}
 
-		err, f := ctx.Apply(e)
+		batch := i < len(req.Skus)-1
+
+		err, f := ctx.Apply(e, batch)
 		switch f {
 		case fail.None:
 		case fail.ConstraintUnique:

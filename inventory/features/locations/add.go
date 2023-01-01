@@ -17,7 +17,7 @@ func Add(c fx.Tx, req *AddLocationsReq) (*AddLocationsResp, *status.Status) {
 
 		var r []*AddLocationsResp_Loc
 
-		for _, l := range ls {
+		for i, l := range ls {
 			if l.Name == "" {
 				return nil, ErrArgNil("name")
 			}
@@ -29,7 +29,8 @@ func Add(c fx.Tx, req *AddLocationsReq) (*AddLocationsResp, *status.Status) {
 			node := &AddLocationsResp_Loc{Name: l.Name, Uid: u, Parent: parent}
 			r = append(r, node)
 
-			err, f := c.Apply(e)
+			batch := i < len(ls)-1
+			err, f := c.Apply(e, batch)
 			switch f {
 			case fail.None:
 			case fail.ConstraintUnique:

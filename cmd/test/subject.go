@@ -29,7 +29,7 @@ func (s *subject) Spec(ctx context.Context, request *api.SpecRequest) (*api.Spec
 		if err != nil {
 			return nil, fmt.Errorf("failed to unmarshal given[%d] %s: %w", i, e.GetTypeUrl(), err)
 		}
-		err, fail := tx.Apply(event)
+		err, fail := tx.Apply(event, false)
 		if err != nil {
 			return nil, fmt.Errorf("#%v problem with given[%d] %d.%s: %w",
 				fail,

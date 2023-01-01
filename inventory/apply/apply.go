@@ -20,26 +20,43 @@ func setInventory(tx fx.Tx, product, location, onHand, delta int64) error {
 	}
 }
 
-func Event(tx fx.Tx, e proto.Message) error {
+func Event(tx fx.Tx, e proto.Message, batch bool) error {
 	switch t := e.(type) {
 	case *LocationAdded:
 
 		id := uid.Parse(t.Uid)
-		values := []any{id, t.Name, uid.Parse(t.Parent), id, "Locations"}
-		return tx.Exec(`
+
+		if batch {
+			values := []any{id, t.Name, uid.Parse(t.Parent)}
+			return tx.Exec(`
+INSERT INTO Locations(Id, Name, Parent) VALUES (?,?,?);
+`, values...)
+		} else {
+			values := []any{id, t.Name, uid.Parse(t.Parent), id, "Locations"}
+			return tx.Exec(`
 INSERT INTO Locations(Id, Name, Parent) VALUES (?,?,?);
 UPDATE sqlite_sequence SET seq=? WHERE name=?
 `, values...)
+		}
+
 	case *LocationMoved:
 		return tx.Exec(`
 UPDATE Locations SET Parent=? WHERE Id=?
 `, uid.Parse(t.NewParent), uid.Parse(t.Uid))
 	case *ProductAdded:
 		id := uid.Parse(t.Uid)
-		return tx.Exec(`
+
+		if batch {
+			return tx.Exec(`
+INSERT INTO Products(Id, Sku) VALUES (?,?); 
+`, id, t.Sku)
+		} else {
+
+			return tx.Exec(`
 INSERT INTO Products(Id, Sku) VALUES (?,?);
 UPDATE sqlite_sequence SET seq=? WHERE name=?
 `, id, t.Sku, id, "Products")
+		}
 	case *InventoryUpdated:
 
 		return setInventory(tx, uid.Parse(t.Product), uid.Parse(t.Location), t.OnHand, t.OnHandChange)

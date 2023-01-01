@@ -164,6 +164,7 @@ func (s *ProductStock) Ensure(branch []int32, qty int32, reserve int32) {
 
 	parentIdx := path[len(path)-1]
 	for _, b := range branch[bi:] {
+
 		s.parentIdx = append(s.parentIdx, parentIdx)
 		s.reserved = append(s.reserved, reserve)
 		s.locs = append(s.locs, b)
@@ -177,10 +178,6 @@ func (s *ProductStock) Ensure(branch []int32, qty int32, reserve int32) {
 	for _, i := range path {
 		s.onHand[i] += qty
 		s.reserved[i] += reserve
-	}
-
-	if len(path) != len(locs) {
-		panic("Ensure fail")
 	}
 
 }

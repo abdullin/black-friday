@@ -61,9 +61,9 @@ func (c *Tx) Commit() error {
 	return c.tx.Commit()
 }
 
-func (c *Tx) Apply(e proto.Message) (error, fail.Code) {
+func (c *Tx) Apply(e proto.Message, batch bool) (error, fail.Code) {
 
-	err := apply.Event(c, e)
+	err := apply.Event(c, e, batch)
 
 	if err != nil {
 		extracted, failCode := fail.Extract(err)

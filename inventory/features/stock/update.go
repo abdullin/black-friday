@@ -34,7 +34,7 @@ func Update(ctx fx.Tx, req *UpdateInventoryReq) (*UpdateInventoryResp, *status.S
 		OnHand:       onHand,
 	}
 
-	err, f := ctx.Apply(e)
+	err, f := ctx.Apply(e, false)
 	switch f {
 	case fail.None:
 	default:

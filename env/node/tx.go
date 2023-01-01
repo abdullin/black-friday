@@ -31,11 +31,11 @@ func (c *tx) GetSeq(name string) int64 {
 
 var EventCount int
 
-func (c *tx) Apply(e proto.Message) (error, fail.Code) {
+func (c *tx) Apply(e proto.Message, batch bool) (error, fail.Code) {
 
 	c.trace.Begin(string(e.ProtoReflect().Descriptor().Name()))
 
-	err := apply.Event(c, e)
+	err := apply.Event(c, e, batch)
 	c.trace.End()
 
 	c.events = append(c.events, e)

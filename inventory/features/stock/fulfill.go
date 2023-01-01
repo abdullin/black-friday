@@ -106,7 +106,7 @@ func Fulfill(ctx fx.Tx, req *FulfillReq) (*FulfillResp, *status.Status) {
 	}
 
 	// temporary implementation
-	err, f := ctx.Apply(e)
+	err, f := ctx.Apply(e, false)
 
 	switch f {
 	case fail.None:

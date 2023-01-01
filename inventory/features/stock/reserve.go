@@ -58,7 +58,7 @@ func Reserve(a fx.Tx, r *ReserveReq) (*ReserveResp, *status.Status) {
 		})
 	}
 
-	err, f := a.Apply(e)
+	err, f := a.Apply(e, false)
 	switch f {
 	case fail.None:
 	case fail.ConstraintUnique:

@@ -13,7 +13,7 @@ func (env *Env) RunSpec(spec *api.Spec, ttx *Tx) *SpecResult {
 
 	beforeEvent := time.Now()
 	for i, e := range spec.Given {
-		err, fail := ttx.Apply(e)
+		err, fail := ttx.Apply(e, false)
 
 		if err != nil {
 			panic(fmt.Sprintf("#%v problem with spec '%s' event %d.%s: %s",

@@ -42,7 +42,7 @@ func Move(a fx.Tx, r *MoveLocationReq) (*MoveLocationResp, *status.Status) {
 		Uid:       r.Uid,
 		OldParent: uid.Str(parent),
 		NewParent: r.NewParent,
-	})
+	}, false)
 	switch f {
 	case fail.None:
 	default:

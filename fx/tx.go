@@ -10,7 +10,7 @@ import (
 
 type Tx interface {
 	GetSeq(table string) int64
-	Apply(e proto.Message) (error, fail.Code)
+	Apply(e proto.Message, batch bool) (error, fail.Code)
 	QueryHack(q string, args ...any) (*sql.Rows, error)
 	QueryRow(query string, args ...any) func(dest ...any) bool
 	Exec(sql string, args ...any) error
