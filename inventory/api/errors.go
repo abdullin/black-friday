@@ -7,8 +7,9 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// these are slighly more detailed error codes
-// they are STILL very generic. TODO: add context details later
+// these typed errors map to gRPC status codes and automatic error handling logic
+// extra context can be added via gRPC details to help human in debugging problems
+// we verify status codes in tests, extra context is not verified
 var (
 	ErrNotUnimplemented = status.New(codes.Unimplemented, "Implement me!")
 	ErrPrecondition     = status.New(codes.FailedPrecondition, "failed precondition")
