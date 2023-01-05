@@ -98,7 +98,7 @@ func (b *Bank) SaveSample(file string) {
 }
 
 func (b *Bank) Open() *Tracer {
-	return new(b)
+	return begin(b)
 }
 
 func (b *Bank) collect(t *Tracer) {

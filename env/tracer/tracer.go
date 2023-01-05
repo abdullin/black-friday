@@ -20,7 +20,7 @@ var (
 	MaxEventCapacity = 5000
 )
 
-func new(b *Bank) *Tracer {
+func begin(b *Bank) *Tracer {
 	return &Tracer{
 		Started: time.Now(),
 		bank:    b,
