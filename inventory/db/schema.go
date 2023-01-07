@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"database/sql"
 	"fmt"
-	"log"
 	"text/template"
 )
 
@@ -21,13 +20,13 @@ func CreateSchema(db *sql.DB, strict bool) error {
 
 	tpl, err := template.New("schema").Parse(schema)
 	if err != nil {
-		log.Fatalln(err)
+		return fmt.Errorf("create schema: %w", err)
 	}
 	buf := new(bytes.Buffer)
 
 	err = tpl.Execute(buf, Config{Strict: strict})
 	if err != nil {
-		log.Fatalln(err)
+		return fmt.Errorf("create schema: %w", err)
 	}
 
 	_, err = db.Exec(buf.String())

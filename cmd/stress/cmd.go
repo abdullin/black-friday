@@ -62,9 +62,7 @@ func (c cmd) Run(args []string) int {
 
 		e.AddWarehouse(ctx)
 
-		for k := e.products; k < int64(len(e.bins)); k++ {
-			e.AddProducts(ctx)
-		}
+		e.AddProducts(ctx)
 
 		for k := 0; k < 100; k++ {
 

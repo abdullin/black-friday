@@ -8,6 +8,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/twmb/franz-go/pkg/kerr"
+	"github.com/twmb/franz-go/pkg/kgo"
+	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
 	"log"
 	"reflect"
@@ -133,14 +136,58 @@ func (c *tx) Rollback() error {
 }
 
 func (t *tx) Commit() error {
+	if len(t.events) == 0 {
+		panic("Nothing to commit!")
+
+	}
+
 	EventCount += len(t.events)
-	t.Trace().Begin("World")
+
+	t.Trace().Begin("Publish")
+	records := make([]*kgo.Record, 0, len(t.events))
+
+	byteCount := 0
+
+	for _, e := range t.events {
+
+		text := prototext.Format(e)
+		header := string(e.ProtoReflect().Descriptor().Name())
+		full := fmt.Sprintf("%s %s", header, text)
+
+		record := kgo.KeyStringRecord("tenant-1", full)
+		records = append(records, record)
+
+	}
+	t.Trace().Arg(map[string]interface{}{"events": len(t.events), "bytes": byteCount})
+
+	if err := t.env.client.BeginTransaction(); err != nil {
+		panic(fmt.Errorf("error beginning transaction: %v\n", err))
+	}
+
+	results := t.env.client.ProduceSync(t.ctx, records...)
+	if results.FirstErr() != nil {
+		log.Panicln("Problem publishing", results.FirstErr())
+	}
+
+	// Attempt to commit the transaction and explicitly abort if the
+	// commit was not attempted.
+	switch err := t.env.client.EndTransaction(t.ctx, kgo.TryCommit); err {
+	case nil:
+	case kerr.OperationNotAttempted:
+		panic("rollback")
+	default:
+		panic(fmt.Errorf("error committing transaction: %v\n", err))
+	}
+	t.Trace().End()
+
+	t.Trace().Begin("Update model")
+	t.Trace().Arg(map[string]interface{}{"events": len(t.events)})
 	for _, e := range t.events {
 		graphs.World.Apply(e)
 	}
 	t.Trace().End()
 
-	t.Trace().Begin("Commit")
+	t.Trace().Begin("Commit Tx")
 	err := t.tx.Commit()
 
 	t.Trace().End()

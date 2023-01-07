@@ -73,6 +73,14 @@ func (t *Tracer) Begin(name string) {
 	})
 }
 
+func (t *Tracer) Arg(kvs map[string]interface{}) {
+
+	if t.Disabled() {
+		return
+	}
+	t.Events[len(t.Events)-1].Args = kvs
+}
+
 func (t *Tracer) End() {
 	if t.Disabled() {
 		return

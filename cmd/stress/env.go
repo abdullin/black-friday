@@ -138,19 +138,24 @@ func (e *env) AddInventory(ctx context.Context) {
 }
 
 func (e *env) AddProducts(ctx context.Context) {
-	e.products += 1
 
-	var skus []string
+	for e.products < int64(len(e.bins)) {
 
-	skus = append(skus, SKU(e.products))
+		var skus []string
+		for i := 0; i < 50; i++ {
 
-	prod := &api.AddProductsReq{Skus: skus}
+			e.products += 1
+			skus = append(skus, SKU(e.products))
 
-	_, err := e.client.AddProducts(ctx, prod)
-	if err != nil {
-		log.Panicln(err)
+		}
+
+		prod := &api.AddProductsReq{Skus: skus}
+
+		_, err := e.client.AddProducts(ctx, prod)
+		if err != nil {
+			log.Panicln(err)
+		}
 	}
-
 }
 
 func SKU(e int64) string {
