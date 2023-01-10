@@ -34,7 +34,8 @@ func (c cmd) Run(args []string) int {
 	file := "/tmp/stress.sqlite"
 
 	_ = os.Remove(file)
-	a := node.NewEnv(ctx, file)
+
+	a := node.NewEnv(ctx, file, nil)
 	a.EnsureSchema()
 
 	// create server

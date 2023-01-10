@@ -7,10 +7,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/twmb/franz-go/pkg/kgo"
 	"log"
-	"os"
-	"strconv"
 	"strings"
 )
 
@@ -18,7 +15,7 @@ type Env struct {
 	ctx context.Context
 	db  *sql.DB
 
-	client *kgo.Client
+	store fx.EventStore
 
 	schemaReady bool
 	Bank        *tracer.Bank
@@ -63,35 +60,16 @@ func (e *Env) GetStmt(q string) *Prepared {
 
 }
 
-func NewEnv(ctx context.Context, file string) *Env {
+func NewEnv(ctx context.Context, file string, store fx.EventStore) *Env {
 
 	dbs, err := sql.Open("sqlite3", file)
 	if err != nil {
 		log.Panicln("failed to open DB", err)
 	}
 
-	seeds := []string{"159.69.176.118:9092"}
-	// One client can both produce and consume!
-	// Consuming can either be direct (no consumer group), or through a group. Below, we use a group.
-
-	producerId := strconv.FormatInt(int64(os.Getpid()), 10)
-	cl, err := kgo.NewClient(
-		kgo.SeedBrokers(seeds...),
-		kgo.TransactionalID(producerId),
-		kgo.DefaultProduceTopic("blackfriday-events"),
-	)
-	if err != nil {
-		panic(fmt.Errorf("Can't create kafka client %w", err))
-	}
-
-	err = cl.Ping(ctx)
-	if err != nil {
-		panic("Failed to ping")
-	}
-
 	return &Env{
 		ctx:         ctx,
-		client:      cl,
+		store:       store,
 		db:          dbs,
 		schemaReady: false,
 		Bank:        tracer.NewBank(),
@@ -107,9 +85,7 @@ func (env *Env) Close() {
 		}
 		env.db = nil
 	}
-	if env.client != nil {
-		env.client.Close()
-	}
+	env.store.Close()
 }
 
 func (env *Env) EnsureSchema() {
