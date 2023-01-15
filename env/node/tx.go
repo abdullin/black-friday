@@ -4,7 +4,7 @@ import (
 	"black-friday/env/tracer"
 	"black-friday/fail"
 	"black-friday/inventory/apply"
-	"black-friday/inventory/features/graphs"
+	"black-friday/inventory/mem"
 	"context"
 	"database/sql"
 	"fmt"
@@ -19,6 +19,16 @@ type tx struct {
 	events []proto.Message
 	trace  *tracer.Tracer
 	env    *Env
+}
+
+func (c *tx) GetStockModel(i int32) *mem.ProductStock {
+	return c.env.model.GetStock(i).Clone()
+}
+
+func (c *tx) LookupProduct(sku string) (int32, bool) {
+
+	pid, found := c.env.model.SKUs[sku]
+	return pid, found
 }
 
 func (c *tx) GetSeq(name string) int64 {
@@ -155,7 +165,7 @@ func (t *tx) Commit() error {
 	t.Trace().Begin("Update model")
 	t.Trace().Arg(map[string]interface{}{"events": len(t.events)})
 	for _, e := range t.events {
-		graphs.World.Apply(e)
+		t.env.model.Apply(e)
 	}
 	t.Trace().End()
 

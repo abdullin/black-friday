@@ -12,25 +12,25 @@ import (
 	"reflect"
 )
 
-func Dispatch(ctx fx.Tx, m proto.Message) (r proto.Message, err *status.Status) {
+func Dispatch(tx fx.Tx, m proto.Message) (r proto.Message, err *status.Status) {
 
 	switch t := m.(type) {
 	case *api.AddLocationsReq:
-		r, err = locations.Add(ctx, t)
+		r, err = locations.Add(tx, t)
 	case *api.AddProductsReq:
-		r, err = products.Add(ctx, t)
+		r, err = products.Add(tx, t)
 	case *api.UpdateInventoryReq:
-		r, err = stock.Update(ctx, t)
+		r, err = stock.Update(tx, t)
 	case *api.ListLocationsReq:
-		r, err = locations.List(ctx, t)
+		r, err = locations.List(tx, t)
 	case *api.GetLocInventoryReq:
-		r, err = stock.Query(ctx, t)
+		r, err = stock.Query(tx, t)
 	case *api.ReserveReq:
-		r, err = stock.Reserve(ctx, t)
+		r, err = stock.Reserve(tx, t)
 	case *api.MoveLocationReq:
-		r, err = locations.Move(ctx, t)
+		r, err = locations.Move(tx, t)
 	case *api.FulfillReq:
-		r, err = stock.Fulfill(ctx, t)
+		r, err = stock.Fulfill(tx, t)
 	default:
 		return nil, status.Newf(codes.Internal, "missing Dispatch for %v", reflect.TypeOf(m))
 	}

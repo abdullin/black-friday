@@ -2,6 +2,7 @@ package specs
 
 import (
 	"black-friday/inventory/db"
+	"black-friday/inventory/mem"
 	"context"
 	"database/sql"
 	"fmt"
@@ -9,7 +10,8 @@ import (
 )
 
 type Env struct {
-	db *sql.DB
+	db    *sql.DB
+	model *mem.Model
 
 	schemaReady bool
 }
@@ -24,6 +26,7 @@ func NewEnv(file string) *Env {
 	return &Env{
 		db:          dbs,
 		schemaReady: false,
+		model:       mem.New(),
 	}
 }
 
@@ -62,6 +65,7 @@ func (env *Env) BeginTx(ctx context.Context) (*Tx, error) {
 		ctx:    ctx,
 		tx:     dbtx,
 		Events: nil,
+		model:  mem.New(),
 	}
 
 	return ttx, nil

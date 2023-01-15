@@ -3,6 +3,7 @@ package fx
 import (
 	"black-friday/env/tracer"
 	"black-friday/fail"
+	"black-friday/inventory/mem"
 	"context"
 	"database/sql"
 	"google.golang.org/protobuf/proto"
@@ -17,6 +18,9 @@ type Tx interface {
 	Rollback() error
 	Commit() error
 	Trace() *tracer.Tracer
+
+	GetStockModel(i int32) *mem.ProductStock
+	LookupProduct(sku string) (int32, bool)
 }
 
 type Transactor interface {

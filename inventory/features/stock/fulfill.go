@@ -5,7 +5,6 @@ import (
 	"black-friday/fail"
 	"black-friday/fx"
 	. "black-friday/inventory/api"
-	"black-friday/inventory/features/graphs"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -68,8 +67,7 @@ func Fulfill(ctx fx.Tx, req *FulfillReq) (*FulfillResp, *status.Status) {
 
 	for pid, is := range fill {
 
-		stock := graphs.World.GetStock(int32(pid)).Clone()
-
+		stock := ctx.GetStockModel(int32(pid))
 		// remove all items
 		for _, i := range is {
 

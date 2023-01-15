@@ -45,6 +45,8 @@ func (s *subject) Spec(ctx context.Context, request *api.SpecRequest) (*api.Spec
 				reflect.TypeOf(e).String(),
 				err)
 		}
+
+		tx.ApplyModelEvent(e)
 	}
 
 	actualReq, err := request.When.UnmarshalNew()

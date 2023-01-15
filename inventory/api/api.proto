@@ -107,9 +107,7 @@ message AddLocationsResp {
 message LocationAdded {
   string uid = 1;
   string name = 2;
-  //LocType type = 3;
 
-  // added later
   string parent = 4;
 }
 

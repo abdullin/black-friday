@@ -76,3 +76,10 @@ func NewStore(topic string, seeds []string) (error, fx.EventStore) {
 	}
 
 }
+
+func (es *store) Close() error {
+	if es.client != nil {
+		es.client.Close()
+	}
+	return nil
+}

@@ -5,7 +5,6 @@ import (
 	"black-friday/fail"
 	"black-friday/fx"
 	. "black-friday/inventory/api"
-	"black-friday/inventory/features/graphs"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -36,13 +35,13 @@ func Reserve(a fx.Tx, r *ReserveReq) (*ReserveResp, *status.Status) {
 
 	for sku, quantity := range groups {
 
-		pid, found := graphs.World.SKUs[sku]
+		pid, found := a.LookupProduct(sku)
 
 		if !found {
 			return nil, ErrProductNotFound
 		}
 
-		stock := graphs.World.GetStock(pid).Clone()
+		stock := a.GetStockModel(pid)
 
 		stock.Update(int32(loc), 0, int32(quantity))
 		enough := stock.IsValid()

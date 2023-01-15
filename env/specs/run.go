@@ -23,6 +23,8 @@ func (env *Env) RunSpec(spec *api.Spec, ttx *Tx) *SpecResult {
 				reflect.TypeOf(e).String(),
 				err))
 		}
+		ttx.ApplyModelEvent(e)
+
 	}
 	eventTime1 := time.Since(beforeEvent)
 

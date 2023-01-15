@@ -4,6 +4,7 @@ import (
 	"black-friday/env/tracer"
 	"black-friday/fx"
 	"black-friday/inventory/db"
+	"black-friday/inventory/mem"
 	"context"
 	"database/sql"
 	"fmt"
@@ -20,6 +21,7 @@ type Env struct {
 	schemaReady bool
 	Bank        *tracer.Bank
 	prepared    map[string]*Prepared
+	model       *mem.Model
 }
 
 type Prepared struct {

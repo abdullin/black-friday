@@ -4,6 +4,7 @@ import (
 	"black-friday/env/tracer"
 	"black-friday/fail"
 	"black-friday/inventory/apply"
+	"black-friday/inventory/mem"
 	"context"
 	"database/sql"
 	"fmt"
@@ -16,6 +17,20 @@ type Tx struct {
 	ctx    context.Context
 	tx     *sql.Tx
 	Events []proto.Message
+	model  *mem.Model
+}
+
+func (c *Tx) ApplyModelEvent(m proto.Message) {
+	c.model.Apply(m)
+}
+
+func (c *Tx) GetStockModel(i int32) *mem.ProductStock {
+	return c.model.GetStock(i).Clone()
+}
+
+func (c *Tx) LookupProduct(sku string) (int32, bool) {
+	pid, found := c.model.SKUs[sku]
+	return pid, found
 }
 
 func (c *Tx) QueryHack(q string, args ...any) (*sql.Rows, error) {

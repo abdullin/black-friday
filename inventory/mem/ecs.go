@@ -1,29 +1,28 @@
-package graphs
+package mem
 
 import (
 	"black-friday/env/uid"
 	"black-friday/inventory/api"
 	"fmt"
 	"google.golang.org/protobuf/proto"
+	"log"
 )
 
-var World = NewMem()
-
-type Mem struct {
-	stocks map[int32]*ProductStock
+type Model struct {
 	locs   map[int32][]int32
 	SKUs   map[string]int32
+	stocks map[int32]*ProductStock
 }
 
-func NewMem() *Mem {
-	return &Mem{
+func New() *Model {
+	return &Model{
 		stocks: map[int32]*ProductStock{},
 		locs:   map[int32][]int32{0: {-1}},
 		SKUs:   map[string]int32{},
 	}
 }
 
-func (m *Mem) GetStock(i int32) *ProductStock {
+func (m *Model) GetStock(i int32) *ProductStock {
 	stock, found := m.stocks[i]
 	if found {
 		return stock
@@ -32,15 +31,6 @@ func (m *Mem) GetStock(i int32) *ProductStock {
 	stock = create()
 	m.stocks[i] = stock
 	return stock
-}
-
-type ProductStock struct {
-	locs []int32
-	// root has parent index of -1
-	parentIdx []int16
-
-	reserved []int32
-	onHand   []int32
 }
 
 func create() *ProductStock {
@@ -52,7 +42,8 @@ func create() *ProductStock {
 	}
 }
 
-func (m *Mem) Apply(e proto.Message) {
+func (m *Model) Apply(e proto.Message) {
+
 	switch t := e.(type) {
 	case *api.ProductAdded:
 		m.SKUs[t.Sku] = uid.P32(t.Uid)
@@ -98,6 +89,8 @@ func (m *Mem) Apply(e proto.Message) {
 }
 
 func (s *ProductStock) Clone() *ProductStock {
+
+	log.Println("Cloned")
 
 	reserved := make([]int32, len(s.reserved))
 	copy(reserved, s.reserved)
@@ -191,6 +184,15 @@ func (s *ProductStock) IsValid() bool {
 
 	}
 	return true
+}
+
+type ProductStock struct {
+	locs []int32
+	// root has parent index of -1
+	parentIdx []int16
+
+	reserved []int32
+	onHand   []int32
 }
 
 // update loc hierarchy in forward
