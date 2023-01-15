@@ -1,5 +1,9 @@
 add new products
 ------------------------------------------
+// Products represent things that can be stored in inventory: GPUs, Colas, iPhones, etc
+// 
+// They are defined by their SKU - code for "Stock Keeping Unit". A collection of
+// product forms a "Catalogue". All SKUs must be unique there.
 GIVEN:
 WHEN:
   AddProductsReq skus:"one"
@@ -42,19 +46,43 @@ ERROR:
 ==========================================
 add location
 ------------------------------------------
+// Locations are places where products could be stored.
+// 
+// We model them as a nested structure of unlimited depth. 
+// 
+// There is a predefined "ROOT" location, while all other 
+// locations are contained within.
+// 
+// ┌── ─── ─── ─── ─── ─── ─── ──┐
+// │ROOT                          
+// │┌────────────┐┌────────────┐ │
+//  │ Warehouse1 ││ Warehouse2 │ │
+// ││┌──────────┐││┌──────────┐│ │
+// │││ Shelf 1  ││││ Shelf 1  ││  
+// ││├──────────┤││├──────────┤│ │
+//  ││ Shelf 2  ││││ Shelf 2  ││ │
+// ││└──────────┘││└──────────┘│ │
+// │└────────────┘└────────────┘  
+// │┌──────────┐                 │
+//  │Container │                 │
+// │└──────────┘                 │
+// └─ ─── ─── ─── ─── ─── ─── ─── 
+// 
+// 
+// Location names must be unique within their parent.
 GIVEN:
 WHEN:
-  AddLocationsReq locs:{name:"Shelf"}
+  AddLocationsReq locs:{name:"Shelf"} parent:"00000000-0000-0000-0000-000000000000"
 THEN:
-  AddLocationsResp locs:{name:"Shelf" uid:"00000000-0000-0000-0000-000000000001"}
+  AddLocationsResp locs:{name:"Shelf" uid:"00000000-0000-0000-0000-000000000001" parent:"00000000-0000-0000-0000-000000000000"}
 EVENTS:
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Shelf"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Shelf" parent:"00000000-0000-0000-0000-000000000000"
 
 ==========================================
 add locations to an existing one
 ------------------------------------------
 GIVEN:
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"WH"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"WH" parent:"00000000-0000-0000-0000-000000000000"
 WHEN:
   AddLocationsReq locs:{name:"S1"} locs:{name:"S2"} parent:"00000000-0000-0000-0000-000000000001"
 THEN:
@@ -67,7 +95,7 @@ EVENTS:
 add nested locations to an existing one
 ------------------------------------------
 GIVEN:
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Warehouse"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Warehouse" parent:"00000000-0000-0000-0000-000000000000"
 WHEN:
   AddLocationsReq locs:{name:"Shelf" locs:{name:"Box"}} parent:"00000000-0000-0000-0000-000000000001"
 THEN:
@@ -99,7 +127,7 @@ insert duplicate location name in a batch
 ------------------------------------------
 GIVEN:
 WHEN:
-  AddLocationsReq locs:{name:"W"} locs:{name:"W"}
+  AddLocationsReq locs:{name:"W"} locs:{name:"W"} parent:"00000000-0000-0000-0000-000000000000"
 ERROR:
   AlreadyExists: already exists
 
@@ -107,9 +135,9 @@ ERROR:
 add location with duplicate name
 ------------------------------------------
 GIVEN:
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"W"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"W" parent:"00000000-0000-0000-0000-000000000000"
 WHEN:
-  AddLocationsReq locs:{name:"W"}
+  AddLocationsReq locs:{name:"W"} parent:"00000000-0000-0000-0000-000000000000"
 ERROR:
   AlreadyExists: already exists
 
@@ -117,9 +145,9 @@ ERROR:
 duplicates are OK, if they don't share a parent
 ------------------------------------------
 GIVEN:
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"WHS1"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"WHS1" parent:"00000000-0000-0000-0000-000000000000"
   LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Inbox" parent:"00000000-0000-0000-0000-000000000001"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000003" name:"WHS2"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000003" name:"WHS2" parent:"00000000-0000-0000-0000-000000000000"
 WHEN:
   AddLocationsReq locs:{name:"Inbox"} parent:"00000000-0000-0000-0000-000000000003"
 THEN:
@@ -131,7 +159,7 @@ EVENTS:
 query one specific location
 ------------------------------------------
 GIVEN:
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Shelf1"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Shelf1" parent:"00000000-0000-0000-0000-000000000000"
 WHEN:
   ListLocationsReq location:"00000000-0000-0000-0000-000000000001"
 THEN:
@@ -141,7 +169,7 @@ THEN:
 query all locations in a tree
 ------------------------------------------
 GIVEN:
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"WH"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"WH" parent:"00000000-0000-0000-0000-000000000000"
   LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Shelf1" parent:"00000000-0000-0000-0000-000000000001"
   LocationAdded uid:"00000000-0000-0000-0000-000000000003" name:"Shelf2" parent:"00000000-0000-0000-0000-000000000001"
 WHEN:
@@ -153,8 +181,8 @@ THEN:
 query locations from another root
 ------------------------------------------
 GIVEN:
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"WH1"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"WH2"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"WH1" parent:"00000000-0000-0000-0000-000000000000"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"WH2" parent:"00000000-0000-0000-0000-000000000000"
   LocationAdded uid:"00000000-0000-0000-0000-000000000003" name:"Shelf" parent:"00000000-0000-0000-0000-000000000001"
 WHEN:
   ListLocationsReq location:"00000000-0000-0000-0000-000000000002"
@@ -174,20 +202,22 @@ ERROR:
 query all locations
 ------------------------------------------
 GIVEN:
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"WH1"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"WH2"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"WH1" parent:"00000000-0000-0000-0000-000000000000"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"WH2" parent:"00000000-0000-0000-0000-000000000000"
   LocationAdded uid:"00000000-0000-0000-0000-000000000003" name:"Shelf" parent:"00000000-0000-0000-0000-000000000001"
 WHEN:
-  ListLocationsReq 
+  ListLocationsReq location:"00000000-0000-0000-0000-000000000000"
 THEN:
   ListLocationsResp locs:{name:"WH1" uid:"00000000-0000-0000-0000-000000000001" parent:"00000000-0000-0000-0000-000000000000" chidren:{name:"Shelf" uid:"00000000-0000-0000-0000-000000000003" parent:"00000000-0000-0000-0000-000000000001"}} locs:{name:"WH2" uid:"00000000-0000-0000-0000-000000000002" parent:"00000000-0000-0000-0000-000000000000"}
 
 ==========================================
 move locations
 ------------------------------------------
+// We can move locations around. For example, we could move a container
+// between the warehouses.
 GIVEN:
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Warehouse"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Container"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Warehouse" parent:"00000000-0000-0000-0000-000000000000"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Container" parent:"00000000-0000-0000-0000-000000000000"
 WHEN:
   MoveLocationReq uid:"00000000-0000-0000-0000-000000000002" newParent:"00000000-0000-0000-0000-000000000001"
 THEN:
@@ -199,7 +229,7 @@ EVENTS:
 recursive locations are not allowed
 ------------------------------------------
 GIVEN:
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Warehouse"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Warehouse" parent:"00000000-0000-0000-0000-000000000000"
   LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Container" parent:"00000000-0000-0000-0000-000000000001"
 WHEN:
   MoveLocationReq uid:"00000000-0000-0000-0000-000000000001" newParent:"00000000-0000-0000-0000-000000000002"
@@ -210,7 +240,7 @@ ERROR:
 don't move location to itself
 ------------------------------------------
 GIVEN:
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Warehouse"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Warehouse" parent:"00000000-0000-0000-0000-000000000000"
 WHEN:
   MoveLocationReq uid:"00000000-0000-0000-0000-000000000001" newParent:"00000000-0000-0000-0000-000000000001"
 ERROR:
@@ -220,9 +250,36 @@ ERROR:
 can't touch root
 ------------------------------------------
 GIVEN:
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Warehouse"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Warehouse" parent:"00000000-0000-0000-0000-000000000000"
 WHEN:
   MoveLocationReq uid:"00000000-0000-0000-0000-000000000000" newParent:"00000000-0000-0000-0000-000000000001"
+ERROR:
+  FailedPrecondition: bad location move
+
+==========================================
+prevent moves that will break availability
+------------------------------------------
+// The system should prevent moves that will break availability.
+// 
+// People will have to make a decision about what to do with that.
+// 
+// ┌─ ── ── ── ── ── ── ─┐                     
+//  RESERVE: 2                                 
+// │ ┌─────────────────┐ │                     
+// │ │    Warehouse    │ │                     
+//   │ ┌─────────────┐ │   Move  ┌────────────┐
+// │ │ │Container: 2 ├─┼─┼──────▶│Container: 2│
+// │ │ └─────────────┘ │ │       └────────────┘
+//   └─────────────────┘                       
+// └─ ── ── ── ── ── ── ─┘                     
+GIVEN:
+  ProductAdded uid:"00000000-0000-0000-0000-000000000001" sku:"GPU"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Warehouse" parent:"00000000-0000-0000-0000-000000000000"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000003" name:"Container" parent:"00000000-0000-0000-0000-000000000002"
+  InventoryUpdated location:"00000000-0000-0000-0000-000000000003" product:"00000000-0000-0000-0000-000000000001" OnHandChange:2 OnHand:2
+  Reserved reservation:"00000000-0000-0000-0000-000000000004" code:"sale" items:{product:"00000000-0000-0000-0000-000000000001" quantity:2 location:"00000000-0000-0000-0000-000000000002"}
+WHEN:
+  MoveLocationReq uid:"00000000-0000-0000-0000-000000000003" newParent:"00000000-0000-0000-0000-000000000000"
 ERROR:
   FailedPrecondition: bad location move
 
@@ -230,7 +287,7 @@ ERROR:
 query locations after removal
 ------------------------------------------
 GIVEN:
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Shelf"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Shelf" parent:"00000000-0000-0000-0000-000000000000"
   ProductAdded uid:"00000000-0000-0000-0000-000000000002" sku:"NVidia"
   InventoryUpdated location:"00000000-0000-0000-0000-000000000001" product:"00000000-0000-0000-0000-000000000002" OnHandChange:3 OnHand:3
   InventoryUpdated location:"00000000-0000-0000-0000-000000000001" product:"00000000-0000-0000-0000-000000000002" OnHandChange:-3
@@ -245,10 +302,10 @@ query inventory at a specific location
 GIVEN:
   ProductAdded uid:"00000000-0000-0000-0000-000000000001" sku:"Cola"
   ProductAdded uid:"00000000-0000-0000-0000-000000000002" sku:"Fanta"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Shelf"
-  InventoryUpdated location:"00000000-0000-0000-0000-000000000001" product:"00000000-0000-0000-0000-000000000002" OnHandChange:2 OnHand:2
+  LocationAdded uid:"00000000-0000-0000-0000-000000000003" name:"Shelf" parent:"00000000-0000-0000-0000-000000000000"
+  InventoryUpdated location:"00000000-0000-0000-0000-000000000003" product:"00000000-0000-0000-0000-000000000002" OnHandChange:2 OnHand:2
 WHEN:
-  GetLocInventoryReq location:"00000000-0000-0000-0000-000000000001"
+  GetLocInventoryReq location:"00000000-0000-0000-0000-000000000003"
 THEN:
   GetLocInventoryResp items:{Product:"00000000-0000-0000-0000-000000000002" OnHand:2 Available:2}
 
@@ -256,29 +313,29 @@ THEN:
 two boxes sum up their quantity at root
 ------------------------------------------
 GIVEN:
-  ProductAdded uid:"00000000-0000-0000-0000-000000000001" sku:"Epyc"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Shelf1"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Shelf2"
-  InventoryUpdated location:"00000000-0000-0000-0000-000000000001" product:"00000000-0000-0000-0000-000000000001" OnHandChange:2 OnHand:2
-  InventoryUpdated location:"00000000-0000-0000-0000-000000000002" product:"00000000-0000-0000-0000-000000000001" OnHandChange:3 OnHand:3
+  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Shelf1" parent:"00000000-0000-0000-0000-000000000000"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Shelf2" parent:"00000000-0000-0000-0000-000000000000"
+  ProductAdded uid:"00000000-0000-0000-0000-000000000003" sku:"Epyc"
+  InventoryUpdated location:"00000000-0000-0000-0000-000000000001" product:"00000000-0000-0000-0000-000000000003" OnHandChange:2 OnHand:2
+  InventoryUpdated location:"00000000-0000-0000-0000-000000000002" product:"00000000-0000-0000-0000-000000000003" OnHandChange:3 OnHand:3
 WHEN:
   GetLocInventoryReq location:"00000000-0000-0000-0000-000000000000"
 THEN:
-  GetLocInventoryResp items:{Product:"00000000-0000-0000-0000-000000000001" OnHand:5 Available:5}
+  GetLocInventoryResp items:{Product:"00000000-0000-0000-0000-000000000003" OnHand:5 Available:5}
 
 ==========================================
 boxes sums up quantity with parent container
 ------------------------------------------
 GIVEN:
-  ProductAdded uid:"00000000-0000-0000-0000-000000000001" sku:"Epyc"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Shelf"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Shelf" parent:"00000000-0000-0000-0000-000000000000"
   LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Bin" parent:"00000000-0000-0000-0000-000000000001"
-  InventoryUpdated location:"00000000-0000-0000-0000-000000000001" product:"00000000-0000-0000-0000-000000000001" OnHandChange:2 OnHand:2
-  InventoryUpdated location:"00000000-0000-0000-0000-000000000002" product:"00000000-0000-0000-0000-000000000001" OnHandChange:3 OnHand:3
+  ProductAdded uid:"00000000-0000-0000-0000-000000000003" sku:"Epyc"
+  InventoryUpdated location:"00000000-0000-0000-0000-000000000001" product:"00000000-0000-0000-0000-000000000003" OnHandChange:2 OnHand:2
+  InventoryUpdated location:"00000000-0000-0000-0000-000000000002" product:"00000000-0000-0000-0000-000000000003" OnHandChange:3 OnHand:3
 WHEN:
   GetLocInventoryReq location:"00000000-0000-0000-0000-000000000001"
 THEN:
-  GetLocInventoryResp items:{Product:"00000000-0000-0000-0000-000000000001" OnHand:5 Available:5}
+  GetLocInventoryResp items:{Product:"00000000-0000-0000-0000-000000000003" OnHand:5 Available:5}
 
 ==========================================
 query inventory at root
@@ -286,8 +343,8 @@ query inventory at root
 GIVEN:
   ProductAdded uid:"00000000-0000-0000-0000-000000000001" sku:"Cola"
   ProductAdded uid:"00000000-0000-0000-0000-000000000002" sku:"Fanta"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Shelf"
-  InventoryUpdated location:"00000000-0000-0000-0000-000000000001" product:"00000000-0000-0000-0000-000000000002" OnHandChange:2 OnHand:2
+  LocationAdded uid:"00000000-0000-0000-0000-000000000003" name:"Shelf" parent:"00000000-0000-0000-0000-000000000000"
+  InventoryUpdated location:"00000000-0000-0000-0000-000000000003" product:"00000000-0000-0000-0000-000000000002" OnHandChange:2 OnHand:2
 WHEN:
   GetLocInventoryReq location:"00000000-0000-0000-0000-000000000000"
 THEN:
@@ -297,61 +354,61 @@ THEN:
 moving container to warehouse increases total quantity
 ------------------------------------------
 GIVEN:
-  ProductAdded uid:"00000000-0000-0000-0000-000000000001" sku:"NVidia 4080"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Warehouse"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Warehouse" parent:"00000000-0000-0000-0000-000000000000"
   LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Unloading" parent:"00000000-0000-0000-0000-000000000001"
   LocationAdded uid:"00000000-0000-0000-0000-000000000003" name:"Shelf" parent:"00000000-0000-0000-0000-000000000001"
-  InventoryUpdated location:"00000000-0000-0000-0000-000000000003" product:"00000000-0000-0000-0000-000000000001" OnHandChange:5 OnHand:5
-  LocationAdded uid:"00000000-0000-0000-0000-000000000004" name:"Container"
-  InventoryUpdated location:"00000000-0000-0000-0000-000000000004" product:"00000000-0000-0000-0000-000000000001" OnHandChange:10 OnHand:10
-  LocationMoved uid:"00000000-0000-0000-0000-000000000004" newParent:"00000000-0000-0000-0000-000000000002"
+  ProductAdded uid:"00000000-0000-0000-0000-000000000004" sku:"NVidia 4080"
+  InventoryUpdated location:"00000000-0000-0000-0000-000000000003" product:"00000000-0000-0000-0000-000000000004" OnHandChange:5 OnHand:5
+  LocationAdded uid:"00000000-0000-0000-0000-000000000005" name:"Container" parent:"00000000-0000-0000-0000-000000000000"
+  InventoryUpdated location:"00000000-0000-0000-0000-000000000005" product:"00000000-0000-0000-0000-000000000004" OnHandChange:10 OnHand:10
+  LocationMoved uid:"00000000-0000-0000-0000-000000000005" newParent:"00000000-0000-0000-0000-000000000002"
 WHEN:
   GetLocInventoryReq location:"00000000-0000-0000-0000-000000000001"
 THEN:
-  GetLocInventoryResp items:{Product:"00000000-0000-0000-0000-000000000001" OnHand:15 Available:15}
+  GetLocInventoryResp items:{Product:"00000000-0000-0000-0000-000000000004" OnHand:15 Available:15}
 
 ==========================================
 moving container to warehouse increases unloading quantity
 ------------------------------------------
 GIVEN:
-  ProductAdded uid:"00000000-0000-0000-0000-000000000001" sku:"NVidia 4080"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Warehouse"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Warehouse" parent:"00000000-0000-0000-0000-000000000000"
   LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Unloading" parent:"00000000-0000-0000-0000-000000000001"
   LocationAdded uid:"00000000-0000-0000-0000-000000000003" name:"Shelf" parent:"00000000-0000-0000-0000-000000000001"
-  InventoryUpdated location:"00000000-0000-0000-0000-000000000003" product:"00000000-0000-0000-0000-000000000001" OnHandChange:5 OnHand:5
-  LocationAdded uid:"00000000-0000-0000-0000-000000000004" name:"Container"
-  InventoryUpdated location:"00000000-0000-0000-0000-000000000004" product:"00000000-0000-0000-0000-000000000001" OnHandChange:10 OnHand:10
-  LocationMoved uid:"00000000-0000-0000-0000-000000000004" newParent:"00000000-0000-0000-0000-000000000002"
+  ProductAdded uid:"00000000-0000-0000-0000-000000000004" sku:"NVidia 4080"
+  InventoryUpdated location:"00000000-0000-0000-0000-000000000003" product:"00000000-0000-0000-0000-000000000004" OnHandChange:5 OnHand:5
+  LocationAdded uid:"00000000-0000-0000-0000-000000000005" name:"Container" parent:"00000000-0000-0000-0000-000000000000"
+  InventoryUpdated location:"00000000-0000-0000-0000-000000000005" product:"00000000-0000-0000-0000-000000000004" OnHandChange:10 OnHand:10
+  LocationMoved uid:"00000000-0000-0000-0000-000000000005" newParent:"00000000-0000-0000-0000-000000000002"
 WHEN:
   GetLocInventoryReq location:"00000000-0000-0000-0000-000000000002"
 THEN:
-  GetLocInventoryResp items:{Product:"00000000-0000-0000-0000-000000000001" OnHand:10 Available:10}
+  GetLocInventoryResp items:{Product:"00000000-0000-0000-0000-000000000004" OnHand:10 Available:10}
 
 ==========================================
 moving container with a reservation
 ------------------------------------------
 GIVEN:
-  ProductAdded uid:"00000000-0000-0000-0000-000000000001" sku:"NVidia 4080"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Warehouse"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Warehouse" parent:"00000000-0000-0000-0000-000000000000"
   LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Unloading" parent:"00000000-0000-0000-0000-000000000001"
   LocationAdded uid:"00000000-0000-0000-0000-000000000003" name:"Shelf" parent:"00000000-0000-0000-0000-000000000001"
-  InventoryUpdated location:"00000000-0000-0000-0000-000000000003" product:"00000000-0000-0000-0000-000000000001" OnHandChange:5 OnHand:5
-  Reserved reservation:"00000000-0000-0000-0000-000000000001" code:"sale1" items:{product:"00000000-0000-0000-0000-000000000001" quantity:3 location:"00000000-0000-0000-0000-000000000003"}
-  LocationAdded uid:"00000000-0000-0000-0000-000000000004" name:"Container"
-  InventoryUpdated location:"00000000-0000-0000-0000-000000000004" product:"00000000-0000-0000-0000-000000000001" OnHandChange:10 OnHand:10
-  Reserved reservation:"00000000-0000-0000-0000-000000000002" code:"sale3" items:{product:"00000000-0000-0000-0000-000000000001" quantity:9 location:"00000000-0000-0000-0000-000000000004"}
-  LocationMoved uid:"00000000-0000-0000-0000-000000000004" newParent:"00000000-0000-0000-0000-000000000002"
+  ProductAdded uid:"00000000-0000-0000-0000-000000000004" sku:"NVidia 4080"
+  InventoryUpdated location:"00000000-0000-0000-0000-000000000003" product:"00000000-0000-0000-0000-000000000004" OnHandChange:5 OnHand:5
+  Reserved reservation:"00000000-0000-0000-0000-000000000005" code:"sale1" items:{product:"00000000-0000-0000-0000-000000000004" quantity:3 location:"00000000-0000-0000-0000-000000000003"}
+  LocationAdded uid:"00000000-0000-0000-0000-000000000006" name:"Container" parent:"00000000-0000-0000-0000-000000000000"
+  InventoryUpdated location:"00000000-0000-0000-0000-000000000006" product:"00000000-0000-0000-0000-000000000004" OnHandChange:10 OnHand:10
+  Reserved reservation:"00000000-0000-0000-0000-000000000007" code:"sale3" items:{product:"00000000-0000-0000-0000-000000000004" quantity:9 location:"00000000-0000-0000-0000-000000000006"}
+  LocationMoved uid:"00000000-0000-0000-0000-000000000006" newParent:"00000000-0000-0000-0000-000000000002"
 WHEN:
   GetLocInventoryReq location:"00000000-0000-0000-0000-000000000001"
 THEN:
-  GetLocInventoryResp items:{Product:"00000000-0000-0000-0000-000000000001" OnHand:15 Available:3}
+  GetLocInventoryResp items:{Product:"00000000-0000-0000-0000-000000000004" OnHand:15 Available:3}
 
 ==========================================
 reservation at location reduces availability at location
 ------------------------------------------
 GIVEN:
   ProductAdded uid:"00000000-0000-0000-0000-000000000001" sku:"pixel"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Warehouse"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Warehouse" parent:"00000000-0000-0000-0000-000000000000"
   InventoryUpdated location:"00000000-0000-0000-0000-000000000002" product:"00000000-0000-0000-0000-000000000001" OnHandChange:10 OnHand:10
   Reserved reservation:"00000000-0000-0000-0000-000000000003" code:"sale" items:{product:"00000000-0000-0000-0000-000000000001" quantity:3 location:"00000000-0000-0000-0000-000000000002"}
 WHEN:
@@ -364,7 +421,7 @@ cancelled reservation returns availability
 ------------------------------------------
 GIVEN:
   ProductAdded uid:"00000000-0000-0000-0000-000000000001" sku:"pixel"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Warehouse"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Warehouse" parent:"00000000-0000-0000-0000-000000000000"
   InventoryUpdated location:"00000000-0000-0000-0000-000000000002" product:"00000000-0000-0000-0000-000000000001" OnHandChange:10 OnHand:10
   Reserved reservation:"00000000-0000-0000-0000-000000000003" code:"sale" items:{product:"00000000-0000-0000-0000-000000000001" quantity:3 location:"00000000-0000-0000-0000-000000000002"}
   Cancelled reservation:"00000000-0000-0000-0000-000000000003" items:{product:"00000000-0000-0000-0000-000000000001" location:"00000000-0000-0000-0000-000000000002" released:3}
@@ -378,7 +435,7 @@ reservation at location reduces availability globally
 ------------------------------------------
 GIVEN:
   ProductAdded uid:"00000000-0000-0000-0000-000000000001" sku:"pixel"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Warehouse"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Warehouse" parent:"00000000-0000-0000-0000-000000000000"
   InventoryUpdated location:"00000000-0000-0000-0000-000000000002" product:"00000000-0000-0000-0000-000000000001" OnHandChange:10 OnHand:10
   Reserved reservation:"00000000-0000-0000-0000-000000000003" code:"sale" items:{product:"00000000-0000-0000-0000-000000000001" quantity:3 location:"00000000-0000-0000-0000-000000000002"}
 WHEN:
@@ -391,10 +448,10 @@ multiple reservations stack
 ------------------------------------------
 GIVEN:
   ProductAdded uid:"00000000-0000-0000-0000-000000000001" sku:"pixel"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Warehouse"
-  InventoryUpdated location:"00000000-0000-0000-0000-000000000001" product:"00000000-0000-0000-0000-000000000001" OnHandChange:10 OnHand:10
-  Reserved reservation:"00000000-0000-0000-0000-000000000001" code:"sale1" items:{product:"00000000-0000-0000-0000-000000000001" quantity:3 location:"00000000-0000-0000-0000-000000000001"}
-  Reserved reservation:"00000000-0000-0000-0000-000000000002" code:"sale2" items:{product:"00000000-0000-0000-0000-000000000001" quantity:4 location:"00000000-0000-0000-0000-000000000001"}
+  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Warehouse" parent:"00000000-0000-0000-0000-000000000000"
+  InventoryUpdated location:"00000000-0000-0000-0000-000000000002" product:"00000000-0000-0000-0000-000000000001" OnHandChange:10 OnHand:10
+  Reserved reservation:"00000000-0000-0000-0000-000000000003" code:"sale1" items:{product:"00000000-0000-0000-0000-000000000001" quantity:3 location:"00000000-0000-0000-0000-000000000002"}
+  Reserved reservation:"00000000-0000-0000-0000-000000000004" code:"sale2" items:{product:"00000000-0000-0000-0000-000000000001" quantity:4 location:"00000000-0000-0000-0000-000000000002"}
 WHEN:
   GetLocInventoryReq location:"00000000-0000-0000-0000-000000000000"
 THEN:
@@ -404,7 +461,7 @@ THEN:
 don't allow negative on-hand
 ------------------------------------------
 GIVEN:
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Shelf"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Shelf" parent:"00000000-0000-0000-0000-000000000000"
   ProductAdded uid:"00000000-0000-0000-0000-000000000002" sku:"NVidia"
 WHEN:
   UpdateInventoryReq location:"00000000-0000-0000-0000-000000000001" product:"00000000-0000-0000-0000-000000000002" OnHandChange:-1
@@ -425,7 +482,7 @@ ERROR:
 add items to a location
 ------------------------------------------
 GIVEN:
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Shelf"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Shelf" parent:"00000000-0000-0000-0000-000000000000"
   ProductAdded uid:"00000000-0000-0000-0000-000000000002" sku:"NVidia"
 WHEN:
   UpdateInventoryReq location:"00000000-0000-0000-0000-000000000001" product:"00000000-0000-0000-0000-000000000002" OnHandChange:7
@@ -438,7 +495,7 @@ EVENTS:
 add items to a location twice
 ------------------------------------------
 GIVEN:
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Shelf"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Shelf" parent:"00000000-0000-0000-0000-000000000000"
   ProductAdded uid:"00000000-0000-0000-0000-000000000002" sku:"NVidia"
   InventoryUpdated location:"00000000-0000-0000-0000-000000000001" product:"00000000-0000-0000-0000-000000000002" OnHandChange:7 OnHand:7
 WHEN:
@@ -449,11 +506,24 @@ EVENTS:
   InventoryUpdated location:"00000000-0000-0000-0000-000000000001" product:"00000000-0000-0000-0000-000000000002" OnHandChange:3 OnHand:10
 
 ==========================================
-reserve sale with one item
+reserve sale with one item on the root
 ------------------------------------------
+// Note that we can have stock in a specific location, while reservation
+// would happen globally (against the root or warehouse).
+// 
+// In this case, the reservation could be later fulfilled using inventory
+// from any location within the scope.
+// 
+// ┌─ ── ── ── ── ── ── ── ── ┐
+//  RESERVE     ┌───────────┐ │
+// │            │SHELF      │  
+// │10 GPU      │           │ │
+//              │10 GPU     │ │
+// │            └───────────┘  
+// └ ── ── ── ── ── ── ── ── ─┘ 
 GIVEN:
   ProductAdded uid:"00000000-0000-0000-0000-000000000001" sku:"GPU"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Shelf"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Shelf" parent:"00000000-0000-0000-0000-000000000000"
   InventoryUpdated location:"00000000-0000-0000-0000-000000000002" product:"00000000-0000-0000-0000-000000000001" OnHandChange:10 OnHand:10
 WHEN:
   ReserveReq reservation:"sale" items:{sku:"GPU" quantity:10} location:"00000000-0000-0000-0000-000000000000"
@@ -467,7 +537,7 @@ reservation with repeating product
 ------------------------------------------
 GIVEN:
   ProductAdded uid:"00000000-0000-0000-0000-000000000001" sku:"GPU"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Shelf"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Shelf" parent:"00000000-0000-0000-0000-000000000000"
   InventoryUpdated location:"00000000-0000-0000-0000-000000000002" product:"00000000-0000-0000-0000-000000000001" OnHandChange:10 OnHand:10
 WHEN:
   ReserveReq reservation:"sale" items:{sku:"GPU" quantity:7} items:{sku:"GPU" quantity:3} location:"00000000-0000-0000-0000-000000000000"
@@ -481,7 +551,7 @@ reserve sale in a specific location
 ------------------------------------------
 GIVEN:
   ProductAdded uid:"00000000-0000-0000-0000-000000000001" sku:"GPU"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Shelf"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Shelf" parent:"00000000-0000-0000-0000-000000000000"
   InventoryUpdated location:"00000000-0000-0000-0000-000000000002" product:"00000000-0000-0000-0000-000000000001" OnHandChange:10 OnHand:10
 WHEN:
   ReserveReq reservation:"sale" items:{sku:"GPU" quantity:10} location:"00000000-0000-0000-0000-000000000002"
@@ -495,9 +565,9 @@ reservation codes must be unique
 ------------------------------------------
 GIVEN:
   ProductAdded uid:"00000000-0000-0000-0000-000000000001" sku:"GPU"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Shelf"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Shelf" parent:"00000000-0000-0000-0000-000000000000"
   InventoryUpdated location:"00000000-0000-0000-0000-000000000002" product:"00000000-0000-0000-0000-000000000001" OnHandChange:10 OnHand:10
-  Reserved reservation:"00000000-0000-0000-0000-000000000001" code:"sale" items:{product:"00000000-0000-0000-0000-000000000001" quantity:1 location:"00000000-0000-0000-0000-000000000002"}
+  Reserved reservation:"00000000-0000-0000-0000-000000000003" code:"sale" items:{product:"00000000-0000-0000-0000-000000000001" quantity:1 location:"00000000-0000-0000-0000-000000000002"}
 WHEN:
   ReserveReq reservation:"sale" items:{sku:"GPU" quantity:1} location:"00000000-0000-0000-0000-000000000002"
 ERROR:
@@ -507,8 +577,8 @@ ERROR:
 reserve sale in a specific location that doesn't have quantity
 ------------------------------------------
 GIVEN:
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Shelf"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Empty"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Shelf" parent:"00000000-0000-0000-0000-000000000000"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Empty" parent:"00000000-0000-0000-0000-000000000000"
   ProductAdded uid:"00000000-0000-0000-0000-000000000003" sku:"GPU"
   InventoryUpdated location:"00000000-0000-0000-0000-000000000001" product:"00000000-0000-0000-0000-000000000003" OnHandChange:10 OnHand:10
 WHEN:
@@ -521,7 +591,7 @@ reserve non-existent sku
 ------------------------------------------
 GIVEN:
 WHEN:
-  ReserveReq reservation:"test" items:{sku:"sale" quantity:1}
+  ReserveReq reservation:"test" items:{sku:"sale" quantity:1} location:"00000000-0000-0000-0000-000000000000"
 ERROR:
   NotFound: product not found
 
@@ -530,9 +600,9 @@ reserve product without inventory
 ------------------------------------------
 GIVEN:
   ProductAdded uid:"00000000-0000-0000-0000-000000000001" sku:"cola"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"WHS1"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"WHS1" parent:"00000000-0000-0000-0000-000000000000"
 WHEN:
-  ReserveReq reservation:"test" items:{sku:"cola" quantity:1}
+  ReserveReq reservation:"test" items:{sku:"cola" quantity:1} location:"00000000-0000-0000-0000-000000000000"
 ERROR:
   FailedPrecondition: not enough quantity
 
@@ -541,10 +611,10 @@ reserve when onHand isn't enough
 ------------------------------------------
 GIVEN:
   ProductAdded uid:"00000000-0000-0000-0000-000000000001" sku:"cola"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"WHS1"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"WHS1" parent:"00000000-0000-0000-0000-000000000000"
   InventoryUpdated location:"00000000-0000-0000-0000-000000000002" product:"00000000-0000-0000-0000-000000000001" OnHandChange:2 OnHand:2
 WHEN:
-  ReserveReq reservation:"test" items:{sku:"cola" quantity:3}
+  ReserveReq reservation:"test" items:{sku:"cola" quantity:3} location:"00000000-0000-0000-0000-000000000000"
 ERROR:
   FailedPrecondition: not enough quantity
 
@@ -553,11 +623,11 @@ over-reserve
 ------------------------------------------
 GIVEN:
   ProductAdded uid:"00000000-0000-0000-0000-000000000001" sku:"cola"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"WHS1"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"WHS1" parent:"00000000-0000-0000-0000-000000000000"
   InventoryUpdated location:"00000000-0000-0000-0000-000000000002" product:"00000000-0000-0000-0000-000000000001" OnHandChange:2 OnHand:2
-  Reserved reservation:"00000000-0000-0000-0000-000000000001" code:"sale" items:{product:"00000000-0000-0000-0000-000000000001" quantity:1 location:"00000000-0000-0000-0000-000000000002"}
+  Reserved reservation:"00000000-0000-0000-0000-000000000003" code:"sale" items:{product:"00000000-0000-0000-0000-000000000001" quantity:1 location:"00000000-0000-0000-0000-000000000002"}
 WHEN:
-  ReserveReq reservation:"test" items:{sku:"cola" quantity:2}
+  ReserveReq reservation:"test" items:{sku:"cola" quantity:2} location:"00000000-0000-0000-0000-000000000000"
 ERROR:
   FailedPrecondition: not enough quantity
 
@@ -566,7 +636,7 @@ reserve in a location that contains enough inside
 ------------------------------------------
 GIVEN:
   ProductAdded uid:"00000000-0000-0000-0000-000000000001" sku:"GPU"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Container"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Container" parent:"00000000-0000-0000-0000-000000000000"
   LocationAdded uid:"00000000-0000-0000-0000-000000000003" name:"Box" parent:"00000000-0000-0000-0000-000000000002"
   InventoryUpdated location:"00000000-0000-0000-0000-000000000003" product:"00000000-0000-0000-0000-000000000001" OnHandChange:10 OnHand:10
 WHEN:
@@ -580,10 +650,10 @@ EVENTS:
 reserve in a location that doesn't have enough inside
 ------------------------------------------
 GIVEN:
-  ProductAdded uid:"00000000-0000-0000-0000-000000000001" sku:"GPU"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Container"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Container" parent:"00000000-0000-0000-0000-000000000000"
   LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Box" parent:"00000000-0000-0000-0000-000000000001"
-  InventoryUpdated location:"00000000-0000-0000-0000-000000000002" product:"00000000-0000-0000-0000-000000000001" OnHandChange:10 OnHand:10
+  ProductAdded uid:"00000000-0000-0000-0000-000000000003" sku:"GPU"
+  InventoryUpdated location:"00000000-0000-0000-0000-000000000002" product:"00000000-0000-0000-0000-000000000003" OnHandChange:10 OnHand:10
 WHEN:
   ReserveReq reservation:"sale" items:{sku:"GPU" quantity:11} location:"00000000-0000-0000-0000-000000000001"
 ERROR:
@@ -594,7 +664,7 @@ reserve box while container has a reservation on top of it (enough)
 ------------------------------------------
 GIVEN:
   ProductAdded uid:"00000000-0000-0000-0000-000000000001" sku:"GPU"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Container"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Container" parent:"00000000-0000-0000-0000-000000000000"
   LocationAdded uid:"00000000-0000-0000-0000-000000000003" name:"Box" parent:"00000000-0000-0000-0000-000000000002"
   InventoryUpdated location:"00000000-0000-0000-0000-000000000003" product:"00000000-0000-0000-0000-000000000001" OnHandChange:10 OnHand:10
   Reserved reservation:"00000000-0000-0000-0000-000000000004" code:"sale0" items:{product:"00000000-0000-0000-0000-000000000001" quantity:5 location:"00000000-0000-0000-0000-000000000002"}
@@ -609,7 +679,7 @@ EVENTS:
 reserve box while container has a reservation on top of it (not enough)
 ------------------------------------------
 GIVEN:
-  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Container"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000001" name:"Container" parent:"00000000-0000-0000-0000-000000000000"
   LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Box" parent:"00000000-0000-0000-0000-000000000001"
   ProductAdded uid:"00000000-0000-0000-0000-000000000003" sku:"GPU"
   InventoryUpdated location:"00000000-0000-0000-0000-000000000002" product:"00000000-0000-0000-0000-000000000003" OnHandChange:3 OnHand:3
@@ -633,7 +703,7 @@ simple fulfillment
 ------------------------------------------
 GIVEN:
   ProductAdded uid:"00000000-0000-0000-0000-000000000001" sku:"GPU"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Warehouse"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Warehouse" parent:"00000000-0000-0000-0000-000000000000"
   InventoryUpdated location:"00000000-0000-0000-0000-000000000002" product:"00000000-0000-0000-0000-000000000001" OnHandChange:10 OnHand:10
   Reserved reservation:"00000000-0000-0000-0000-000000000003" code:"sale" items:{product:"00000000-0000-0000-0000-000000000001" quantity:7 location:"00000000-0000-0000-0000-000000000002"}
 WHEN:
@@ -648,7 +718,7 @@ fulfill reservation in a shipment box
 ------------------------------------------
 GIVEN:
   ProductAdded uid:"00000000-0000-0000-0000-000000000001" sku:"GPU"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Warehouse"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Warehouse" parent:"00000000-0000-0000-0000-000000000000"
   LocationAdded uid:"00000000-0000-0000-0000-000000000003" name:"Shelf" parent:"00000000-0000-0000-0000-000000000002"
   InventoryUpdated location:"00000000-0000-0000-0000-000000000003" product:"00000000-0000-0000-0000-000000000001" OnHandChange:10 OnHand:10
   Reserved reservation:"00000000-0000-0000-0000-000000000004" code:"sale" items:{product:"00000000-0000-0000-0000-000000000001" quantity:7 location:"00000000-0000-0000-0000-000000000002"}
@@ -664,7 +734,7 @@ can't fulfill in a way that breaks availability
 ------------------------------------------
 GIVEN:
   ProductAdded uid:"00000000-0000-0000-0000-000000000001" sku:"GPU"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Warehouse"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Warehouse" parent:"00000000-0000-0000-0000-000000000000"
   LocationAdded uid:"00000000-0000-0000-0000-000000000003" name:"Shelf 1" parent:"00000000-0000-0000-0000-000000000002"
   LocationAdded uid:"00000000-0000-0000-0000-000000000004" name:"Shelf 2" parent:"00000000-0000-0000-0000-000000000002"
   InventoryUpdated location:"00000000-0000-0000-0000-000000000003" product:"00000000-0000-0000-0000-000000000001" OnHandChange:2 OnHand:2
@@ -681,7 +751,7 @@ can fulfill in a way that keeps availability
 ------------------------------------------
 GIVEN:
   ProductAdded uid:"00000000-0000-0000-0000-000000000001" sku:"GPU"
-  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Warehouse"
+  LocationAdded uid:"00000000-0000-0000-0000-000000000002" name:"Warehouse" parent:"00000000-0000-0000-0000-000000000000"
   LocationAdded uid:"00000000-0000-0000-0000-000000000003" name:"Shelf 1" parent:"00000000-0000-0000-0000-000000000002"
   LocationAdded uid:"00000000-0000-0000-0000-000000000004" name:"Shelf 2" parent:"00000000-0000-0000-0000-000000000002"
   InventoryUpdated location:"00000000-0000-0000-0000-000000000003" product:"00000000-0000-0000-0000-000000000001" OnHandChange:2 OnHand:2

@@ -22,7 +22,7 @@ func Str(v int64) string {
 
 func Parse(s string) int64 {
 	if len(s) == 0 {
-		return 0
+		panic("GUID can't be empty")
 	}
 	if TestMode {
 

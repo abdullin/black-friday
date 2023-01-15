@@ -11,7 +11,7 @@ func init() {
 		Level: 2,
 		Name:  "query locations after removal",
 		Given: []proto.Message{
-			&LocationAdded{Uid: u(1), Name: "Shelf"},
+			&LocationAdded{Uid: u(1), Name: "Shelf", Parent: u(0)},
 			&ProductAdded{Uid: u(2), Sku: "NVidia"},
 			&InventoryUpdated{Product: u(2), Location: u(1), OnHandChange: 3, OnHand: 3},
 			&InventoryUpdated{Product: u(2), Location: u(1), OnHandChange: -3, OnHand: 0},
@@ -24,7 +24,7 @@ func init() {
 		Level: 2,
 		Name:  "query one specific location",
 		Given: []proto.Message{
-			&LocationAdded{Uid: u(1), Name: "Shelf1"},
+			&LocationAdded{Uid: u(1), Name: "Shelf1", Parent: u(0)},
 		},
 		When: &ListLocationsReq{Location: u(1)},
 		ThenResponse: &ListLocationsResp{Locs: []*ListLocationsResp_Loc{
@@ -36,7 +36,7 @@ func init() {
 		Level: 3,
 		Name:  "query all locations in a tree",
 		Given: []proto.Message{
-			&LocationAdded{Uid: u(1), Name: "WH"},
+			&LocationAdded{Uid: u(1), Name: "WH", Parent: u(0)},
 			&LocationAdded{Uid: u(2), Name: "Shelf1", Parent: u(1)},
 			&LocationAdded{Uid: u(3), Name: "Shelf2", Parent: u(1)},
 		},
@@ -53,8 +53,8 @@ func init() {
 		Level: 3,
 		Name:  "query locations from another root",
 		Given: []proto.Message{
-			&LocationAdded{Uid: u(1), Name: "WH1"},
-			&LocationAdded{Uid: u(2), Name: "WH2"},
+			&LocationAdded{Uid: u(1), Name: "WH1", Parent: u(0)},
+			&LocationAdded{Uid: u(2), Name: "WH2", Parent: u(0)},
 			&LocationAdded{Uid: u(3), Name: "Shelf", Parent: u(1)},
 		},
 		When: &ListLocationsReq{Location: u(2)},
@@ -75,11 +75,11 @@ func init() {
 		Level: 2,
 		Name:  "query all locations",
 		Given: []proto.Message{
-			&LocationAdded{Uid: u(1), Name: "WH1"},
-			&LocationAdded{Uid: u(2), Name: "WH2"},
+			&LocationAdded{Uid: u(1), Name: "WH1", Parent: u(0)},
+			&LocationAdded{Uid: u(2), Name: "WH2", Parent: u(0)},
 			&LocationAdded{Uid: u(3), Name: "Shelf", Parent: u(1)},
 		},
-		When: &ListLocationsReq{},
+		When: &ListLocationsReq{Location: u(0)},
 		ThenResponse: &ListLocationsResp{Locs: []*ListLocationsResp_Loc{
 			{Name: "WH1", Uid: u(1), Parent: u(0), Chidren: []*ListLocationsResp_Loc{
 				{Name: "Shelf", Uid: u(3), Parent: u(1)},

@@ -8,6 +8,8 @@ github.com/Masterminds/sprig/v3 v3.2.0 h1:P1ekkbuU73Ui/wS0nK1HOM37hh4xdfZo485UPf
 github.com/Masterminds/sprig/v3 v3.2.0/go.mod h1:tWhwTbUTndesPNeF0C900vKoq283u6zp4APT9vaF3SI=
 github.com/abdullin/go-seq v1.0.6 h1:50jVDywPg3A0zuFGFRLI4MSoq6AgA3GvuiFHBPeGmmo=
 github.com/abdullin/go-seq v1.0.6/go.mod h1:4yO2uZUKzV/HnMkRQqmQHxDr/BQPczf9rGKpRLgB5QY=
+github.com/abdullin/go-seq v1.0.7 h1:jAMOg5Nmrl99rUPsyZiXa2DOHW9PsFpJe9ZDLK14iz8=
+github.com/abdullin/go-seq v1.0.7/go.mod h1:4yO2uZUKzV/HnMkRQqmQHxDr/BQPczf9rGKpRLgB5QY=
 github.com/armon/go-radix v0.0.0-20180808171621-7fddfc383310 h1:BUAU3CGlLvorLI26FmByPp2eC2qla6E1Tw+scpcg/to=
 github.com/armon/go-radix v0.0.0-20180808171621-7fddfc383310/go.mod h1:ufUuZ+zHj4x4TnLV4JWEpy2hxWSpsRywHrMgIH9cCH8=
 github.com/bgentry/speakeasy v0.1.0 h1:ByYyxL9InA1OWqxJqqp2A5pYHUrCiAL6K3J+LKSsQkY=

@@ -63,6 +63,7 @@ func stringToMsg(s string) (proto.Message, error) {
 
 const NAME_SEPARATOR = "------------------------------------------"
 const BODY_SEPARATOR = "=========================================="
+const COMMENT_PREFIX = "//"
 
 func WriteSpecs(specs []*api.Spec, w io.Writer) error {
 
@@ -121,12 +122,12 @@ func ReadSpecs(r io.Reader) ([]*api.Spec, error) {
 		// hacky for now
 		joined := strings.Join(lines, "\n")
 		parsed, err := SpecFromParseableString(joined)
+
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse spec from line %d: %w", line, err)
 		}
 		specs = append(specs, parsed)
 	}
-
 	for i, s := range specs {
 		s.Seq = i + 1
 	}
@@ -145,7 +146,17 @@ func SpecToParseableString(s *api.Spec) (string, error) {
 	}
 
 	ln(s.Name)
+
 	ln(NAME_SEPARATOR)
+
+	if len(s.Comments) > 0 {
+		lines := strings.Split(s.Comments, "\n")
+
+		for _, l := range lines {
+			ln("%s %s", COMMENT_PREFIX, l)
+		}
+	}
+
 	ln("GIVEN:")
 
 	for _, e := range s.Given {
@@ -230,9 +241,18 @@ func SpecFromParseableString(s string) (*api.Spec, error) {
 	scanner := bufio.NewScanner(strings.NewReader(s))
 
 	var lines []string
+	var comments []string
 	for scanner.Scan() {
 		s := strings.TrimSpace(scanner.Text())
-		if len(s) > 0 {
+		if len(s) == 0 {
+			continue
+		}
+
+		if strings.HasPrefix(s, COMMENT_PREFIX) {
+			tr := strings.TrimSpace(s[2:])
+			comments = append(comments, tr)
+		} else {
+
 			lines = append(lines, scanner.Text())
 		}
 	}
@@ -243,6 +263,7 @@ func SpecFromParseableString(s string) (*api.Spec, error) {
 	spec := &api.Spec{}
 
 	spec.Name = lines[0]
+	spec.Comments = strings.Join(comments, "\n")
 
 	if !strings.HasPrefix(lines[1], "---") {
 		return nil, fmt.Errorf("expected ----- bot got: %s", lines[1])

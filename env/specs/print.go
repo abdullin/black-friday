@@ -81,6 +81,17 @@ func shortenUuid(s string) string {
 func Print(s *api.Spec) {
 	//println(s.Name)
 
+	if len(s.Comments) > 0 {
+		lines := strings.Split(s.Comments, "\n")
+
+		println()
+		for _, l := range lines {
+
+			println(fmt.Sprintf("%s%s%s", YELLOW, l, CLEAR))
+		}
+		println()
+	}
+
 	if len(s.Given) > 0 {
 		println(yellow("GIVEN:"))
 		for i, e := range s.Given {

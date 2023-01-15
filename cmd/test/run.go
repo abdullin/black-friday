@@ -7,6 +7,7 @@ import (
 	"black-friday/inventory/api"
 	"context"
 	"fmt"
+	"github.com/abdullin/go-seq"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
@@ -131,6 +132,16 @@ func test_specs(db, addr string) {
 		st := status.New(codes.Code(resp.Status), resp.Error)
 
 		deltas := specs.Compare(s, mustMsg(resp.Response), st, events)
+
+		_, err = nextSeq(s.Given)
+		if err != nil {
+			deltas = append(deltas, seq.Issue{
+				Expected: "Sequential seqs",
+				Actual:   "Order violated",
+				Path:     seq.NewPath("Seq"),
+			})
+		}
+
 		issues += len(deltas)
 
 		fmt.Print(ERASE, "\r")

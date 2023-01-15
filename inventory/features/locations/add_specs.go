@@ -15,16 +15,43 @@ func init() {
 	Define(&Spec{
 		Level: 0,
 		Name:  "add location",
+		Comments: `
+Locations are places where products could be stored.
+
+We model them as a nested structure of unlimited depth. 
+
+There is a predefined "ROOT" location, while all other 
+locations are contained within.
+
+┌── ─── ─── ─── ─── ─── ─── ──┐
+│ROOT                          
+│┌────────────┐┌────────────┐ │
+ │ Warehouse1 ││ Warehouse2 │ │
+││┌──────────┐││┌──────────┐│ │
+│││ Shelf 1  ││││ Shelf 1  ││  
+││├──────────┤││├──────────┤│ │
+ ││ Shelf 2  ││││ Shelf 2  ││ │
+││└──────────┘││└──────────┘│ │
+│└────────────┘└────────────┘  
+│┌──────────┐                 │
+ │Container │                 │
+│└──────────┘                 │
+└─ ─── ─── ─── ─── ─── ─── ─── 
+
+
+Location names must be unique within their parent.
+`,
 		When: &AddLocationsReq{
+			Parent: u(0),
 			Locs: []*AddLocationsReq_Loc{
 				{Name: "Shelf"},
 			},
 		},
 		ThenResponse: &AddLocationsResp{Locs: []*AddLocationsResp_Loc{
-			{Uid: u(1), Name: "Shelf"},
+			{Uid: u(1), Name: "Shelf", Parent: u(0)},
 		}},
 		ThenEvents: []proto.Message{
-			&LocationAdded{Uid: u(1), Name: "Shelf"},
+			&LocationAdded{Uid: u(1), Name: "Shelf", Parent: u(0)},
 		},
 	})
 
@@ -32,7 +59,7 @@ func init() {
 		Level: 1,
 		Name:  "add locations to an existing one",
 		Given: []proto.Message{
-			&LocationAdded{Uid: u(1), Name: "WH"},
+			&LocationAdded{Uid: u(1), Name: "WH", Parent: u(0)},
 		},
 		When: &AddLocationsReq{
 			Parent: u(1),
@@ -56,7 +83,7 @@ func init() {
 		Level: 1,
 		Name:  "add nested locations to an existing one",
 		Given: []proto.Message{
-			&LocationAdded{Uid: u(1), Name: "Warehouse"},
+			&LocationAdded{Uid: u(1), Name: "Warehouse", Parent: u(0)},
 		},
 		When: &AddLocationsReq{
 			Parent: u(1),
@@ -102,7 +129,7 @@ func init() {
 	Define(&Spec{
 		Level: 2,
 		Name:  "insert duplicate location name in a batch",
-		When: &AddLocationsReq{Locs: []*AddLocationsReq_Loc{
+		When: &AddLocationsReq{Parent: u(0), Locs: []*AddLocationsReq_Loc{
 			{Name: "W"},
 			{Name: "W"},
 		}},
@@ -113,9 +140,9 @@ func init() {
 		Level: 2,
 		Name:  "add location with duplicate name",
 		Given: []proto.Message{
-			&LocationAdded{Uid: u(1), Name: "W"},
+			&LocationAdded{Uid: u(1), Name: "W", Parent: u(0)},
 		},
-		When: &AddLocationsReq{Locs: []*AddLocationsReq_Loc{
+		When: &AddLocationsReq{Parent: u(0), Locs: []*AddLocationsReq_Loc{
 			{Name: "W"},
 		}},
 		ThenError: ErrAlreadyExists,
@@ -124,9 +151,9 @@ func init() {
 		Level: 2,
 		Name:  "duplicates are OK, if they don't share a parent",
 		Given: []proto.Message{
-			&LocationAdded{Uid: u(1), Name: "WHS1"},
+			&LocationAdded{Uid: u(1), Name: "WHS1", Parent: u(0)},
 			&LocationAdded{Uid: u(2), Name: "Inbox", Parent: u(1)},
-			&LocationAdded{Uid: u(3), Name: "WHS2"},
+			&LocationAdded{Uid: u(3), Name: "WHS2", Parent: u(0)},
 		},
 		When: &AddLocationsReq{Parent: u(3), Locs: []*AddLocationsReq_Loc{{Name: "Inbox"}}},
 		ThenResponse: &AddLocationsResp{Locs: []*AddLocationsResp_Loc{

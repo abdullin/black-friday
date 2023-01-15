@@ -98,6 +98,7 @@ func (e *env) TrySell(ctx context.Context) {
 	r, err := e.client.Reserve(ctx, &api.ReserveReq{
 		Reservation: name,
 		Items:       items,
+		Location:    uid.Str(0),
 	})
 
 	if err == nil {

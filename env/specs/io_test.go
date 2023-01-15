@@ -17,11 +17,11 @@ func TestMessageConversion(t *testing.T) {
 		txt string
 	}{
 		{
-			msg: &api.LocationAdded{Id: 1, Name: "loc", Parent: 2},
-			txt: `LocationAdded id:1 name:"loc" parent:2`,
+			msg: &api.LocationAdded{Uid: "0", Name: "loc", Parent: "2"},
+			txt: `LocationAdded uid:"0" name:"loc" parent:"2"`,
 		}, {
-			msg: &api.Reserved{Reservation: 2, Code: "ASD"},
-			txt: `Reserved reservation:2 code: "ASD"`,
+			msg: &api.Reserved{Reservation: "2", Code: "ASD"},
+			txt: `Reserved reservation:"2" code: "ASD"`,
 		},
 	}
 
@@ -29,7 +29,7 @@ func TestMessageConversion(t *testing.T) {
 		t.Run(s.txt, func(t *testing.T) {
 			actual, err := stringToMsg(s.txt)
 			if err != nil {
-				t.Fatalf("parsing error: %s", err)
+				t.Fatalf("error: %s in \n%s\n", err, s.txt)
 			}
 			deltas := cmp.Diff(actual, s.msg, protocmp.Transform())
 			if len(deltas) > 0 {
