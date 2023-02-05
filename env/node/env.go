@@ -69,7 +69,7 @@ func NewEnv(ctx context.Context, file string) *Env {
 		ctx:         ctx,
 		db:          dbs,
 		schemaReady: false,
-		Bank:        &tracer.Bank{},
+		Bank:        tracer.NewBank(),
 		prepared:    make(map[string]*Prepared),
 	}
 }

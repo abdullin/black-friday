@@ -10,6 +10,7 @@ type Tracer struct {
 	Started time.Time
 	Events  []Event
 	bank    *Bank
+	stack   []string
 }
 
 var (
@@ -19,7 +20,7 @@ var (
 	MaxEventCapacity = 5000
 )
 
-func new(b *Bank) *Tracer {
+func begin(b *Bank) *Tracer {
 	return &Tracer{
 		Started: time.Now(),
 		bank:    b,
@@ -62,6 +63,7 @@ func (t *Tracer) Begin(name string) {
 	if t.Disabled() {
 		return
 	}
+	t.stack = append(t.stack, name)
 	t.append(Event{
 		Timestamp: time.Since(t.Started).Microseconds(),
 		Name:      name,
@@ -71,12 +73,33 @@ func (t *Tracer) Begin(name string) {
 	})
 }
 
+func (t *Tracer) Arg(kvs map[string]interface{}) {
+
+	if t.Disabled() {
+		return
+	}
+	t.Events[len(t.Events)-1].Args = kvs
+}
+
 func (t *Tracer) End() {
 	if t.Disabled() {
 		return
 	}
+
+	elapsed := time.Since(t.Started)
+
+	name := t.stack[len(t.stack)-1]
+
+	counter := t.bank.gross[name]
+	counter.cnt += 1
+	counter.dur += elapsed
+	if t.bank != nil {
+		t.bank.gross[name] = counter
+	}
+
+	t.stack = t.stack[0 : len(t.stack)-1]
 	t.append(Event{
-		Timestamp: time.Since(t.Started).Microseconds(),
+		Timestamp: elapsed.Microseconds(),
 		PID:       1,
 		TID:       1,
 		Phase:     "E",

@@ -25,12 +25,11 @@ func Parse(s string) int64 {
 		panic("GUID can't be empty")
 	}
 	if TestMode {
-
 		return ParseTestUuid(s)
 	}
 	i, err := strconv.ParseInt(s, 16, 64)
 	if err != nil {
-		log.Panicf("Can't parse id in prod mode")
+		log.Panicf("Can't parse id %q in prod mode", s)
 	}
 	return i
 

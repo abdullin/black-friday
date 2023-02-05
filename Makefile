@@ -15,3 +15,11 @@ clean:
 .PHONY: test
 test: bin/bf
 	@bin/bf test
+
+.PHONY: perf
+perf: bin/bf
+	@bin/bf perf
+
+.PHONY: stress
+stress: bin/bf
+	@bin/bf stress

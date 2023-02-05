@@ -33,7 +33,7 @@ func (c cmd) Run(args []string) int {
 }
 
 func (c cmd) Synopsis() string {
-	return "run specs"
+	return "test this implementation against bfkata test suite"
 }
 
 func Factory() (cli.Command, error) {

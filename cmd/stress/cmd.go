@@ -34,6 +34,7 @@ func (c cmd) Run(args []string) int {
 	file := "/tmp/stress.sqlite"
 
 	_ = os.Remove(file)
+
 	a := node.NewEnv(ctx, file)
 	a.EnsureSchema()
 
@@ -52,15 +53,17 @@ func (c cmd) Run(args []string) int {
 	e := NewEnv(client)
 
 	global := time.Now()
-	fmt.Println("DUR        DB      LOCs   SKUs  ON-HAND  RESERVE    SALES    REJECT   PENDING FULFILLED ENTITIES   EVENTS")
 	for i := 0; i < 90; i++ {
+
+		if i%20 == 0 {
+			fmt.Println("#     TIME    DUR     DB      LOCs   SKUs  ON-HAND  RESERVE    SALES    REJECT   PENDING FULFILLED ENTITIES   EVENTS")
+		}
+
 		started := time.Now()
 
 		e.AddWarehouse(ctx)
 
-		for k := e.products; k < int64(len(e.bins)); k++ {
-			e.AddProducts(ctx)
-		}
+		e.AddProducts(ctx)
 
 		for k := 0; k < 100; k++ {
 
@@ -73,9 +76,10 @@ func (c cmd) Run(args []string) int {
 
 		e.TryFulfull(ctx, e.reservations.Len()*3/4)
 
-		funcName(ctx, file, started, e, a)
+		funcName(ctx, file, i, global, started, e, a)
 
 		a.Bank.SaveSample(fmt.Sprintf("/tmp/trace_%02d.jsonl", i))
+		a.Bank.SaveReport(fmt.Sprintf("/tmp/gross_%02d.txt", i))
 		a.Bank.Clear()
 
 		if time.Since(global) > time.Second*60 {
@@ -86,7 +90,7 @@ func (c cmd) Run(args []string) int {
 	return 0
 }
 
-func funcName(ctx context.Context, file string, started time.Time, e *env, a *node.Env) {
+func funcName(ctx context.Context, file string, i int, global, started time.Time, e *env, a *node.Env) {
 
 	tx, err := a.Begin(ctx)
 	if err != nil {
@@ -94,14 +98,16 @@ func funcName(ctx context.Context, file string, started time.Time, e *env, a *no
 	}
 	var onHand, reserved, reservations, entities int64
 	tx.QueryRow("SELECT SUM(OnHand) FROM Inventory")(&onHand)
-	tx.QueryRow("SELECT SUM(Quantity) FROM Reserves")(&reserved)
+	tx.QueryRow("SELECT ifnull(SUM(Quantity),0) FROM Reserves")(&reserved)
 	tx.QueryRow("SELECT COUNT(*) FROM Reservations")(&reservations)
 	tx.QueryRow("SELECT SUM(seq) FROM sqlite_sequence")(&entities)
 
 	defer tx.Rollback()
 
 	bytes := Size(file, file+"-wal")
-	fmt.Printf("%5dms %8s %6d %6d %8d %8d %8d  %8d  %8d %8d  %8d %8d\n",
+	fmt.Printf("%2d %5dms %5dms %8s %6d %6d %8d %8d %8d  %8d  %8d %8d  %8d %8d\n",
+		i,
+		time.Since(global).Milliseconds(),
 		time.Since(started).Milliseconds(),
 		ByteCountDecimal(bytes),
 		e.locations,

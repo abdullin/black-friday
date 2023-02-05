@@ -2,6 +2,7 @@ package perf
 
 import (
 	specs2 "black-friday/env/specs"
+	"black-friday/env/uid"
 	"black-friday/inventory/api"
 	"context"
 	"fmt"
@@ -21,6 +22,8 @@ func speed_test(cores int, specs []*api.Spec, seconds int) {
 	ctx, cancel := context.WithTimeout(context.Background(), duration+time.Second)
 
 	fmt.Printf("Speed test with %d core(s) for %ds\n", cores, seconds)
+
+	uid.TestMode = true
 
 	var services []*specs2.Env
 	var wg sync.WaitGroup

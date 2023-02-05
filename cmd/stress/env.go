@@ -14,7 +14,7 @@ type env struct {
 	products   int64
 	locations  int64
 	warehouses int64
-	inventory  []int64
+	inventory  []int32
 
 	reject       int64
 	sales        int64
@@ -28,8 +28,10 @@ type env struct {
 	client api.InventoryServiceClient
 }
 
+const MAX_INVENTORY = 500000
+
 func NewEnv(client api.InventoryServiceClient) *env {
-	return &env{client: client, r: rnd.New(), inventory: make([]int64, 10000, 10000)}
+	return &env{client: client, r: rnd.New(), inventory: make([]int32, MAX_INVENTORY, MAX_INVENTORY)}
 }
 
 func (e *env) TryFulfull(ctx context.Context, count int) {
@@ -124,7 +126,7 @@ func (e *env) AddInventory(ctx context.Context) {
 		OnHandChange: quantity,
 	})
 
-	e.inventory[product] += quantity
+	e.inventory[product] += int32(quantity)
 
 	if err != nil {
 		log.Fatalln(err)
@@ -136,19 +138,24 @@ func (e *env) AddInventory(ctx context.Context) {
 }
 
 func (e *env) AddProducts(ctx context.Context) {
-	e.products += 1
 
-	var skus []string
+	for e.products < int64(len(e.bins)) {
 
-	skus = append(skus, SKU(e.products))
+		var skus []string
+		for i := 0; i < 50; i++ {
 
-	prod := &api.AddProductsReq{Skus: skus}
+			e.products += 1
+			skus = append(skus, SKU(e.products))
 
-	_, err := e.client.AddProducts(ctx, prod)
-	if err != nil {
-		log.Panicln(err)
+		}
+
+		prod := &api.AddProductsReq{Skus: skus}
+
+		_, err := e.client.AddProducts(ctx, prod)
+		if err != nil {
+			log.Panicln(err)
+		}
 	}
-
 }
 
 func SKU(e int64) string {
@@ -168,7 +175,7 @@ func (e *env) AddWarehouse(ctx context.Context) {
 	e.locations += 1
 
 	// add rows
-	for r := 0; r < 3; r++ {
+	for r := 0; r < 10; r++ {
 		rowName := fmt.Sprintf("%s/ROW-%d", whsName, r+1)
 		row := &api.AddLocationsReq_Loc{
 			Name: rowName}
@@ -176,14 +183,14 @@ func (e *env) AddWarehouse(ctx context.Context) {
 
 		e.locations += 1
 
-		for s := 0; s < 4; s++ {
+		for s := 0; s < 20; s++ {
 			shelfName := fmt.Sprintf("%s/SHELF-%d", rowName, s+1)
 			shelf := &api.AddLocationsReq_Loc{Name: shelfName}
 			row.Locs = append(row.Locs, shelf)
 
 			e.locations += 1
 
-			for b := 0; b < 5; b++ {
+			for b := 0; b < 30; b++ {
 				binName := fmt.Sprintf("BIN-%d", e.locations)
 				bin := &api.AddLocationsReq_Loc{Name: binName}
 				shelf.Locs = append(shelf.Locs, bin)
