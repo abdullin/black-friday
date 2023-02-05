@@ -1,5 +1,7 @@
 This is a black friday experiment code: implementing a subset of warehouse management system with event sourcing.
 
+This is an implementation of [Trustbit Black Friday Kata](https://github.com/trustbit/bfkata).
+
 This experiment focuses:
 
 - event sourcing;
